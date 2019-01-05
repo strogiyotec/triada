@@ -1,4 +1,4 @@
-package io.triada.triada;
+package io.triada;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
