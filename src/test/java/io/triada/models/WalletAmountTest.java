@@ -37,8 +37,8 @@ public final class WalletAmountTest extends Assert {
 
     @Test
     public void testParsedTridz(){
-        final WalletAmount walletAmount = new WalletAmount(new BigDecimal(900_000_000L));
-        assertThat(walletAmount.toString(),is("0.21TRIADA"));
+        final WalletAmount walletAmount = new WalletAmount(900_000_000L);
+        assertThat(walletAmount.toString(),is("0.20TRIADA"));
     }
 
 }

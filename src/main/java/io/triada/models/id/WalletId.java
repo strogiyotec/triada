@@ -1,8 +1,11 @@
 package io.triada.models.id;
 
+import io.triada.models.RandomNumber;
 import io.triada.text.HexText;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -29,6 +32,15 @@ public final class WalletId implements Id<Long> {
     public WalletId(final String id) {
         validate(id);
         this.id = Long.valueOf(id, 16);
+    }
+
+    public WalletId() {
+        final RandomNumber randomNumber =
+                new RandomNumber(
+                        BigInteger.valueOf(2).pow(32),
+                        BigInteger.valueOf(2).pow(50).subtract(BigInteger.ONE)
+                );
+        this.id = randomNumber.get().longValueExact();
     }
 
 

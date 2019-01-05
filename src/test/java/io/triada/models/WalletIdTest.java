@@ -24,6 +24,11 @@ public final class WalletIdTest extends Assert {
         );
     }
 
+    @Test
+    public void testRandomWalletId() {
+        assertTrue(new WalletId().id()>4294967296L);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testNonValidId() {
         final Long id = new WalletId("000000000001234").id();

@@ -1,28 +1,35 @@
 package io.triada.models;
 
-import lombok.experimental.Delegate;
-
+import java.math.BigInteger;
 import java.util.Random;
+import java.util.function.Supplier;
 
 /**
  * Generate random value in inclusive range
  */
-public final class RandomNumber extends Number {
+public final class RandomNumber implements Supplier<BigInteger> {
 
-    private static final Random R = new Random();
+    private final static Random R = new Random();
 
-    /**
-     * Value
-     */
-    @Delegate
-    private final Integer value;
+    private final BigInteger origin;
 
     /**
      * @param min min value
      * @param max max value
      */
-    public RandomNumber(final int min, int max) {
-        max++;//inclusive
-        this.value = RandomNumber.R.nextInt(max) % (max - min + 1) + min;
+    public RandomNumber(BigInteger min, BigInteger max) {
+        max = max.add(BigInteger.ONE);
+        BigInteger range = max.subtract(min);
+        final int length = range.bitLength();
+        BigInteger result = new BigInteger(length, R);
+        while (result.compareTo(range) >= 0) {
+            result = new BigInteger(length, R);
+        }
+        this.origin = result.add(min);
+    }
+
+    @Override
+    public BigInteger get() {
+        return this.origin;
     }
 }
