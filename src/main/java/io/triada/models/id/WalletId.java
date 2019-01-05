@@ -1,6 +1,5 @@
 package io.triada.models.id;
 
-import io.triada.models.Id;
 import io.triada.text.HexText;
 import lombok.EqualsAndHashCode;
 

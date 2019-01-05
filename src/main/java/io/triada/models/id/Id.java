@@ -1,4 +1,4 @@
-package io.triada.models;
+package io.triada.models.id;
 
 /**
  * Represent id
