@@ -18,6 +18,11 @@ public final class WalletId implements Id<Long> {
     private static final Pattern ID_PTN = Pattern.compile("^[0-9a-fA-F]{16}$");
 
     /**
+     * Root wallet
+     */
+    private static final Id<Long> ROOT = new WalletId("0000000000000000");
+
+    /**
      * Id
      */
     private final Long id;
