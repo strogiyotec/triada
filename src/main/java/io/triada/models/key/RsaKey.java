@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,12 +26,21 @@ public final class RsaKey implements Key {
      */
     private final String content;
 
+    /**
+     * Is public key
+     */
+    private final boolean isPublicKey;
+
+    /**
+     * Command line Interface
+     */
     private final CommandLineInterface<String> cli;
 
     public RsaKey(final File file, final CommandLineInterface<String> cli) throws IOException {
         validate(file);
         this.content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         this.cli = cli;
+        this.isPublicKey = this.content.contains("PRIVATE KEY-----");
     }
 
     public RsaKey(final File file) throws IOException {
@@ -50,15 +62,24 @@ public final class RsaKey implements Key {
             );
         }
         this.cli = cli;
+        this.isPublicKey = this.content.contains("PRIVATE KEY-----");
     }
 
     @Override
-    public String sign() {
-        return null;
+    public String sign(final String text) throws Exception {
+        if (!this.isPublicKey) {
+            final PrivateKey pk = new PrivateKeyFromFile(this.rsa()).call();
+            final Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(pk);
+            signature.update(text.getBytes(StandardCharsets.UTF_8));
+            final byte[] sign = signature.sign();
+            return Base64.getEncoder().encodeToString(sign);
+        }
+        throw new IllegalStateException("Can't sign using public key");
     }
 
     @Override
-    public boolean verify(final String signature, final String text) {
+    public boolean verify(final String signature, final String text) throws Exception {
         return false;
     }
 
@@ -73,14 +94,14 @@ public final class RsaKey implements Key {
     private String rsa() {
         return this.rsa.computeIfAbsent(this.content, key -> {
             final String trimed = this.content.trim();
-            try {
-                if (!trimed.startsWith("-----BEGIN")) {
+            if (this.isPublicKey) {
+                try {
                     return this.encodePublicKey(trimed);
-                } else {
-                    return this.encodePrivateKey(trimed);
+                } catch (final IOException exc) {
+                    throw new UncheckedIOException(exc);
                 }
-            } catch (final IOException exc) {
-                throw new UncheckedIOException(exc);
+            } else {
+                return trimed;
             }
         });
 
@@ -114,19 +135,6 @@ public final class RsaKey implements Key {
         final String pkcs1 = this.PKCS1RSAkey(tempFile);
         FileUtils.write(tempFile, "", StandardCharsets.UTF_8);//clear content
         FileUtils.write(tempFile, pkcs1, StandardCharsets.UTF_8);//write pkcs1
-        final String pkcs8 = this.pkcs1To8(tempFile);
-        tempFile.delete();
-        return pkcs8;
-    }
-
-    /**
-     * @param privateKey ssh-rsa public key
-     * @return encoded to pkcs8 text
-     * @throws IOException if failed
-     */
-    private String encodePrivateKey(final String privateKey) throws IOException {
-        final File tempFile = File.createTempFile("/tmp/", ".tmp");
-        FileUtils.write(tempFile, privateKey, StandardCharsets.UTF_8);//write pkcs1
         final String pkcs8 = this.pkcs1To8(tempFile);
         tempFile.delete();
         return pkcs8;

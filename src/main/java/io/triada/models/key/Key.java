@@ -1,9 +1,24 @@
 package io.triada.models.key;
 
 public interface Key {
-    String sign();
 
-    boolean verify(String signature, String text);
+    /**
+     * @param text to sign
+     * @return signed text
+     * @throws Exception if failed
+     */
+    String sign(String text) throws Exception;
 
+    /**
+     * @param signature
+     * @param text
+     * @return true if text was verified
+     * @throws Exception if failed
+     */
+    boolean verify(String signature, String text) throws Exception;
+
+    /**
+     * @return public representation of text
+     */
     String asPublic();
 }
