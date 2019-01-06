@@ -40,7 +40,7 @@ public final class RsaKey implements Key {
         validate(file);
         this.content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         this.cli = cli;
-        this.isPublicKey = this.content.contains("PRIVATE KEY-----");
+        this.isPublicKey = this.content.contains("PUBLIC KEY-----");
     }
 
     public RsaKey(final File file) throws IOException {
