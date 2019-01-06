@@ -1,14 +1,13 @@
 package io.triada.models;
 
-import io.triada.models.cli.ShellScript;
+import io.triada.models.key.PrivateKeyFromFile;
+import io.triada.models.key.PublicKeyFromText;
 import io.triada.models.key.RsaKey;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
+import static org.hamcrest.CoreMatchers.is;
 
 public final class RsaKeyTest extends Assert {
 
@@ -35,22 +34,33 @@ public final class RsaKeyTest extends Assert {
     }
 
     @Test
-    public void test() throws Exception {
-        final String s = FileUtils.readFileToString(new File("/home/strogiyotec/Java/id_rsa/id_rsa.pub"), StandardCharsets.UTF_8);
-        final ShellScript shellScript = new ShellScript();
-        final File tempFile = File.createTempFile("/tmp/", ".tmp");
-        System.out.println(tempFile);
-        FileUtils.write(
-                tempFile,
-                s,
-                StandardCharsets.UTF_8
-        );
-        final String s1 = shellScript.executeCommand(
-                String.format(
-                        "ssh-keygen -f %s -e -m pem",
-                        tempFile.getAbsolutePath()
-                )
-        );
-        System.out.println(s1);
+    public void testSignAndVerify() throws Exception {
+        final RsaKey privateKey =
+                new RsaKey(
+                        ResourceUtils.getFile(
+                                this.getClass().getResource("/keys/pkcs8")
+                        )
+                );
+        final RsaKey publicKey =
+                new RsaKey(
+                        ResourceUtils.getFile(
+                                this.getClass().getResource("/keys/id_rsa.pub")
+                        )
+                );
+        final String text = "Hello world";
+        final String signed = privateKey.sign(text);
+        assertTrue(publicKey.verify(signed, text));
+    }
+
+    @Test
+    public void testPrivateKeyToPkcs8() throws Exception {
+        final PrivateKeyFromFile privateKeyFromFile = new PrivateKeyFromFile(ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")));
+        assertThat(privateKeyFromFile.call().getAlgorithm(), is("RSA"));
+    }
+
+    @Test
+    public void testPublicKeyToPkcs8() throws Exception {
+        final PublicKeyFromText privateKeyFromFile = new PublicKeyFromText(new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/id_rsa.pub"))).toString());
+        assertThat(privateKeyFromFile.call().getAlgorithm(), is("RSA"));
     }
 }

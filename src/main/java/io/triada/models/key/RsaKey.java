@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentMap;
 
 public final class RsaKey implements Key {
 
+    private static final String RSA_ALG = "SHA256withRSA";
+
     /**
      * Lazy RSA value , calculated only once
      */
@@ -40,7 +42,7 @@ public final class RsaKey implements Key {
         validate(file);
         this.content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         this.cli = cli;
-        this.isPublicKey = this.content.contains("PUBLIC KEY-----");
+        this.isPublicKey = this.content.contains("ssh-rsa");
     }
 
     public RsaKey(final File file) throws IOException {
@@ -62,14 +64,14 @@ public final class RsaKey implements Key {
             );
         }
         this.cli = cli;
-        this.isPublicKey = this.content.contains("PRIVATE KEY-----");
+        this.isPublicKey = this.content.contains("ssh-rsa");
     }
 
     @Override
     public String sign(final String text) throws Exception {
         if (!this.isPublicKey) {
             final PrivateKey pk = new PrivateKeyFromFile(this.rsa()).call();
-            final Signature signature = Signature.getInstance("SHA256withRSA");
+            final Signature signature = Signature.getInstance(RSA_ALG);
             signature.initSign(pk);
             signature.update(text.getBytes(StandardCharsets.UTF_8));
             final byte[] sign = signature.sign();
@@ -80,7 +82,12 @@ public final class RsaKey implements Key {
 
     @Override
     public boolean verify(final String signature, final String text) throws Exception {
-        return false;
+        final Signature publicSignature = Signature.getInstance(RSA_ALG);
+        publicSignature.initVerify(new PublicKeyFromText(this.rsa()).call());
+        publicSignature.update(text.getBytes(StandardCharsets.UTF_8));
+
+        final byte[] decode = Base64.getDecoder().decode(signature);
+        return publicSignature.verify(decode);
     }
 
     @Override
@@ -94,15 +101,16 @@ public final class RsaKey implements Key {
     private String rsa() {
         return this.rsa.computeIfAbsent(this.content, key -> {
             final String trimed = this.content.trim();
-            if (this.isPublicKey) {
-                try {
+            try {
+                if (this.isPublicKey) {
                     return this.encodePublicKey(trimed);
-                } catch (final IOException exc) {
-                    throw new UncheckedIOException(exc);
+                } else {
+                    return trimed;
                 }
-            } else {
-                return trimed;
+            } catch (final IOException exc) {
+                throw new UncheckedIOException(exc);
             }
+
         });
 
     }
@@ -140,6 +148,17 @@ public final class RsaKey implements Key {
         return pkcs8;
     }
 
+    private String encodePrivateKey(final String privateKey) throws IOException {
+        final File pkcs1 = File.createTempFile("/tmp/", ".tmp");
+        FileUtils.write(pkcs1, privateKey, StandardCharsets.UTF_8);//write private PKCS1
+        final String s = this.cli.executeCommand(String.format("openssl pkcs8 -topk8 - inform PEM - outform PEM - nocrypt - in %s - out /tmp/pkcs8", pkcs1.getAbsolutePath()));
+        final File pkcs8 = new File("/tmp/pkcs8");
+        final String content = FileUtils.readFileToString(pkcs8, StandardCharsets.UTF_8);
+        pkcs1.delete();
+        pkcs1.delete();
+        return content;
+    }
+
     /**
      * @param tempFile file with ssh-rsa content
      * @return PKCS#1 public key format
@@ -156,5 +175,10 @@ public final class RsaKey implements Key {
      */
     private String pkcs1To8(final File tempFile) throws IOException {
         return this.cli.executeCommand(String.format("openssl rsa -RSAPublicKey_in -in %s -pubout", tempFile.getAbsolutePath()));
+    }
+
+    @Override
+    public String toString() {
+        return this.rsa();
     }
 }
