@@ -1,23 +1,44 @@
 package io.triada.models.key;
 
+import io.triada.models.cli.CommandLineInterface;
+import io.triada.models.cli.ShellScript;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public final class RsaKey implements Key {
+
+    /**
+     * Lazy RSA value , calculated only once
+     */
+    private final ConcurrentMap<String, String> rsa = new ConcurrentHashMap<>(2, 1, 2);
 
     /**
      * File content
      */
     private final String content;
 
-    public RsaKey(final File file) throws IOException {
+    private final CommandLineInterface<String> cli;
+
+    public RsaKey(final File file, final CommandLineInterface<String> cli) throws IOException {
         validate(file);
-        this.content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        this.content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        this.cli = cli;
     }
 
-    public RsaKey(final String content) {
+    public RsaKey(final File file) throws IOException {
+        this(
+                file,
+                new ShellScript()
+        );
+    }
+
+    public RsaKey(final String content, final CommandLineInterface<String> cli) {
         if (content.startsWith("-----")) {
             this.content = content;
         } else {
@@ -28,6 +49,7 @@ public final class RsaKey implements Key {
                     "-----END PUBLIC KEY-----"
             );
         }
+        this.cli = cli;
     }
 
     @Override
@@ -42,12 +64,26 @@ public final class RsaKey implements Key {
 
     @Override
     public String asPublic() {
-        return this.content.replace("\n", "").replaceAll("-{5}[ A-Z]+-{5}", "");
+        return this.rsa().replace("\n", "").replaceAll("-{5}[ A-Z]+-{5}", "");
     }
 
-    private String rsa(){
-        final String text  = this.content.trim();
-        return text;
+    /**
+     * @return RSA key
+     */
+    private String rsa() {
+        return this.rsa.computeIfAbsent(this.content, key -> {
+            final String trimed = this.content.trim();
+            try {
+                if (!trimed.startsWith("-----BEGIN")) {
+                    return this.encodePublicKey(trimed);
+                } else {
+                    return this.encodePrivateKey(trimed);
+                }
+            } catch (final IOException exc) {
+                throw new UncheckedIOException(exc);
+            }
+        });
+
     }
 
     /**
@@ -65,5 +101,52 @@ public final class RsaKey implements Key {
                     )
             );
         }
+    }
+
+    /**
+     * @param publicKey ssh-rsa public key
+     * @return encoded to pkcs8 text
+     * @throws IOException if failed
+     */
+    private String encodePublicKey(final String publicKey) throws IOException {
+        final File tempFile = File.createTempFile("/tmp/", ".tmp");
+        FileUtils.write(tempFile, publicKey, StandardCharsets.UTF_8);//write ssh-rsa
+        final String pkcs1 = this.PKCS1RSAkey(tempFile);
+        FileUtils.write(tempFile, "", StandardCharsets.UTF_8);//clear content
+        FileUtils.write(tempFile, pkcs1, StandardCharsets.UTF_8);//write pkcs1
+        final String pkcs8 = this.pkcs1To8(tempFile);
+        tempFile.delete();
+        return pkcs8;
+    }
+
+    /**
+     * @param privateKey ssh-rsa public key
+     * @return encoded to pkcs8 text
+     * @throws IOException if failed
+     */
+    private String encodePrivateKey(final String privateKey) throws IOException {
+        final File tempFile = File.createTempFile("/tmp/", ".tmp");
+        FileUtils.write(tempFile, privateKey, StandardCharsets.UTF_8);//write pkcs1
+        final String pkcs8 = this.pkcs1To8(tempFile);
+        tempFile.delete();
+        return pkcs8;
+    }
+
+    /**
+     * @param tempFile file with ssh-rsa content
+     * @return PKCS#1 public key format
+     * @throws IOException if failed
+     */
+    private String PKCS1RSAkey(final File tempFile) throws IOException {
+        return this.cli.executeCommand(String.format("ssh-keygen -f %s -e -m pem", tempFile.getAbsolutePath()));
+    }
+
+    /**
+     * @param tempFile with PKCS#1 content
+     * @return PKCS#8 format
+     * @throws IOException if failed
+     */
+    private String pkcs1To8(final File tempFile) throws IOException {
+        return this.cli.executeCommand(String.format("openssl rsa -RSAPublicKey_in -in %s -pubout", tempFile.getAbsolutePath()));
     }
 }
