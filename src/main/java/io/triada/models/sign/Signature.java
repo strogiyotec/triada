@@ -4,13 +4,13 @@ import io.triada.models.id.Id;
 import io.triada.models.key.Key;
 import io.triada.models.transaction.Transaction;
 
-public interface SignTxn {
+public interface Signature {
 
     /**
      * @param privateKey  Private RSA key
      * @param id          wallet id
      * @param transaction The transaction
-     * @return Sign and return signature
+     * @return Sign and return sign
      * @throws Exception if failed
      */
     String sign(Key privateKey, Id<String> id, Transaction transaction) throws Exception;
