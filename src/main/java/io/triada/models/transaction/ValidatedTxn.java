@@ -46,7 +46,6 @@ public final class ValidatedTxn implements Transaction {
         ValidatedTxn.validateDate(date);
         ValidatedTxn.validateAmount(amount);
         ValidatedTxn.validatePrefix(prefix);
-        ValidatedTxn.validatePrefix(prefix);
         ValidatedTxn.validateBnf(bnf);
         ValidatedTxn.validateDetails(details);
 
