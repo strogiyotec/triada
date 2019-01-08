@@ -3,14 +3,12 @@ package io.triada.models.transaction;
 import com.google.gson.JsonObject;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.WalletId;
-import lombok.AllArgsConstructor;
 
 import java.util.Date;
 
 /**
  * Parse data from txn
  */
-@AllArgsConstructor
 public final class ParsedTxnData implements TriadaTxn.Data {
     private final int id;
     private final Date date;
