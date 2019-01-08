@@ -1,7 +1,6 @@
 package io.triada.models.transaction;
 
 import io.triada.models.id.Id;
-import io.triada.models.id.WalletId;
 import io.triada.models.key.Key;
 import io.triada.models.sign.TriadaSignature;
 
@@ -13,15 +12,8 @@ public final class SignedTriadaTxn implements SignedTransaction {
     private final Transaction origin;
 
     /**
-     * Private key to sign
+     * Signature of txn
      */
-    private final Key prvtKey;
-
-    /**
-     * Paying wallet id
-     */
-    private final Id<Long> walletId;
-
     private final String signature;
 
     /**
@@ -32,8 +24,6 @@ public final class SignedTriadaTxn implements SignedTransaction {
      */
     public SignedTriadaTxn(final Transaction origin, final Key prvtKey, final Id<Long> walletId) throws Exception {
         this.origin = origin;
-        this.prvtKey = prvtKey;
-        this.walletId = walletId;
         this.signature = new TriadaSignature().sign(prvtKey, walletId, origin);
     }
 
