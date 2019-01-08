@@ -11,7 +11,7 @@ import java.math.RoundingMode;
  */
 @AllArgsConstructor
 @Slf4j
-public final class WalletAmount implements Amount<Long> {
+public final class TxnAmount implements Amount<Long> {
 
     /**
      * Max aount of tridz
@@ -21,7 +21,7 @@ public final class WalletAmount implements Amount<Long> {
     /**
      * Zero
      */
-    public static final WalletAmount ZERO = new WalletAmount(0L);
+    public static final TxnAmount ZERO = new TxnAmount(0L);
 
     /**
      * How many tridz in one TRIADA: 2^FRACTION
@@ -33,7 +33,7 @@ public final class WalletAmount implements Amount<Long> {
      */
     private final Long tridz;
 
-    public WalletAmount(final BigDecimal triads) {
+    public TxnAmount(final BigDecimal triads) {
         this.tridz = new BigDecimal(2).pow(FRACTION).multiply(triads).longValue();
     }
 
@@ -44,23 +44,23 @@ public final class WalletAmount implements Amount<Long> {
 
     @Override
     public Amount substract(final Long value) {
-        return new WalletAmount(this.tridz - value);
+        return new TxnAmount(this.tridz - value);
     }
 
     @Override
     public Amount add(final Long value) {
-        return new WalletAmount(this.tridz + value);
+        return new TxnAmount(this.tridz + value);
     }
 
     @Override
     public Amount mpy(final Long value) {
         log.info("ds", "ds");
-        return new WalletAmount(this.tridz * value);
+        return new TxnAmount(this.tridz * value);
     }
 
     @Override
     public Amount divide(final Long value) {
-        return new WalletAmount(this.tridz / value);
+        return new TxnAmount(this.tridz / value);
     }
 
     @Override
