@@ -74,7 +74,15 @@ final class TriadaTxn implements Transaction {
 
     @Override
     public String body() {
-        return null;
+        return String.join(
+                " ",
+                String.valueOf(this.id),
+                String.valueOf(this.date.getTime()),
+                String.valueOf(this.amount.value()),
+                this.prefix,
+                String.valueOf(this.bnf.id()),
+                this.details
+        );
     }
 
     @Override
