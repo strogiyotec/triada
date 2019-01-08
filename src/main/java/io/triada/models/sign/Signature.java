@@ -2,6 +2,7 @@ package io.triada.models.sign;
 
 import io.triada.models.id.Id;
 import io.triada.models.key.Key;
+import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.transaction.Transaction;
 
 public interface Signature {
@@ -13,7 +14,7 @@ public interface Signature {
      * @return Sign and return sign
      * @throws Exception if failed
      */
-    String sign(Key privateKey, Id<String> id, Transaction transaction) throws Exception;
+    String sign(Key privateKey, Id<Long> id, Transaction transaction) throws Exception;
 
     /**
      * @param publicKey   Public key of wallet
@@ -22,5 +23,5 @@ public interface Signature {
      * @return true if transaction is valid
      * @throws Exception if failed
      */
-    boolean valid(Key publicKey, Id<String> id, Transaction transaction) throws Exception;
+    boolean valid(Key publicKey, Id<Long> id, SignedTransaction transaction) throws Exception;
 }

@@ -10,7 +10,7 @@ public interface Key {
     String sign(String text) throws Exception;
 
     /**
-     * @param signature The signature
+     * @param signature The sign
      * @param text      Text to be verified
      * @return true if text was verified
      * @throws Exception if failed
