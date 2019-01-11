@@ -1,14 +1,13 @@
 package io.triada.models.prefix;
 
-import io.triada.models.id.Id;
-import io.triada.models.id.WalletId;
+import io.triada.models.wallet.Wallet;
 
 public final class PaymentPrefix implements Prefix {
 
-    private final Id<Long> walletId;
+    private final Wallet wallet;
 
-    public PaymentPrefix(final WalletId walletId) {
-        this.walletId = walletId;
+    public PaymentPrefix(final Wallet wallet) {
+        this.wallet = wallet;
     }
 
     @Override
