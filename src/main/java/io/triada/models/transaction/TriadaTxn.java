@@ -5,6 +5,7 @@ import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.Id;
 import io.triada.models.id.WalletId;
 import io.triada.models.key.Key;
+import io.triada.text.Text;
 import org.jooq.lambda.Unchecked;
 
 import java.util.Date;
@@ -99,7 +100,7 @@ final class TriadaTxn implements Transaction {
                 ));
     }
 
-    public interface Data {
+    public interface Data extends Text {
         int id();
 
         Date date();

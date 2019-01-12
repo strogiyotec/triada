@@ -36,4 +36,9 @@ public final class SignedTriadaTxn implements SignedTransaction {
     public String signature() {
         return this.signature;
     }
+
+    @Override
+    public String asText() {
+        return new ParsedTxnData(this).asText();
+    }
 }
