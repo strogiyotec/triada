@@ -1,4 +1,4 @@
-package io.triada.models;
+package io.triada.models.random;
 
 import java.math.BigInteger;
 import java.util.Random;
@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 /**
  * Generate random value in inclusive range
  */
-public final class RandomNumber implements Supplier<BigInteger> {
+public final class RandomBigInteger implements Supplier<BigInteger> {
 
     private final static Random R = new Random();
 
@@ -17,7 +17,7 @@ public final class RandomNumber implements Supplier<BigInteger> {
      * @param min min value
      * @param max max value
      */
-    public RandomNumber(BigInteger min, BigInteger max) {
+    public RandomBigInteger(BigInteger min, BigInteger max) {
         max = max.add(BigInteger.ONE);
         BigInteger range = max.subtract(min);
         final int length = range.bitLength();
