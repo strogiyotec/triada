@@ -16,6 +16,12 @@ public interface Transaction {
      */
     String body();
 
+    /**
+     * @param id      of Wallet
+     * @param prvtKey Private key to sign
+     * @return SingedTransaction
+     * @throws Exception if failed
+     */
     SignedTransaction signed(Id<Long> id, Key prvtKey) throws Exception;
 
 

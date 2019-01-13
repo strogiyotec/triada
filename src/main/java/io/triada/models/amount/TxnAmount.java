@@ -93,6 +93,10 @@ public final class TxnAmount implements Amount<Long> {
         return this.less(other) || this.tridz.equals(other);
     }
 
+    /**
+     * @param digits after dot
+     * @return Amount of Triads from tridz
+     */
     @Override
     public String asText(final int digits) {
         final BigDecimal divide = new BigDecimal(this.tridz).divide(new BigDecimal(2).pow(FRACTION), digits, RoundingMode.DOWN);

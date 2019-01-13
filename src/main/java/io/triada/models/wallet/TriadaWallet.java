@@ -1,8 +1,12 @@
 package io.triada.models.wallet;
 
+import com.google.common.hash.Hashing;
+import io.triada.models.amount.Amount;
+import io.triada.models.amount.TxnAmount;
 import io.triada.models.head.Head;
 import io.triada.models.head.HeadOfWallet;
 import io.triada.models.key.Key;
+import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTxnFromText;
 import io.triada.models.transactions.SignedTxns;
 import io.triada.models.transactions.SignedTxnsFromFile;
@@ -10,7 +14,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class TriadaWallet implements Wallet {
 
@@ -21,14 +26,16 @@ public final class TriadaWallet implements Wallet {
 
     private final File file;
 
+    private final String fileContent;
+
     private final SignedTxns<SignedTxnFromText> txns;
 
     private final Head head;
 
     public TriadaWallet(final File file) throws IOException {
-        final String context = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        this.txns = new SignedTxnsFromFile(context);
-        this.head = new HeadOfWallet(context);
+        this.fileContent = FileUtils.readFileToString(file, UTF_8);
+        this.txns = new SignedTxnsFromFile(this.fileContent);
+        this.head = new HeadOfWallet(this.fileContent);
         this.file = file;
 
 
@@ -41,7 +48,27 @@ public final class TriadaWallet implements Wallet {
 
     @Override
     public String mnemo() {
-        return null;
+        return String.join(
+                "/",
+                this.head.id(),
+                this.balance().asText(4),
+                String.valueOf(this.txns.txns().size()),
+                Hashing.sha256().hashString(this.fileContent, UTF_8).toString(),
+                String.valueOf(this.file.getTotalSpace())
+        );
+    }
+
+    @Override
+    public Amount<Long> balance() {
+        final long balance =
+                this.txns.txns()
+                        .stream()
+                        .map(ParsedTxnData::new)
+                        .map(ParsedTxnData::amount)
+                        .mapToLong(TxnAmount::value)
+                        .sum();
+
+        return new TxnAmount(balance);
     }
 
     /**
