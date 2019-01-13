@@ -1,17 +1,20 @@
 package io.triada.models.prefix;
 
-import io.triada.models.wallet.Wallet;
+import io.triada.models.key.RsaKey;
+
+import java.util.Random;
 
 public final class PaymentPrefix implements Prefix {
 
-    private final Wallet wallet;
+    private final RsaKey publicKey;
 
-    public PaymentPrefix(final Wallet wallet) {
-        this.wallet = wallet;
+    public PaymentPrefix(final RsaKey publicKey) {
+        this.publicKey = publicKey;
     }
 
     @Override
     public String create(final int length) {
+        final String asString = this.publicKey.asPublic();
         if (length < 8 || length > 32) {
             throw new IllegalArgumentException(
                     String.format(
@@ -20,6 +23,7 @@ public final class PaymentPrefix implements Prefix {
                     )
             );
         }
-        return null;
+        final int start = new Random().nextInt(asString.length() - length);
+        return asString.substring(start, start + length);
     }
 }
