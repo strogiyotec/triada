@@ -34,7 +34,7 @@ public final class TriadaWallet implements Wallet {
 
     public TriadaWallet(final File file) throws IOException {
         this.fileContent = FileUtils.readFileToString(file, UTF_8);
-        this.txns = new SignedTxnsFromFile(this.fileContent);
+        this.txns = new SignedTxnsFromFile(this.fileContent, file);
         this.head = new HeadOfWallet(this.fileContent);
         this.file = file;
 
