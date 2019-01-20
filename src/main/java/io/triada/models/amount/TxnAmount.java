@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
@@ -35,6 +36,10 @@ public final class TxnAmount implements Amount<Long> {
 
     public TxnAmount(final BigDecimal triads) {
         this.tridz = new BigDecimal(2).pow(FRACTION).multiply(triads).longValue();
+    }
+
+    public TxnAmount(final String triads) {
+        this.tridz = new BigInteger(triads, 16).longValue();
     }
 
     @Override

@@ -30,15 +30,13 @@ public final class SignedTxnFromText implements SignedTransaction {
             Pattern.compile(
                     String.join(
                             ";",
-                            "^",
                             "(?<id>[0-9a-f]{4})",
                             "(?<date>[0-9]{10,12})",
-                            "(?<amount>[0-9]{16})",
+                            "(?<amount>[0-9a-f]{16})",
                             "(?<prefix>[a-zA-Z0-9]+)",
                             "(?<bnf>[0-9a-f]{16})",
                             "(?<details>[a-zA-Z0-9 @\\!\\?\\*_\\-\\.:,\\'/]+)",
-                            "(?<sign>[A-Za-z0-9+/]+={0,3})?",
-                            "$"
+                            "(?<sign>[A-Za-z0-9+/]+={0,3})?"
                     )
             );
 
@@ -48,14 +46,14 @@ public final class SignedTxnFromText implements SignedTransaction {
         validate(matcher, text);
 
         this.txn = new TriadaTxn(
-                Integer.valueOf(matcher.group(0)),
-                new Date(Long.valueOf(matcher.group(1))),
-                new TxnAmount(Long.valueOf(matcher.group(2))),
-                matcher.group(3),
-                new WalletId(matcher.group(4)),
-                matcher.group(5)
+                Integer.parseInt(matcher.group(1),16),
+                new Date(Long.valueOf(matcher.group(2))),
+                new TxnAmount(matcher.group(3)),
+                matcher.group(4),
+                new WalletId(matcher.group(5)),
+                matcher.group(6)
         );
-        this.signature = matcher.group(6);
+        this.signature = matcher.group(7);
 
     }
 
@@ -67,7 +65,7 @@ public final class SignedTxnFromText implements SignedTransaction {
         if (!matcher.find()) {
             throw new IllegalArgumentException(
                     String.format(
-                            "Line %s doesn't match Pattern %s",
+                            "Line '%s' doesn't match Pattern %s",
                             text,
                             TXN_FROM_TEXT_PTN.pattern()
                     )

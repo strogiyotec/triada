@@ -31,7 +31,7 @@ public final class HeadOfWallet implements Head {
 
     private HeadOfWallet(final String[] lines) {
         final int length = lines.length;
-        if (length != 4) {
+        if (length < 4) {
             throw new IllegalArgumentException(
                     String.format(
                             "Head must contains 4 lines but has only %d",

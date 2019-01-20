@@ -1,5 +1,6 @@
 package io.triada.models.wallet;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
 import io.triada.models.amount.Amount;
 import io.triada.models.amount.TxnAmount;
@@ -8,6 +9,7 @@ import io.triada.models.head.HeadOfWallet;
 import io.triada.models.key.Key;
 import io.triada.models.key.RsaKey;
 import io.triada.models.transaction.ParsedTxnData;
+import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.transaction.SignedTxnFromText;
 import io.triada.models.transaction.Transaction;
 import io.triada.models.transactions.SignedTxns;
@@ -17,6 +19,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -25,7 +28,7 @@ public final class TriadaWallet implements Wallet {
     /**
      * The extension of the wallet file
      */
-    private static final String EXT = ".trd";
+    public static final String EXT = ".trd";
 
     private final File file;
 
@@ -80,6 +83,16 @@ public final class TriadaWallet implements Wallet {
             writer.append(transaction.body());
             return new TriadaWallet(this.file);
         }
+    }
+
+    @Override
+    public Wallet substract(final Transaction transaction) {
+        return null;
+    }
+
+    @Override
+    public List<SignedTransaction> transactions() {
+        return ImmutableList.copyOf(this.txns.txns());
     }
 
 

@@ -39,8 +39,8 @@ public final class SignedTxnsFromFile implements SignedTxns<SignedTxnFromText> {
 
     private SignedTxnsFromFile(final Stream<String> stream, final File file) {
         this.txns = stream
+                .skip(5)//because of Head + EMPTY LINE
                 .map(SignedTxnFromText::new)
-                .skip(4)//because of Head
                 .collect(Collectors.toList());
         this.file = file;
     }

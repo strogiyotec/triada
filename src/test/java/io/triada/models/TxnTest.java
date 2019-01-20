@@ -22,8 +22,6 @@ public final class TxnTest extends Assert {
 
     @Test
     public void testJson() {
-
-
         final ValidatedTxn validatedTxn = new ValidatedTxn(
                 id,
                 now,
@@ -54,5 +52,16 @@ public final class TxnTest extends Assert {
                 is(desc)
         );
 
+    }
+
+    public void test(){
+        final ValidatedTxn validatedTxn = new ValidatedTxn(
+                id,
+                now,
+                txnAmount,
+                prefix,
+                walletId,
+                desc
+        );
     }
 }

@@ -30,7 +30,7 @@ public final class WalletId implements Id<Long> {
 
     public WalletId(final String id) {
         validate(id);
-        this.id = Long.valueOf(id, 16);
+        this.id = new BigInteger(id,16).longValue();
     }
 
     public WalletId() {
