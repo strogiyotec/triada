@@ -6,13 +6,16 @@ import io.triada.models.amount.TxnAmount;
 import io.triada.models.head.Head;
 import io.triada.models.head.HeadOfWallet;
 import io.triada.models.key.Key;
+import io.triada.models.key.RsaKey;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTxnFromText;
+import io.triada.models.transaction.Transaction;
 import io.triada.models.transactions.SignedTxns;
 import io.triada.models.transactions.SignedTxnsFromFile;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,7 +46,7 @@ public final class TriadaWallet implements Wallet {
 
     @Override
     public Key walletKey() {
-        return null;
+        return new RsaKey(this.head.key());
     }
 
     @Override
@@ -71,6 +74,20 @@ public final class TriadaWallet implements Wallet {
         return new TxnAmount(balance);
     }
 
+    @Override
+    public Wallet add(final Transaction transaction) throws IOException {
+        try (final FileWriter writer = new FileWriter(this.file, true)) {
+            writer.append(transaction.body());
+            return new TriadaWallet(this.file);
+        }
+    }
+
+
+    @Override
+    public String asText() {
+        return this.head.id();
+    }
+
     /**
      * Validate extension of given file
      *
@@ -87,8 +104,4 @@ public final class TriadaWallet implements Wallet {
         }
     }
 
-    @Override
-    public String asText() {
-        return this.head.id();
-    }
 }
