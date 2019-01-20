@@ -38,6 +38,9 @@ public final class RsaKey implements Key {
      */
     private final CommandLineInterface<String> cli;
 
+    /**
+     * Ctor
+     */
     public RsaKey(final File file, final CommandLineInterface<String> cli) throws IOException {
         validate(file);
         this.content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
@@ -45,6 +48,9 @@ public final class RsaKey implements Key {
         this.isPublicKey = this.content.contains("ssh-rsa");
     }
 
+    /**
+     * Ctor
+     */
     public RsaKey(final File file) throws IOException {
         this(
                 file,
@@ -52,6 +58,9 @@ public final class RsaKey implements Key {
         );
     }
 
+    /**
+     * Ctor
+     */
     public RsaKey(final String content, final CommandLineInterface<String> cli) {
         if (content.startsWith("-----")) {
             this.content = content;
@@ -65,6 +74,13 @@ public final class RsaKey implements Key {
         }
         this.cli = cli;
         this.isPublicKey = this.content.contains("ssh-rsa");
+    }
+
+    /**
+     * Ctor
+     */
+    public RsaKey(final String content) {
+        this(content, new ShellScript());
     }
 
     @Override
