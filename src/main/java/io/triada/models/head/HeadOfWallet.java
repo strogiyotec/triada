@@ -60,12 +60,12 @@ public final class HeadOfWallet implements Head {
     @Override
     public String protocol() {
         final String protocol = this.head.get(1);
-        if (!NETWORK_PTN.matcher(protocol).find()) {
+        if (!PROTOCOL_PTN.matcher(protocol).find()) {
             throw new IllegalArgumentException(
                     String.format(
                             "Invalid protocol name %s Pattern : %s",
                             protocol,
-                            NETWORK_PTN.pattern()
+                            PROTOCOL_PTN.pattern()
                     )
             );
         }
@@ -79,6 +79,15 @@ public final class HeadOfWallet implements Head {
 
     @Override
     public String key() {
-        return this.head.get(3);
+        final String key = this.head.get(3);
+        if (!key.startsWith("MIICI")) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Invalid key '%s' should start with MIICI",
+                            key
+                    )
+            );
+        }
+        return key;
     }
 }
