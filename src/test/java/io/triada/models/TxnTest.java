@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.is;
 public final class TxnTest extends Assert {
 
     private final Date now = new Date();
-    private final int id = 123;
+    private final String id = "fffffc6f00000000";
     private final String prefix = "NOPREFIX";
     private final WalletId walletId = new WalletId();
     private final String desc = "Test to see json";

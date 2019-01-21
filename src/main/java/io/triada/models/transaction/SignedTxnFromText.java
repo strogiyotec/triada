@@ -46,7 +46,7 @@ public final class SignedTxnFromText implements SignedTransaction {
         validate(matcher, text);
 
         this.txn = new TriadaTxn(
-                Integer.parseInt(matcher.group(1),16),
+                matcher.group(1),
                 new Date(Long.valueOf(matcher.group(2))),
                 new TxnAmount(matcher.group(3)),
                 matcher.group(4),

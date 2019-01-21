@@ -32,7 +32,7 @@ public final class SignatureTest extends Assert {
         final WalletId walletId = new WalletId();
         final SignedTriadaTxn signedTxn = new SignedTriadaTxn(
                 new ValidatedTxn(
-                        123,
+                        "fffffc6f00000000",
                         new Date(),
                         new TxnAmount(1000L),
                         "NOPREFIX",

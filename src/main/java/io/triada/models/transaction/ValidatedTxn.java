@@ -19,7 +19,7 @@ public final class ValidatedTxn implements Transaction {
     @Delegate
     private final Transaction origin;
 
-    public ValidatedTxn(final int id,
+    public ValidatedTxn(final String id,
                         final Date date,
                         final TxnAmount amount,
                         final String prefix,
@@ -36,7 +36,7 @@ public final class ValidatedTxn implements Transaction {
         );
     }
 
-    private static void vaildate(final int id,
+    private static void vaildate(final String id,
                                  final Date date,
                                  final TxnAmount amount,
                                  final WalletId bnf,
@@ -51,12 +51,15 @@ public final class ValidatedTxn implements Transaction {
 
     }
 
-    private static void validateId(final int id) {
-        if (id < 0) {
-            throw new IllegalArgumentException(String.format(
-                    "The ID of transaction can't be negative :%d",
-                    id
-            ));
+    private static void validateId(final String id) {
+        final boolean matches = id.matches("\\p{XDigit}+");
+        if (!matches) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Id %s should be hex",
+                            id
+                    )
+            );
         }
     }
 

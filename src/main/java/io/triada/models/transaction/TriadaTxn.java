@@ -22,7 +22,7 @@ final class TriadaTxn implements Transaction {
     /**
      * Id of transaction
      */
-    private final int id;
+    private final String id;
 
     /**
      * Date of transaction
@@ -50,7 +50,7 @@ final class TriadaTxn implements Transaction {
     private final String details;
 
 
-    public TriadaTxn(final int id, final Date date, final TxnAmount amount, final String prefix, final WalletId bnf, final String details) {
+    public TriadaTxn(final String id, final Date date, final TxnAmount amount, final String prefix, final WalletId bnf, final String details) {
         this.id = id;
         this.date = date;
         this.amount = amount;
@@ -101,7 +101,7 @@ final class TriadaTxn implements Transaction {
     }
 
     public interface Data extends Text {
-        int id();
+        String id();
 
         Date date();
 
