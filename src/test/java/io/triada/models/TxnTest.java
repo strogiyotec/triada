@@ -2,7 +2,7 @@ package io.triada.models;
 
 import com.google.gson.JsonObject;
 import io.triada.models.amount.TxnAmount;
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 import io.triada.models.transaction.ValidatedTxn;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public final class TxnTest extends Assert {
     private final Date now = new Date();
     private final String id = "fffffc6f00000000";
     private final String prefix = "NOPREFIX";
-    private final WalletId walletId = new WalletId();
+    private final LongId walletId = new LongId();
     private final String desc = "Test to see json";
     private final TxnAmount txnAmount = new TxnAmount(1000L);
 
@@ -32,7 +32,7 @@ public final class TxnTest extends Assert {
         );
         final JsonObject jsonObject = validatedTxn.asJson();
         assertThat(
-                jsonObject.get("id").getAsInt(),
+                jsonObject.get("id").getAsString(),
                 is(id)
         );
         assertThat(

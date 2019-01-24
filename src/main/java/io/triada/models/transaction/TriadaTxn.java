@@ -3,7 +3,7 @@ package io.triada.models.transaction;
 import com.google.gson.JsonObject;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.Id;
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 import io.triada.models.key.Key;
 import io.triada.text.Text;
 import org.jooq.lambda.Unchecked;
@@ -20,7 +20,7 @@ final class TriadaTxn implements Transaction {
      */
     private final ConcurrentMap<Integer, SignedTransaction> signedTxnCache = new ConcurrentHashMap<>(2, 1.0F, 2);
     /**
-     * Id of transaction
+     * Id of transaction in hex
      */
     private final String id;
 
@@ -42,7 +42,7 @@ final class TriadaTxn implements Transaction {
     /**
      * The paying or receiving wallet
      */
-    private final WalletId bnf;
+    private final LongId bnf;
 
     /**
      * Details of transaction
@@ -50,7 +50,7 @@ final class TriadaTxn implements Transaction {
     private final String details;
 
 
-    public TriadaTxn(final String id, final Date date, final TxnAmount amount, final String prefix, final WalletId bnf, final String details) {
+    public TriadaTxn(final String id, final Date date, final TxnAmount amount, final String prefix, final LongId bnf, final String details) {
         this.id = id;
         this.date = date;
         this.amount = amount;
@@ -76,7 +76,7 @@ final class TriadaTxn implements Transaction {
     @Override
     public String body() {
         return String.join(
-                " ",
+                ";",
                 String.valueOf(this.id),
                 String.valueOf(this.date.getTime()),
                 String.valueOf(this.amount.value()),
@@ -109,7 +109,7 @@ final class TriadaTxn implements Transaction {
 
         String prefix();
 
-        WalletId bnf();
+        LongId bnf();
 
         String details();
     }

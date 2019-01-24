@@ -48,23 +48,23 @@ public final class TxnAmount implements Amount<Long> {
     }
 
     @Override
-    public Amount substract(final Long value) {
+    public TxnAmount substract(final Long value) {
         return new TxnAmount(this.tridz - value);
     }
 
     @Override
-    public Amount add(final Long value) {
+    public TxnAmount add(final Long value) {
         return new TxnAmount(this.tridz + value);
     }
 
     @Override
-    public Amount mpy(final Long value) {
+    public TxnAmount mpy(final Long value) {
         log.info("ds", "ds");
         return new TxnAmount(this.tridz * value);
     }
 
     @Override
-    public Amount divide(final Long value) {
+    public TxnAmount divide(final Long value) {
         return new TxnAmount(this.tridz / value);
     }
 

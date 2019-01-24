@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * Wallet id
  */
 @EqualsAndHashCode(of = "id")
-public final class WalletId implements Id<Long> {
+public final class LongId implements Id<Long> {
 
     /**
      * Id pattern
@@ -21,19 +21,19 @@ public final class WalletId implements Id<Long> {
     /**
      * Root wallet
      */
-    private static final Id<Long> ROOT = new WalletId("0000000000000000");
+    private static final Id<Long> ROOT = new LongId("0000000000000000");
 
     /**
      * Id
      */
     private final Long id;
 
-    public WalletId(final String id) {
+    public LongId(final String id) {
         validate(id);
         this.id = new BigInteger(id,16).longValue();
     }
 
-    public WalletId() {
+    public LongId() {
         final RandomBigInteger randomNumber =
                 new RandomBigInteger(
                         BigInteger.valueOf(2).pow(32),

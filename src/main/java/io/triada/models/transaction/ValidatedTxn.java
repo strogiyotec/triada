@@ -1,7 +1,7 @@
 package io.triada.models.transaction;
 
 import io.triada.models.amount.TxnAmount;
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 import lombok.experimental.Delegate;
 import org.springframework.util.StringUtils;
 
@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 
+//TODO: change type of txnamount to amount
 public final class ValidatedTxn implements Transaction {
 
     private static final Pattern PREFIX_P = Pattern.compile("^[a-zA-Z0-9]+$");
@@ -23,7 +24,7 @@ public final class ValidatedTxn implements Transaction {
                         final Date date,
                         final TxnAmount amount,
                         final String prefix,
-                        final WalletId bnf,
+                        final LongId bnf,
                         final String details) {
         ValidatedTxn.vaildate(id, date, amount, bnf, details, prefix);
         this.origin = new TriadaTxn(
@@ -39,7 +40,7 @@ public final class ValidatedTxn implements Transaction {
     private static void vaildate(final String id,
                                  final Date date,
                                  final TxnAmount amount,
-                                 final WalletId bnf,
+                                 final LongId bnf,
                                  final String details,
                                  final String prefix) {
         ValidatedTxn.validateId(id);
@@ -140,7 +141,7 @@ public final class ValidatedTxn implements Transaction {
 
     }
 
-    private static void validateBnf(final WalletId bnf) {
+    private static void validateBnf(final LongId bnf) {
         requireNonNull(bnf, "Bnf can't be null");
     }
 

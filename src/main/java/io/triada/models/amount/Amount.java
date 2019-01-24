@@ -7,13 +7,13 @@ public interface Amount<T extends Number> {
 
     T value();
 
-    Amount substract(T value);
+    Amount<T> substract(T value);
 
-    Amount add(T value);
+    Amount<T> add(T value);
 
-    Amount mpy(T value);
+    Amount<T> mpy(T value);
 
-    Amount divide(T value);
+    Amount<T> divide(T value);
 
     boolean positive();
 

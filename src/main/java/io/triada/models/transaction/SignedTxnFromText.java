@@ -1,7 +1,7 @@
 package io.triada.models.transaction;
 
 import io.triada.models.amount.TxnAmount;
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 
 import java.util.Date;
 import java.util.Objects;
@@ -50,11 +50,26 @@ public final class SignedTxnFromText implements SignedTransaction {
                 new Date(Long.valueOf(matcher.group(2))),
                 new TxnAmount(matcher.group(3)),
                 matcher.group(4),
-                new WalletId(matcher.group(5)),
+                new LongId(matcher.group(5)),
                 matcher.group(6)
         );
         this.signature = matcher.group(7);
 
+    }
+
+    @Override
+    public Transaction origin() {
+        return this.txn;
+    }
+
+    @Override
+    public String signature() {
+        return this.signature;
+    }
+
+    @Override
+    public String asText() {
+        return new ParsedTxnData(this).asText();
     }
 
     /**
@@ -71,20 +86,5 @@ public final class SignedTxnFromText implements SignedTransaction {
                     )
             );
         }
-    }
-
-    @Override
-    public Transaction origin() {
-        return this.txn;
-    }
-
-    @Override
-    public String signature() {
-        return this.signature;
-    }
-
-    @Override
-    public String asText() {
-        return new ParsedTxnData(this).asText();
     }
 }

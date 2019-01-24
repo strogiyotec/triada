@@ -1,7 +1,7 @@
 package io.triada.models;
 
 import io.triada.models.amount.TxnAmount;
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.sign.TriadaSignature;
 import io.triada.models.transaction.SignedTriadaTxn;
@@ -29,17 +29,20 @@ public final class SignatureTest extends Assert {
                         this.getClass().getResource("/keys/id_rsa.pub")
                 )
         );
-        final WalletId walletId = new WalletId();
-        final SignedTriadaTxn signedTxn = new SignedTriadaTxn(
-                new ValidatedTxn(
-                        "fffffc6f00000000",
-                        new Date(),
-                        new TxnAmount(1000L),
-                        "NOPREFIX",
-                        new WalletId(),
-                        "Hello . This is sign test"
-                )
-                , priv, walletId);
+        final LongId walletId = new LongId();
+        final SignedTriadaTxn signedTxn =
+                new SignedTriadaTxn(
+                        new ValidatedTxn(
+                                "fffffc6f00000000",
+                                new Date(),
+                                new TxnAmount(1000L),
+                                "NOPREFIX",
+                                new LongId(),
+                                "Hello . This is sign test"
+                        ),
+                        priv,
+                        walletId
+                );
         assertThat(signedTxn.signature().length(), is(684));
         assertThat(sign.valid(pub, walletId, signedTxn), is(true));
 

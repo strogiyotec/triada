@@ -2,7 +2,7 @@ package io.triada.models.transaction;
 
 import com.google.gson.JsonObject;
 import io.triada.models.amount.TxnAmount;
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 
 import java.util.Date;
 
@@ -49,7 +49,7 @@ public final class ParsedTxnData implements TriadaTxn.Data {
     }
 
     @Override
-    public WalletId bnf() {
+    public LongId bnf() {
         return null;
     }
 

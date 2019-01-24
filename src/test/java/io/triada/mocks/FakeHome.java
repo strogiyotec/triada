@@ -1,6 +1,6 @@
 package io.triada.mocks;
 
-import io.triada.models.id.WalletId;
+import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
@@ -10,7 +10,6 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Fake home directory
@@ -19,7 +18,7 @@ import java.nio.file.Path;
 public final class FakeHome {
 
 
-    public Wallet createWallet(final WalletId id, final int txns) throws IOException {
+    public Wallet createWallet(final LongId id, final int txns) throws IOException {
         final File tempFile = File.createTempFile("/tmp/", TriadaWallet.EXT);
         tempFile.deleteOnExit();
         try (final FileWriter writer = new FileWriter(tempFile)) {
