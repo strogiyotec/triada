@@ -31,7 +31,7 @@ public final class SignedTxnFromText implements SignedTransaction {
                     String.join(
                             ";",
                             "(?<id>[0-9a-f]{4})",
-                            "(?<date>[0-9]{10,12})",
+                            "(?<date>[0-9]{10,15})",
                             "(?<amount>[0-9a-f]{16})",
                             "(?<prefix>[a-zA-Z0-9]+)",
                             "(?<bnf>[0-9a-f]{16})",
@@ -46,7 +46,7 @@ public final class SignedTxnFromText implements SignedTransaction {
         validate(matcher, text);
 
         this.txn = new TriadaTxn(
-                matcher.group(1),
+                Integer.parseInt(matcher.group(1), 16),
                 new Date(Long.valueOf(matcher.group(2))),
                 new TxnAmount(matcher.group(3)),
                 matcher.group(4),

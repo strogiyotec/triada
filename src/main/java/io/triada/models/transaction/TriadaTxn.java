@@ -5,6 +5,7 @@ import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.Id;
 import io.triada.models.id.LongId;
 import io.triada.models.key.Key;
+import io.triada.text.HexNumber;
 import io.triada.text.Text;
 import org.jooq.lambda.Unchecked;
 
@@ -22,7 +23,7 @@ final class TriadaTxn implements Transaction {
     /**
      * Id of transaction in hex
      */
-    private final String id;
+    private final int id;
 
     /**
      * Date of transaction
@@ -50,7 +51,14 @@ final class TriadaTxn implements Transaction {
     private final String details;
 
 
-    public TriadaTxn(final String id, final Date date, final TxnAmount amount, final String prefix, final LongId bnf, final String details) {
+    public TriadaTxn(
+            final int id,
+            final Date date,
+            final TxnAmount amount,
+            final String prefix,
+            final LongId bnf,
+            final String details
+    ) {
         this.id = id;
         this.date = date;
         this.amount = amount;
@@ -77,11 +85,11 @@ final class TriadaTxn implements Transaction {
     public String body() {
         return String.join(
                 ";",
-                String.valueOf(this.id),
+                String.format("%04x", this.id).replaceAll("^\\.{2}", "ff"),
                 String.valueOf(this.date.getTime()),
-                String.valueOf(this.amount.value()),
+                new HexNumber(16, this.amount.value()).asText(),
                 this.prefix,
-                String.valueOf(this.bnf.id()),
+                this.bnf.toString(),
                 this.details
         );
     }
@@ -101,7 +109,7 @@ final class TriadaTxn implements Transaction {
     }
 
     public interface Data extends Text {
-        String id();
+        int id();
 
         Date date();
 

@@ -28,7 +28,7 @@ public final class ValidatedTxn implements Transaction {
                         final String details) {
         ValidatedTxn.vaildate(id, date, amount, bnf, details, prefix);
         this.origin = new TriadaTxn(
-                id,
+                Integer.parseInt(id, 16),
                 date,
                 amount,
                 prefix,

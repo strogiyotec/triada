@@ -10,7 +10,7 @@ import java.util.Date;
  * Parse data from txn
  */
 public final class ParsedTxnData implements TriadaTxn.Data {
-    private final String id;
+    private final int id;
     private final Date date;
     private final TxnAmount txnAmount;
     private final String prefix;
@@ -18,9 +18,9 @@ public final class ParsedTxnData implements TriadaTxn.Data {
     private final SignedTransaction signed;
 
     public ParsedTxnData(final SignedTransaction signed) {
-
         final JsonObject jsonObject = signed.origin().asJson();
-        this.id = jsonObject.get("id").getAsString();
+
+        this.id = jsonObject.get("id").getAsInt();
         this.date = new Date(jsonObject.get("date").getAsLong());
         this.txnAmount = new TxnAmount(jsonObject.get("amount").getAsLong());
         this.prefix = jsonObject.get("prefix").getAsString();
@@ -29,7 +29,7 @@ public final class ParsedTxnData implements TriadaTxn.Data {
     }
 
     @Override
-    public String id() {
+    public int id() {
         return this.id;
     }
 
@@ -62,11 +62,7 @@ public final class ParsedTxnData implements TriadaTxn.Data {
     public String asText() {
         return String.join(
                 ";",
-                String.valueOf(this.id),
-                String.valueOf(this.date.getTime()),
-                String.valueOf(this.txnAmount.value()),
-                this.prefix,
-                String.valueOf(this.bnf().id()),
+                this.signed.origin().body(),
                 this.signed.signature()
 
         );
