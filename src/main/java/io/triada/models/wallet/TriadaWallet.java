@@ -1,13 +1,11 @@
 package io.triada.models.wallet;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.hash.Hashing;
 import io.triada.models.amount.Amount;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.head.Head;
 import io.triada.models.head.HeadOfWallet;
 import io.triada.models.id.LongId;
-import io.triada.models.key.Key;
 import io.triada.models.key.RsaKey;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTransaction;
@@ -15,7 +13,7 @@ import io.triada.models.transaction.SignedTxnFromText;
 import io.triada.models.transaction.ValidatedTxn;
 import io.triada.models.transactions.SignedTxns;
 import io.triada.models.transactions.SignedTxnsFromFile;
-import io.triada.text.HexText;
+import io.triada.text.HexNumber;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -33,15 +31,12 @@ public final class TriadaWallet implements Wallet {
      */
     public static final String EXT = ".trd";
 
+    private static final String FIRST_TXN_ID = new HexNumber(4, 1).asText();
+
     /**
      * File with txns
      */
     private final File file;
-
-    /**
-     * Content of file with txns
-     */
-    private final String fileContent;
 
     /**
      * txns from file
@@ -54,29 +49,15 @@ public final class TriadaWallet implements Wallet {
     private final Head head;
 
     public TriadaWallet(final File file) throws IOException {
-        this.fileContent = FileUtils.readFileToString(file, UTF_8);
-        this.txns = new SignedTxnsFromFile(this.fileContent, file);
-        this.head = new HeadOfWallet(this.fileContent);
+        final String fileContent = FileUtils.readFileToString(file, UTF_8);
+        this.txns = new SignedTxnsFromFile(fileContent, file);
+        this.head = new HeadOfWallet(fileContent);
         this.file = file;
-
-
     }
 
     @Override
-    public Key walletKey() {
-        return new RsaKey(this.head.key());
-    }
-
-    @Override
-    public String mnemo() {
-        return String.join(
-                "/",
-                this.head.id(),
-                this.balance().asText(4),
-                String.valueOf(this.txns.txns().size()),
-                Hashing.sha256().hashString(this.fileContent, UTF_8).toString(),
-                String.valueOf(this.file.getTotalSpace())
-        );
+    public Head head() {
+        return this.head;
     }
 
     @Override
@@ -97,14 +78,14 @@ public final class TriadaWallet implements Wallet {
         try (final FileWriter writer = new FileWriter(this.file, true)) {
             writer.append(
                     String.format(
-                            "%s;%s%s",
-                            transaction.origin().body(),
-                            transaction.signature(),
-                            System.lineSeparator()
+                            "%s%s;%s",
+                            System.lineSeparator(),
+                            transaction.asText(),
+                            transaction.signature()
                     )
             );
-            return new TriadaWallet(this.file);
         }
+        return new TriadaWallet(this.file);
     }
 
     @Override
@@ -150,16 +131,11 @@ public final class TriadaWallet implements Wallet {
     private String maxTxnId() {
         final List<SignedTxnFromText> transactions = this.txns.txns();
         if (transactions.isEmpty()) {
-            return Long.toHexString(1L);
+            return FIRST_TXN_ID;
         } else {
-            return new HexText(
-                    Long.parseLong(
-                            new ParsedTxnData(
-                                    transactions.get(transactions.size() - 1)
-                            ).id()+1
-                            , 16
-                    )
-            ).toString();
+            final int id = new ParsedTxnData(transactions.get(transactions.size() - 1)).id();
+            return new HexNumber(4, id + 1).asText();
+
         }
     }
 
