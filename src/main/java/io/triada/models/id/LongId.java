@@ -30,7 +30,7 @@ public final class LongId implements Id<Long> {
 
     public LongId(final String id) {
         validate(id);
-        this.id = new BigInteger(id,16).longValue();
+        this.id = new BigInteger(id, 16).longValue();
     }
 
     public LongId() {
@@ -48,9 +48,18 @@ public final class LongId implements Id<Long> {
         return this.id;
     }
 
+    /**
+     * @return 16 chars length representation of id in hex
+     */
     @Override
     public String toString() {
-        return new HexText(id).toString();
+        final StringBuilder hexValue = new StringBuilder(
+                new HexText(id).toString()
+        );
+        while (hexValue.length() != 16) {
+            hexValue.insert(0, '0');
+        }
+        return hexValue.toString();
     }
 
     /**

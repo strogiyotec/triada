@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public final class WalletIdTest extends Assert {
+public final class IdTest extends Assert {
 
     @Test
     public void testParseId() {
@@ -21,6 +21,14 @@ public final class WalletIdTest extends Assert {
         assertThat(
                 new LongId("0000000000012345").toString(),
                 is("12345")
+        );
+    }
+
+    @Test
+    public void testHexValueLength() {
+        assertThat(
+                new LongId().toString().length(),
+                is(16)
         );
     }
 
