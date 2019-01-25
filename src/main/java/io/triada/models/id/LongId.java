@@ -1,7 +1,7 @@
 package io.triada.models.id;
 
 import io.triada.models.random.RandomBigInteger;
-import io.triada.text.HexText;
+import io.triada.text.HexNumber;
 import lombok.EqualsAndHashCode;
 
 import java.math.BigInteger;
@@ -53,13 +53,7 @@ public final class LongId implements Id<Long> {
      */
     @Override
     public String toString() {
-        final StringBuilder hexValue = new StringBuilder(
-                new HexText(id).toString()
-        );
-        while (hexValue.length() != 16) {
-            hexValue.insert(0, '0');
-        }
-        return hexValue.toString();
+        return new HexNumber(16, this.id).asText();
     }
 
     /**
