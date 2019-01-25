@@ -9,6 +9,7 @@ import java.math.RoundingMode;
 
 /**
  * Wallet amount
+ * TODO::wrong calculate with double values
  */
 @AllArgsConstructor
 @Slf4j
@@ -59,7 +60,6 @@ public final class TxnAmount implements Amount<Long> {
 
     @Override
     public TxnAmount mpy(final Long value) {
-        log.info("ds", "ds");
         return new TxnAmount(this.tridz * value);
     }
 
