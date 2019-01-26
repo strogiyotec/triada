@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public final class WalletAmountTest extends Assert {
+public final class TxnAmountTest extends Assert {
 
     @Test
     public void testParsedTriads() {
