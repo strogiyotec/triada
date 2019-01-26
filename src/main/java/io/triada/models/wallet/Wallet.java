@@ -13,6 +13,11 @@ import java.util.List;
 public interface Wallet extends Text {
 
     /**
+     * @return Age of wallet in hours
+     */
+    long age();
+
+    /**
      * @return Head of wallet
      */
     Head head();

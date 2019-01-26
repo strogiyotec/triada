@@ -1,6 +1,7 @@
 package io.triada.models.wallet;
 
 import com.google.common.collect.ImmutableList;
+import io.triada.dates.DateConverters;
 import io.triada.models.amount.Amount;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.head.Head;
@@ -19,6 +20,9 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Period;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -53,6 +57,21 @@ public final class TriadaWallet implements Wallet {
         this.txns = new SignedTxnsFromFile(fileContent, file);
         this.head = new HeadOfWallet(fileContent);
         this.file = file;
+    }
+
+    @Override
+    public long age() {
+        final List<SignedTxnFromText> txns = this.txns.txns();
+        if (txns.isEmpty()) {
+            return 0L;
+        } else {
+            final ParsedTxnData minTxn =
+                    txns.stream()
+                            .map(ParsedTxnData::new)
+                            .min(Comparator.comparing(ParsedTxnData::date))
+                            .get();
+            return Duration.between(DateConverters.toLocalDateTime(minTxn.date()),DateConverters.toLocalDateTime(new Date())).toHours();
+        }
     }
 
     @Override

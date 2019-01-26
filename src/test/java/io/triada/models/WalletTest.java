@@ -64,6 +64,29 @@ public final class WalletTest extends Assert {
         assertThat(sub.balance().asText(2), is("-79.97"));
     }
 
+    @Test
+    public void testWalletAge() throws Exception {
+        final Wallet wallet = fakeHome.createWallet(new LongId(), 0);
+        final RsaKey key = new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")));
+        final long hours = 100;
+        final Wallet added = wallet.add(
+                new SignedTriadaTxn(
+                        new ValidatedTxn(
+                                "0001",
+                                new Date(System.currentTimeMillis() - (1000 * 60 * 60 *hours)),
+                                new TxnAmount(new BigDecimal("1.99")),
+                                "MOPREFIX",
+                                new LongId(),
+                                "-"
+                        ),
+                        key,
+                        new LongId(wallet.head().id())
+                )
+        );
+        assertEquals(hours, added.age());
+
+    }
+
 
     @Test
     public void testAddTxb() throws Exception {
