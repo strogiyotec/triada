@@ -1,11 +1,11 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import io.triada.dates.DateConverters;
 
 import java.time.Duration;
 import java.util.Date;
 
-import static io.triada.dates.DateConverters.toLocalDateTime;
 
 public final class TriadaScore implements Score {
 
@@ -103,6 +103,6 @@ public final class TriadaScore implements Score {
      * @return Age of score in seconds
      */
     private long age() {
-        return Duration.between(toLocalDateTime(this.time), toLocalDateTime(new Date())).getSeconds();
+        return Duration.between(DateConverters.toLocalDateTime(this.time), DateConverters.toLocalDateTime(new Date())).getSeconds();
     }
 }

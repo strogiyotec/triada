@@ -1,7 +1,5 @@
 package io.triada.models.hash;
 
-import java.math.BigInteger;
-
 public interface TxnHash {
     /**
      * @return Txn hash
@@ -11,5 +9,5 @@ public interface TxnHash {
     /**
      * @return Txn nonce
      */
-    BigInteger nonce();
+    String nonce();
 }
