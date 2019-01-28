@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 
 /**
- * Calculate hash of transaction
+ * Calculate hash of transaction using incremented value of BigInteger
  */
 public final class BigIntegerHash extends HashEnvelope {
 
