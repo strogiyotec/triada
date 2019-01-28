@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
  * Constant Hash and Nonce of Transaction
  */
 @AllArgsConstructor
-public final class ConstTxnHash implements TxnHash {
+public final class ConstTxnHash implements Hash {
 
     private final String hash;
 

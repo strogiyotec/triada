@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public abstract class HashEnvelope implements TxnHash {
+public abstract class HashEnvelope implements Hash {
 
-    private final TxnHash origin;
+    private final Hash origin;
 
-    HashEnvelope(final Supplier<TxnHash> hash) {
+    HashEnvelope(final Supplier<Hash> hash) {
         this.origin = hash.get();
     }
 

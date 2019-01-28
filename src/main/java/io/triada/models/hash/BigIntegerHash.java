@@ -1,9 +1,6 @@
 package io.triada.models.hash;
 
-import com.google.common.hash.Hashing;
-
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 /**
@@ -15,17 +12,11 @@ public final class BigIntegerHash extends HashEnvelope {
         super(
                 () -> {
                     BigInteger nonce = BigInteger.ONE;
+                    final String zeroes = String.join("", Collections.nCopies(strength, "0"));
                     while (true) {
                         nonce = nonce.add(BigInteger.ONE);
-                        final String hash =
-                                Hashing.sha256().hashString(
-                                        String.format(
-                                                "%s %s",
-                                                prefix, nonce.toString()
-                                        ),
-                                        StandardCharsets.UTF_8
-                                ).toString();
-                        if (checkHash(hash, strength)) {
+                        final String hash = Hash.sha256(prefix, nonce.toString());
+                        if (checkHash(hash, zeroes)) {
                             return new ConstTxnHash(hash, nonce.toString());
                         }
                     }
@@ -38,7 +29,7 @@ public final class BigIntegerHash extends HashEnvelope {
      * @param strength amount of zeros
      * @return True if hash end with with amount of zeros
      */
-    private static boolean checkHash(final String hash, final int strength) {
-        return hash.endsWith(String.join("", Collections.nCopies(strength, "0")));
+    private static boolean checkHash(final String hash, final String strength) {
+        return hash.endsWith(strength);
     }
 }
