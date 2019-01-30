@@ -108,4 +108,26 @@ public final class ScoreTest extends Assert {
         assertTrue(score.hash().endsWith("0000"));
     }
 
+    @Test
+    public void testParseNoSuffixScore() {
+        final TriadaScore triadaScore = new TriadaScore("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff");
+
+        assertEquals(triadaScore.strength(), 3);
+        assertEquals(triadaScore.time(), new Date(1548869681));
+        assertEquals(triadaScore.address(), HostAndPort.fromParts("localhost", 8080));
+        assertEquals(triadaScore.invoice(), INVOICE);
+        assertTrue(triadaScore.suffixes().isEmpty());
+    }
+
+    @Test
+    public void testParseSuffixScore() {
+        final TriadaScore triadaScore = new TriadaScore("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff AF_FD");
+
+        assertEquals(triadaScore.strength(), 3);
+        assertEquals(triadaScore.time(), new Date(1548869681));
+        assertEquals(triadaScore.address(), HostAndPort.fromParts("localhost", 8080));
+        assertEquals(triadaScore.invoice(), INVOICE);
+        assertEquals(triadaScore.suffixes(), Arrays.asList("AF", "FD"));
+    }
+
 }

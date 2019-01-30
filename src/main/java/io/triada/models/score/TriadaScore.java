@@ -6,10 +6,7 @@ import io.triada.models.hash.BigIntegerHash;
 import io.triada.models.hash.Hash;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 public final class TriadaScore implements Score {
@@ -53,6 +50,25 @@ public final class TriadaScore implements Score {
      * Created at time
      */
     private final Date created;
+
+    /**
+     * @param body Text to parse into Score
+     */
+    public TriadaScore(final String body) {
+        final String[] parts = body.split(" ");
+
+        this.strength = Integer.parseInt(parts[0]);
+        this.time = new Date(Long.parseLong(parts[1]));
+        this.hostAndPort = HostAndPort.fromParts(parts[2], Integer.parseInt(parts[3]));
+        this.invoice = parts[4];
+        if (parts.length == 6) {
+            this.suffixes = Arrays.asList(parts[5].split("_"));
+        } else {
+            this.suffixes = Collections.emptyList();
+        }
+        this.created = new Date();
+
+    }
 
     /**
      * Ctor
