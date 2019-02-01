@@ -2,7 +2,10 @@ package io.triada.models.tax;
 
 import com.google.common.collect.ImmutableMap;
 import io.triada.models.amount.TxnAmount;
+import io.triada.models.id.LongId;
+import io.triada.models.key.RsaKey;
 import io.triada.models.score.IsValidScore;
+import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
 import io.triada.models.transaction.ParsedTxnData;
@@ -10,14 +13,15 @@ import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.wallet.Wallet;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.OffsetDateTime.parse;
 
-public final class TransactionTaxes implements Tax {
+public final class TxnTaxes implements Tax {
 
 
     /**
@@ -64,7 +68,7 @@ public final class TransactionTaxes implements Tax {
 
     private final int strength;
 
-    public TransactionTaxes(
+    public TxnTaxes(
             final Wallet wallet,
             final boolean ignoreScoreWeakness,
             final int strength
@@ -74,45 +78,73 @@ public final class TransactionTaxes implements Tax {
         this.strength = strength;
     }
 
-    public TransactionTaxes(final Wallet wallet) {
+    public TxnTaxes(final Wallet wallet) {
         this.wallet = wallet;
         this.ignoreScoreWeakness = false;
         this.strength = TriadaScore.STRENGTH;
     }
 
     @Override
-    public void pay() throws Exception {
+    public TxnTaxes pay(final RsaKey rsaKey, final Score score) throws Exception {
+        final String[] invoice = score.invoice().split("@");
+        final String prefix = invoice[0];
+        final LongId id = new LongId(invoice[1]);
 
+        return new TxnTaxes(this.wallet.substract(
+                new TxnAmount(this.debt()),
+                prefix,
+                id,
+                rsaKey,
+                this.details(score)
+        ));
     }
 
     @Override
-    public int paid() throws Exception {
+    public long paid() throws Exception {
         final List<SignedTransaction> txns = this.wallet.transactions();
-        final List<SignedTransaction> scored = new ArrayList<>(10);
+        final AtomicLong amount = new AtomicLong(0L);
 
         for (final SignedTransaction txn : txns) {
             final ParsedTxnData txnData = new ParsedTxnData(txn);
             final String[] details = txnData.details().split(" ");
-            final String prefix = details[0];
-            if (prefix.equals(PREFIX) && details.length == 2) {
-                final TriadaScore score = new TriadaScore(details[1]);
-                if (scoreValid(score)) {
-                    if (score.strength() < this.strength && !this.ignoreScoreWeakness) {
+            if (TxnTaxes.isDetailsValid(details)) {
+                final TriadaScore score = new TriadaScore(details[1]/*body*/);
+                if (TxnTaxes.isScoreValid(score)) {
+                    if (this.isStrengthValid(score)) {
                         MILESTONES.forEach((date, strength) -> {
-                            if (txnData.date().compareTo(date) < 0 && score.strength() >= strength && txnData.amount().less(MAX_PAYMENT.value())) {
-                                scored.add(txn);
+                            if (TxnTaxes.isDateAndAmountValid(score, txnData, date, strength)) {
+                                amount.addAndGet(txnData.amount().value());
                             }
                         });
                     }
                 }
             }
         }
-        return 0;
+        return amount.get();
     }
 
     @Override
     public long debt() throws Exception {
         return FEE.value() * this.wallet.transactions().size() * this.wallet.age() - this.paid();
+    }
+
+    @Override
+    public Optional<SignedTransaction> last() {
+        final List<SignedTransaction> transactions = this.wallet.transactions();
+        if (transactions.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(transactions.get(transactions.size() - 1));
+        }
+    }
+
+    @Override
+    public String details(final Score score) {
+        return String.join(
+                " ",
+                PREFIX,
+                new ReducesScore(EXACT_SCORE, score).asText()
+        );
     }
 
     @Override
@@ -122,11 +154,24 @@ public final class TransactionTaxes implements Tax {
         );
     }
 
-    private boolean strengthValid(final Score score) {
-
+    private boolean isStrengthValid(final Score score) {
+        return score.strength() < this.strength && !this.ignoreScoreWeakness;
     }
 
-    private static boolean scoreValid(final Score score) {
+    private static boolean isScoreValid(final Score score) {
         return scoreValidator.test(score) && score.value() == EXACT_SCORE;
+    }
+
+    private static boolean isDateAndAmountValid(
+            final Score score,
+            final ParsedTxnData txnData,
+            final Date date,
+            final Integer strength
+    ) {
+        return txnData.date().compareTo(date) < 0 && score.strength() >= strength && txnData.amount().less(MAX_PAYMENT.value());
+    }
+
+    private static boolean isDetailsValid(final String[] details) {
+        return details.length == 2 && details[0].equals(PREFIX);
     }
 }
