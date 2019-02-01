@@ -62,7 +62,12 @@ public abstract class ScoreEnvelope implements Score {
     }
 
     @Override
-    public boolean expired(final int hours) {
+    public final boolean expired(final int hours) {
         return this.origin.expired(hours);
+    }
+
+    @Override
+    public final String asText() {
+        return this.origin.asText();
     }
 }

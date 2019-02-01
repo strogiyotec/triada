@@ -1,11 +1,12 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import io.triada.text.Text;
 
 import java.util.Date;
 import java.util.List;
 
-public interface Score {
+public interface Score extends Text{
 
     /**
      * @return New suffix

@@ -4,9 +4,11 @@ import com.google.common.net.HostAndPort;
 import io.triada.dates.DateConverters;
 import io.triada.models.hash.BigIntegerHash;
 import io.triada.models.hash.Hash;
+import io.triada.models.id.LongId;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public final class TriadaScore implements Score {
@@ -161,6 +163,24 @@ public final class TriadaScore implements Score {
     }
 
     /**
+     * Ctor
+     */
+    public TriadaScore(
+            final HostAndPort hostAndPort,
+            final String invoice,
+            final List<String> suffixes
+    ) {
+        final Date now = new Date();
+
+        this.time = now;
+        this.hostAndPort = hostAndPort;
+        this.invoice = invoice;
+        this.suffixes = suffixes;
+        this.created = now;
+        this.strength = STRENGTH;
+    }
+
+    /**
      * @return New score with one more suffix
      */
     @Override
@@ -272,4 +292,16 @@ public final class TriadaScore implements Score {
         return suffixes;
     }
 
+    @Override
+    public String asText() {
+        return String.format(
+                "%d %d %s %d %s %s",
+                this.strength,
+                this.time.getTime(),
+                this.hostAndPort.getHost(),
+                this.hostAndPort.getPort(),
+                this.invoice,
+                this.suffixes.stream().collect(Collectors.joining("_"))
+        );
+    }
 }
