@@ -6,7 +6,7 @@ public interface Tax extends Text {
 
     void pay() throws Exception;
 
-    void paid() throws Exception;
+    int paid() throws Exception;
 
     long debt() throws Exception;
 

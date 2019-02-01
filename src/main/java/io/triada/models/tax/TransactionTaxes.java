@@ -3,12 +3,9 @@ package io.triada.models.tax;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.score.IsValidScore;
 import io.triada.models.score.TriadaScore;
-import io.triada.models.transaction.ParsedTxnData;
-import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.wallet.Wallet;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public final class TransactionTaxes implements Tax {
 
@@ -27,7 +24,7 @@ public final class TransactionTaxes implements Tax {
      * Here is the formula: 16.0 / (365 * 24) / 4096 = 1915
      * But I like the 1917 number better.
      */
-    private static final TxnAmount FEE = new TxnAmount(1917L);
+    public static final TxnAmount FEE = new TxnAmount(1917L);
 
     /**
      * Max amount allowed amount in one txn
@@ -55,36 +52,45 @@ public final class TransactionTaxes implements Tax {
         this.strength = strength;
     }
 
+    public TransactionTaxes(final Wallet wallet) {
+        this.wallet = wallet;
+        this.ignoreScoreWeakness = false;
+        this.strength = TriadaScore.STRENGTH;
+    }
+
     @Override
     public void pay() throws Exception {
 
     }
 
     @Override
-    public void paid() throws Exception {
-        final List<SignedTransaction> txns = this.wallet.transactions();
+    public int paid() throws Exception {
+        return 0;
+        /*final List<SignedTransaction> txns = this.wallet.transactions();
         for (final SignedTransaction txn : txns) {
             final ParsedTxnData data = new ParsedTxnData(txn);
             final String[] details = data.details().split(" ");
             final String prefix = details[0];
-            if (!prefix.equals(PREFIX) || details.length == 2) {
+            if (prefix.equals(PREFIX) && details.length == 2) {
                 final TriadaScore score = new TriadaScore(details[1]);
-                if (scoreValid.test(score) || score.value() != EXACT_SCORE) {
-                    if (score.strength() < this.strength && !this.ignoreScoreWeakness){
+                if (scoreValid.test(score) && score.value() == EXACT_SCORE) {
+                    if (score.strength() < this.strength && !this.ignoreScoreWeakness) {
 
                     }
                 }
             }
-        }
+        }*/
     }
 
     @Override
     public long debt() throws Exception {
-        return FEE.value() * this.wallet.transactions().size();
+        return FEE.value() * this.wallet.transactions().size() * this.wallet.age() - this.paid();
     }
 
     @Override
     public String asText() {
-        return null;
+        return String.format(
+                "A=%d hours,F=%dz/th, T="
+        );
     }
 }
