@@ -120,6 +120,15 @@ public final class ScoreTest extends Assert {
     }
 
     @Test
+    public void testAsTextFromParsed() {
+        final TriadaScore score1 = new TriadaScore("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff");
+        final TriadaScore score2 = new TriadaScore(score1.asText());
+
+        assertEquals("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff",score1.asText().trim());
+        assertEquals(score1.asText(),score2.asText());
+    }
+
+    @Test
     public void testParseSuffixScore() {
         final TriadaScore triadaScore = new TriadaScore("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff AF_FD");
 
