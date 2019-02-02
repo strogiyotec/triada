@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Period;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -70,7 +69,7 @@ public final class TriadaWallet implements Wallet {
                             .map(ParsedTxnData::new)
                             .min(Comparator.comparing(ParsedTxnData::date))
                             .get();
-            return Duration.between(DateConverters.toLocalDateTime(minTxn.date()),DateConverters.toLocalDateTime(new Date())).toHours();
+            return Duration.between(DateConverters.toLocalDateTime(minTxn.date()), DateConverters.toLocalDateTime(new Date())).toHours();
         }
     }
 
@@ -107,6 +106,9 @@ public final class TriadaWallet implements Wallet {
         return new TriadaWallet(this.file);
     }
 
+    /**
+     * Originally was implemented as invoice.split(@) instead of PREFIX + id
+     */
     @Override
     public Wallet substract(
             final TxnAmount amount,

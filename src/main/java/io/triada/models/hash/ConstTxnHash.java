@@ -1,19 +1,16 @@
 package io.triada.models.hash;
 
-import io.triada.models.hash.TxnHash;
 import lombok.AllArgsConstructor;
-
-import java.math.BigInteger;
 
 /**
  * Constant Hash and Nonce of Transaction
  */
 @AllArgsConstructor
-public final class ConstTxnHash implements TxnHash {
+public final class ConstTxnHash implements Hash {
 
     private final String hash;
 
-    private final BigInteger nonce;
+    private final String nonce;
 
     @Override
     public String hash() {
@@ -21,7 +18,7 @@ public final class ConstTxnHash implements TxnHash {
     }
 
     @Override
-    public BigInteger nonce() {
+    public String nonce() {
         return this.nonce;
     }
 }

@@ -2,15 +2,14 @@ package io.triada.models.hash;
 
 import lombok.AllArgsConstructor;
 
-import java.math.BigInteger;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public abstract class HashEnvelope implements TxnHash {
+public abstract class HashEnvelope implements Hash {
 
-    private final TxnHash origin;
+    private final Hash origin;
 
-    public HashEnvelope(final Supplier<TxnHash> hash) {
+    HashEnvelope(final Supplier<Hash> hash) {
         this.origin = hash.get();
     }
 
@@ -20,7 +19,7 @@ public abstract class HashEnvelope implements TxnHash {
     }
 
     @Override
-    public BigInteger nonce() {
+    public String nonce() {
         return this.origin.nonce();
     }
 }

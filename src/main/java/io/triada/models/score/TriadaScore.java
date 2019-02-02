@@ -1,18 +1,27 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import io.triada.dates.DateConverters;
+import io.triada.models.hash.BigIntegerHash;
+import io.triada.models.hash.Hash;
+import io.triada.models.id.LongId;
 
 import java.time.Duration;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static io.triada.dates.DateConverters.toLocalDateTime;
 
 public final class TriadaScore implements Score {
 
     /**
      * Max amount of hours a score can stay fresh
      */
-    private static final int BEST_BEFORE = 24;
+    public static final int BEST_BEFORE = 24;
+
+    /**
+     * Default amount of zeroes for Hash
+     */
+    public static final int STRENGTH = 8;
 
     /**
      * Score time
@@ -32,7 +41,7 @@ public final class TriadaScore implements Score {
     /**
      * Array of suffixes
      */
-    private final String[] suffixes;
+    private final List<String> suffixes;
 
     /**
      * Amount of zeros
@@ -44,11 +53,33 @@ public final class TriadaScore implements Score {
      */
     private final Date created;
 
+    /**
+     * @param body Text to parse into Score
+     */
+    public TriadaScore(final String body) {
+        final String[] parts = body.split(" ");
+
+        this.strength = Integer.parseInt(parts[0]);
+        this.time = new Date(Long.parseLong(parts[1]));
+        this.hostAndPort = HostAndPort.fromParts(parts[2], Integer.parseInt(parts[3]));
+        this.invoice = parts[4];
+        if (parts.length == 6) {
+            this.suffixes = Arrays.asList(parts[5].split("_"));
+        } else {
+            this.suffixes = Collections.emptyList();
+        }
+        this.created = new Date();
+
+    }
+
+    /**
+     * Ctor
+     */
     public TriadaScore(
             final Date time,
             final HostAndPort hostAndPort,
             final String invoice,
-            final String[] suffixes,
+            final List<String> suffixes,
             final int strength,
             final Date created
     ) {
@@ -60,6 +91,98 @@ public final class TriadaScore implements Score {
         this.created = created;
     }
 
+    /**
+     * Ctor
+     */
+    public TriadaScore(
+            final Date time,
+            final HostAndPort hostAndPort,
+            final String invoice,
+            final List<String> suffixes,
+            final Date created
+    ) {
+        this.time = time;
+        this.hostAndPort = hostAndPort;
+        this.invoice = invoice;
+        this.suffixes = suffixes;
+        this.strength = STRENGTH;
+        this.created = created;
+    }
+
+    /**
+     * Ctor
+     */
+    public TriadaScore(
+            final Date time,
+            final HostAndPort hostAndPort,
+            final String invoice,
+            final int strength,
+            final Date created
+    ) {
+        this.time = time;
+        this.hostAndPort = hostAndPort;
+        this.invoice = invoice;
+        this.suffixes = Collections.emptyList();
+        this.strength = strength;
+        this.created = created;
+    }
+
+    /**
+     * Ctor
+     */
+    public TriadaScore(
+            final Date time,
+            final HostAndPort hostAndPort,
+            final String invoice,
+            final int strength
+    ) {
+        this.time = time;
+        this.hostAndPort = hostAndPort;
+        this.invoice = invoice;
+        this.suffixes = Collections.emptyList();
+        this.strength = strength;
+        this.created = new Date();
+    }
+
+    /**
+     * Ctor
+     */
+    public TriadaScore(
+            final HostAndPort hostAndPort,
+            final String invoice,
+            final int strength
+    ) {
+        final Date now = new Date();
+
+        this.time = now;
+        this.hostAndPort = hostAndPort;
+        this.invoice = invoice;
+        this.suffixes = Collections.emptyList();
+        this.strength = strength;
+        this.created = now;
+    }
+
+    /**
+     * Ctor
+     */
+    public TriadaScore(
+            final HostAndPort hostAndPort,
+            final String invoice,
+            final List<String> suffixes
+    ) {
+        final Date now = new Date();
+
+        this.time = now;
+        this.hostAndPort = hostAndPort;
+        this.invoice = invoice;
+        this.suffixes = suffixes;
+        this.created = now;
+        this.strength = STRENGTH;
+    }
+
+    /**
+     * @return New score with one more suffix
+     */
     @Override
     public Score next() {
         if (this.expired(BEST_BEFORE)) {
@@ -68,26 +191,76 @@ public final class TriadaScore implements Score {
                     now,
                     this.hostAndPort,
                     this.invoice,
-                    new String[]{},
+                    Collections.emptyList(),
                     this.strength,
                     now
             );
-        } else {
-
         }
-        return null;
+        final String suffix =
+                new BigIntegerHash(
+                        this.suffixes.isEmpty() ? this.prefix() : hash(),
+                        this.strength
+                ).nonce();
+        return new TriadaScore(
+                this.time,
+                this.hostAndPort,
+                this.invoice,
+                this.oldSuffixesWithNewOne(suffix),
+                this.strength,
+                this.created
+        );
     }
 
-    /**
-     * @param hours Hours value
-     * @return True if the age of the score is over 24 hours
-     */
-    private boolean expired(final int hours) {
+    @Override
+    public List<String> suffixes() {
+        return this.suffixes;
+    }
+
+    @Override
+    public Date createdAt() {
+        return this.created;
+    }
+
+    @Override
+    public HostAndPort address() {
+        return this.hostAndPort;
+    }
+
+    @Override
+    public String invoice() {
+        return this.invoice;
+    }
+
+    @Override
+    public int strength() {
+        return this.strength;
+    }
+
+    @Override
+    public Date time() {
+        return this.time;
+    }
+
+    @Override
+    public String hash() {
+        if (this.suffixes.isEmpty()) {
+            throw new IllegalStateException("Score has zero value , there is no prefix");
+        }
+        return this.suffixes.stream().reduce(this.prefix(), Hash::sha256);
+    }
+
+    @Override
+    public int value() {
+        return this.suffixes.size();
+    }
+
+    @Override
+    public boolean expired(final int hours) {
         return this.age() > hours * 60 * 60;
     }
 
     /**
-     * @return Prefix for the hash calc
+     * @return Prefix for the hash calculation
      */
     private String prefix() {
         return String.format(
@@ -103,6 +276,32 @@ public final class TriadaScore implements Score {
      * @return Age of score in seconds
      */
     private long age() {
-        return Duration.between(toLocalDateTime(this.time), toLocalDateTime(new Date())).getSeconds();
+        return Duration.between(DateConverters.toLocalDateTime(this.time), DateConverters.toLocalDateTime(new Date())).getSeconds();
+    }
+
+    /**
+     * Because by default suffixes is {@link java.util.Collections.EmptyList}
+     * we need to create new one providing old suffixes and add new to them
+     *
+     * @param suffix New Suffix
+     * @return new list of suffixes
+     */
+    private List<String> oldSuffixesWithNewOne(final String suffix) {
+        final List<String> suffixes = new ArrayList<>(this.suffixes);
+        suffixes.add(suffix);
+        return suffixes;
+    }
+
+    @Override
+    public String asText() {
+        return String.format(
+                "%d %d %s %d %s %s",
+                this.strength,
+                this.time.getTime(),
+                this.hostAndPort.getHost(),
+                this.hostAndPort.getPort(),
+                this.invoice,
+                this.suffixes.stream().collect(Collectors.joining("_"))
+        );
     }
 }
