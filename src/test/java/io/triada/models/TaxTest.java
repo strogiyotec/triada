@@ -6,6 +6,7 @@ import io.triada.mocks.FakeHome;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
+import io.triada.models.prefix.PaymentPrefix;
 import io.triada.models.score.TriadaScore;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.ParsedTxnData;
@@ -107,6 +108,45 @@ public final class TaxTest extends Assert {
         );
         final TxnTaxes txnTaxes = new TxnTaxes(added, 6);
         assertEquals(amount.value().longValue(), txnTaxes.paid());
+    }
+
+    @Test
+    public void testExistanceOfDuplicate() throws Exception {
+        final Wallet wallet = fakeHome.createWallet(new LongId(), 0);
+        final RsaKey key = new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")));
+        final Wallet added = wallet.add(
+                new SignedTriadaTxn(
+                        new ValidatedTxn(
+                                "0001",
+                                DateConverters.nowMinusYears(1),
+                                new TxnAmount(new BigDecimal("19.99")),
+                                "NOPREFIX",
+                                new LongId(),
+                                "-"
+                        ),
+                        key,
+                        new LongId(wallet.head().id())
+                )
+        );
+        final Wallet target = fakeHome.createWallet(new LongId(), 0);
+        final String invoice =
+                String.format(
+                        "%s@%s",
+                        new PaymentPrefix(
+                                new RsaKey(target.head().key())
+                        ).create(8),
+                        target.head().id()
+                );
+        final TxnTaxes tax = new TxnTaxes(added);
+        final TriadaScore score = new TriadaScore(
+                HostAndPort.fromParts("localhost", 80),
+                invoice,
+                Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V")
+        );
+        final TxnTaxes payed = tax.pay(key, score);
+
+        assertTrue(payed.exists(payed.details(score)));
+        assertTrue(payed.exists("-"));
     }
 
 
