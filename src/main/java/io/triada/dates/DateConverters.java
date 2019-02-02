@@ -2,6 +2,7 @@ package io.triada.dates;
 
 import lombok.experimental.UtilityClass;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 @UtilityClass
 public final class DateConverters {
@@ -19,6 +21,12 @@ public final class DateConverters {
 
     public LocalDateTime toLocalDateTime(final Date date) {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    public String asIso(final Date date) {
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+        return sdf.format(date);
     }
 
     public Date nowMinusYears(final int years) {
