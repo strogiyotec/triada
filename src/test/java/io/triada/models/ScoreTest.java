@@ -124,8 +124,8 @@ public final class ScoreTest extends Assert {
         final TriadaScore score1 = new TriadaScore("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff");
         final TriadaScore score2 = new TriadaScore(score1.asText());
 
-        assertEquals("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff",score1.asText().trim());
-        assertEquals(score1.asText(),score2.asText());
+        assertEquals("3 1548869681 localhost 8080 NOPREFIX@ffffffffffffffff", score1.asText().trim());
+        assertEquals(score1.asText(), score2.asText());
     }
 
     @Test
@@ -137,6 +137,16 @@ public final class ScoreTest extends Assert {
         assertEquals(triadaScore.address(), HostAndPort.fromParts("localhost", 8080));
         assertEquals(triadaScore.invoice(), INVOICE);
         assertEquals(triadaScore.suffixes(), Arrays.asList("AF", "FD"));
+    }
+
+    @Test
+    public void testCalculateSuffixForParsedScore() {
+        final String line = "TAXES 6 1549094153600 b2.zold.io 1000 DCexx0hG@912ecc24b32dbe74 52310229_24729451_14470076_5837578_49671844_22449904_1972513_4434596";
+        final String[] split = line.split(" ", 2);
+        final TriadaScore triadaScore = new TriadaScore(split[1]);
+        assertEquals(triadaScore.value(), 8);
+        assertTrue(isValidScore.test(triadaScore));
+
     }
 
 }
