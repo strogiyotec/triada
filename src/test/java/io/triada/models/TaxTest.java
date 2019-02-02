@@ -18,6 +18,7 @@ import org.springframework.util.ResourceUtils;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
 
 public final class TaxTest extends Assert {
 
@@ -77,6 +78,35 @@ public final class TaxTest extends Assert {
         final long debt = txnTaxes.debt();
         final TxnTaxes pay = txnTaxes.pay(key, score);
         assertEquals(debt, new ParsedTxnData(pay.last().get()).amount().value() * -1);
+    }
+
+    @Test
+    public void testPrintTaxFormula() throws Exception {
+        final Wallet wallet = fakeHome.createWallet(new LongId(), 0);
+        assertNotNull(new TxnTaxes(wallet).asText());
+    }
+
+    @Test
+    public void testTakesTaxPaymentIntoAccount() throws Exception {
+        final Wallet wallet = fakeHome.createWallet(new LongId(), 0);
+        final TxnAmount amount = new TxnAmount(95_596_800L);
+        final RsaKey key = new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")));
+        final Wallet added = wallet.add(
+                new SignedTriadaTxn(
+                        new ValidatedTxn(
+                                "0001",
+                                new Date(),
+                                amount.mpy(-1L),
+                                "NOPREFIX",
+                                new LongId("912ecc24b32dbe74"),
+                                "TAXES 6 1549094153600 b2.zold.io 1000 DCexx0hG@912ecc24b32dbe74 52310229_24729451_14470076_5837578_49671844_22449904_1972513_4434596"
+                        ),
+                        key,
+                        new LongId(wallet.head().id())
+                )
+        );
+        final TxnTaxes txnTaxes = new TxnTaxes(added, 6);
+        assertEquals(amount.value().longValue(), txnTaxes.paid());
     }
 
 

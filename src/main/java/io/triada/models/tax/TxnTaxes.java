@@ -11,6 +11,7 @@ import io.triada.models.score.TriadaScore;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.wallet.Wallet;
+import org.jooq.lambda.Unchecked;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -78,10 +79,28 @@ public final class TxnTaxes implements Tax {
         this.strength = strength;
     }
 
+    public TxnTaxes(
+            final Wallet wallet,
+            final int strength
+    ) {
+        this.wallet = wallet;
+        this.ignoreScoreWeakness = false;
+        this.strength = strength;
+    }
+
     public TxnTaxes(final Wallet wallet) {
         this.wallet = wallet;
         this.ignoreScoreWeakness = false;
         this.strength = TriadaScore.STRENGTH;
+    }
+
+    /**
+     * @param details Details
+     * @return True if this tax payment already exists in the wallet
+     */
+    @Override
+    public boolean exists(final String details) {
+        return this.wallet.transactions().stream().map(ParsedTxnData::new).anyMatch(data -> data.details().equals(details));
     }
 
     @Override
@@ -106,21 +125,19 @@ public final class TxnTaxes implements Tax {
 
         for (final SignedTransaction txn : txns) {
             final ParsedTxnData txnData = new ParsedTxnData(txn);
-            final String[] details = txnData.details().split(" ");
+            final String[] details = txnData.details().split(" ", 2);
             if (TxnTaxes.isDetailsValid(details)) {
                 final TriadaScore score = new TriadaScore(details[1]/*body*/);
                 if (TxnTaxes.isScoreValid(score)) {
                     if (this.isStrengthValid(score)) {
-                        MILESTONES.forEach((date, strength) -> {
-                            if (TxnTaxes.isDateAndAmountValid(score, txnData, date, strength)) {
-                                amount.addAndGet(txnData.amount().value());
-                            }
-                        });
+                        if (txnData.amount().less(MAX_PAYMENT.value())) {
+                            amount.addAndGet(txnData.amount().value());
+                        }
                     }
                 }
             }
         }
-        return amount.get();
+        return amount.get() * -1;
     }
 
     @Override
@@ -150,12 +167,16 @@ public final class TxnTaxes implements Tax {
     @Override
     public String asText() {
         return String.format(
-                "A=%d hours,F=%dz/th, T="
+                "A=%d hours,F=%d triada/th, T=%dt, Paid=%d",
+                this.wallet.age(),
+                FEE.value(),
+                this.wallet.transactions().size(),
+                Unchecked.supplier(this::debt).get()
         );
     }
 
     private boolean isStrengthValid(final Score score) {
-        return score.strength() < this.strength && !this.ignoreScoreWeakness;
+        return score.strength() == this.strength || this.ignoreScoreWeakness;
     }
 
     private static boolean isScoreValid(final Score score) {
