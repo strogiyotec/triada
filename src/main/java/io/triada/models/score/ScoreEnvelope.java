@@ -70,4 +70,9 @@ public abstract class ScoreEnvelope implements Score {
     public final String asText() {
         return this.origin.asText();
     }
+
+    @Override
+    public final String mnemo() {
+        return this.origin.mnemo();
+    }
 }

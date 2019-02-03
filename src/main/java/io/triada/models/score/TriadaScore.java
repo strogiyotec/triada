@@ -4,8 +4,8 @@ import com.google.common.net.HostAndPort;
 import io.triada.dates.DateConverters;
 import io.triada.models.hash.BigIntegerHash;
 import io.triada.models.hash.Hash;
-import io.triada.models.id.LongId;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -178,6 +178,16 @@ public final class TriadaScore implements Score {
         this.suffixes = suffixes;
         this.created = now;
         this.strength = STRENGTH;
+    }
+
+    @Override
+    public String mnemo() {
+        final SimpleDateFormat format = new SimpleDateFormat("HHmm");
+        return String.format(
+                "%d:%s",
+                this.value(),
+                format.format(this.time)
+        );
     }
 
     /**

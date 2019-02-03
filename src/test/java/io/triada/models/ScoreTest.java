@@ -1,6 +1,7 @@
 package io.triada.models;
 
 import com.google.common.net.HostAndPort;
+import io.triada.dates.DateConverters;
 import io.triada.models.score.IsValidScore;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
@@ -8,6 +9,7 @@ import io.triada.models.score.TriadaScore;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
@@ -146,7 +148,19 @@ public final class ScoreTest extends Assert {
         final TriadaScore triadaScore = new TriadaScore(split[1]);
         assertEquals(triadaScore.value(), 8);
         assertTrue(isValidScore.test(triadaScore));
-
     }
+
+    @Test
+    public void testPrintMnemo() throws Exception {
+        final TriadaScore score = new TriadaScore(
+                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse("2017-07-19T22:32:51"),
+                HostAndPort.fromParts("localhost", 80),
+                "NOPREFIX@ffffffffffffffff",
+                TriadaScore.STRENGTH
+        );
+
+        assertEquals(score.mnemo(), "0:2232");
+    }
+
 
 }

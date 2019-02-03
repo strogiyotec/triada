@@ -6,7 +6,9 @@ import io.triada.text.Text;
 import java.util.Date;
 import java.util.List;
 
-public interface Score extends Text{
+public interface Score extends Text {
+
+    String mnemo();
 
     /**
      * @return New suffix
