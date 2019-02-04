@@ -1,7 +1,10 @@
 package io.triada.node.farm;
 
+import io.triada.models.score.Score;
 import io.triada.text.Jsonable;
 import io.triada.text.Text;
+
+import java.util.List;
 
 public interface Farm extends Text, Jsonable {
     void start() throws Exception;
@@ -10,5 +13,5 @@ public interface Farm extends Text, Jsonable {
 
     void save();
 
-    void load();
+    List<Score> best() throws Exception;
 }
