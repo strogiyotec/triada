@@ -11,15 +11,20 @@ import org.jooq.lambda.Unchecked;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Farm scores in background
+ */
 @Slf4j
 public final class ScoreFarm implements Farm {
 
@@ -42,7 +47,6 @@ public final class ScoreFarm implements Farm {
     public ScoreFarm(
             final File cache,
             final String invoice,
-            final Queue<String> pipeline,
             final ThreadPoolExecutor threads,
             final int lifetime,
             final int strength,
@@ -51,7 +55,7 @@ public final class ScoreFarm implements Farm {
     ) {
         this.cache = cache;
         this.invoice = invoice;
-        this.pipeline = pipeline;
+        this.pipeline = new ArrayBlockingQueue<>(10);
         this.threads = threads;
         this.lifetime = lifetime;
         this.strength = strength;
@@ -77,6 +81,10 @@ public final class ScoreFarm implements Farm {
     @Override
     public List<Score> best() throws Exception {
         final String content = FileUtils.readFileToString(this.cache, StandardCharsets.UTF_8);
+
+        if (content.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         return Stream.of(content.split(System.lineSeparator()))
                 .map(TriadaScore::new)
