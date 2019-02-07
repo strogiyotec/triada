@@ -22,6 +22,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.OffsetDateTime.parse;
 
+/**
+ * Tax transactions
+ */
 public final class TxnTaxes implements Tax {
 
 
@@ -103,6 +106,12 @@ public final class TxnTaxes implements Tax {
         return this.wallet.transactions().stream().map(ParsedTxnData::new).anyMatch(data -> data.details().equals(details));
     }
 
+    /**
+     * @param rsaKey to sign
+     * @param score  Score to pay
+     * @return wallet with new payment
+     * @throws Exception if failed
+     */
     @Override
     public TxnTaxes pay(final RsaKey rsaKey, final Score score) throws Exception {
         final String[] invoice = score.invoice().split("@");
@@ -118,6 +127,12 @@ public final class TxnTaxes implements Tax {
         ));
     }
 
+    /**
+     * // TODO: 2/7/19 remove throws
+     *
+     * @return Sum of amounts in wallet
+     * @throws Exception if failed
+     */
     @Override
     public long paid() throws Exception {
         final List<SignedTransaction> txns = this.wallet.transactions();
@@ -140,6 +155,12 @@ public final class TxnTaxes implements Tax {
         return amount.get() * -1;
     }
 
+    /**
+     * Debt of transaction , if less than 1 TRIADA can skip taxes
+     *
+     * @return Debt of wallet
+     * @throws Exception if failed
+     */
     @Override
     public long debt() throws Exception {
         return FEE.value() * this.wallet.transactions().size() * this.wallet.age() - this.paid();
