@@ -4,7 +4,9 @@ import lombok.experimental.Delegate;
 
 import java.util.Objects;
 
-
+/**
+ * Create hex text from given number
+ */
 public final class HexText implements CharSequence {
 
     @Delegate

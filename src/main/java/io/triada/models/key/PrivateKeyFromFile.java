@@ -11,8 +11,14 @@ import java.util.concurrent.Callable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Create private key from file
+ */
 public final class PrivateKeyFromFile implements Callable<PrivateKey> {
 
+    /**
+     * Private key
+     */
     private final byte[] content;
 
     public PrivateKeyFromFile(final File file) throws Exception {

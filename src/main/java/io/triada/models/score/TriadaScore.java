@@ -259,11 +259,18 @@ public final class TriadaScore implements Score {
         return this.suffixes.stream().reduce(this.prefix(), Hash::sha256);
     }
 
+    /**
+     * @return Amount of prefixes
+     */
     @Override
     public int value() {
         return this.suffixes.size();
     }
 
+    /**
+     * @param hours Hours value
+     * @return Expired if wallet older than given hours (usually 24)
+     */
     @Override
     public boolean expired(final int hours) {
         return this.age() > hours * 60 * 60;

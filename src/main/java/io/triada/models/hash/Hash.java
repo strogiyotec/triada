@@ -15,6 +15,12 @@ public interface Hash {
      */
     String nonce();
 
+    /**
+     *
+     * @param first Body
+     * @param second Nonce or suffix
+     * @return Sha-256 String
+     */
     static String sha256(final String first, final String second) {
         return Hashing.sha256().hashString(
                 String.format(

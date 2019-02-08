@@ -5,15 +5,20 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.concurrent.Callable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Create public key from file
+ */
 public final class PublicKeyFromText implements Callable<PublicKey> {
 
+    /**
+     * Public key
+     */
     private final byte[] content;
 
     public PublicKeyFromText(final File file) throws Exception {

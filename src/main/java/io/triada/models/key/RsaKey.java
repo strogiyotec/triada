@@ -16,10 +16,14 @@ import java.util.concurrent.ConcurrentMap;
 
 public final class RsaKey implements Key {
 
+    /**
+     * Rsa algorithm
+     */
     private static final String RSA_ALG = "SHA256withRSA";
 
     /**
      * Lazy RSA value , calculated only once
+     * // TODO: 2/8/19 rewrite using Google guava cache
      */
     private final ConcurrentMap<String, String> rsa = new ConcurrentHashMap<>(2, 1, 2);
 
@@ -83,6 +87,11 @@ public final class RsaKey implements Key {
         this(content, new ShellScript());
     }
 
+    /**
+     * @param text to sign
+     * @return signed text
+     * @throws Exception if key is not a private key
+     */
     @Override
     public String sign(final String text) throws Exception {
         if (!this.isPublicKey) {
@@ -96,6 +105,12 @@ public final class RsaKey implements Key {
         throw new IllegalStateException("Can't sign using public key");
     }
 
+    /**
+     * @param signature The sign
+     * @param text      Text to be verified
+     * @return <tt>TRUE</tt> if text verified by signature
+     * @throws Exception if failed
+     */
     @Override
     public boolean verify(final String signature, final String text) throws Exception {
         final Signature publicSignature = Signature.getInstance(RSA_ALG);
@@ -162,17 +177,6 @@ public final class RsaKey implements Key {
         final String pkcs8 = this.pkcs1To8(tempFile);
         tempFile.delete();
         return pkcs8;
-    }
-
-    private String encodePrivateKey(final String privateKey) throws IOException {
-        final File pkcs1 = File.createTempFile("/tmp/", ".tmp");
-        FileUtils.write(pkcs1, privateKey, StandardCharsets.UTF_8);//write private PKCS1
-        final String s = this.cli.executeCommand(String.format("openssl pkcs8 -topk8 - inform PEM - outform PEM - nocrypt - in %s - out /tmp/pkcs8", pkcs1.getAbsolutePath()));
-        final File pkcs8 = new File("/tmp/pkcs8");
-        final String content = FileUtils.readFileToString(pkcs8, StandardCharsets.UTF_8);
-        pkcs1.delete();
-        pkcs1.delete();
-        return content;
     }
 
     /**

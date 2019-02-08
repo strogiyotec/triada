@@ -4,14 +4,24 @@ import io.triada.models.key.RsaKey;
 
 import java.util.Random;
 
+/**
+ * Payment prefix
+ */
 public final class PaymentPrefix implements Prefix {
 
+    /**
+     * Public key
+     */
     private final RsaKey publicKey;
 
     public PaymentPrefix(final RsaKey publicKey) {
         this.publicKey = publicKey;
     }
 
+    /**
+     * @param length to concat
+     * @return Part of public key
+     */
     @Override
     public String create(final int length) {
         final String asString = this.publicKey.asPublic();

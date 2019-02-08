@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 
 import java.util.function.Supplier;
 
+/**
+ * Hash Envelope
+ */
 @AllArgsConstructor
 public abstract class HashEnvelope implements Hash {
 

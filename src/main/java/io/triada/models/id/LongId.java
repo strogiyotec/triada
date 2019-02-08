@@ -33,6 +33,9 @@ public final class LongId implements Id<Long> {
         this.id = new BigInteger(id, 16).longValue();
     }
 
+    /**
+     * Create random id
+     */
     public LongId() {
         final RandomBigInteger randomNumber =
                 new RandomBigInteger(
@@ -42,7 +45,10 @@ public final class LongId implements Id<Long> {
         this.id = randomNumber.get().longValueExact();
     }
 
-
+    /**
+     *
+     * @return Id
+     */
     @Override
     public Long id() {
         return this.id;

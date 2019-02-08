@@ -2,6 +2,9 @@ package io.triada.text;
 
 import lombok.AllArgsConstructor;
 
+/**
+ * Convert given number to fixed length hex value
+ */
 @AllArgsConstructor
 public final class HexNumber implements Text {
 

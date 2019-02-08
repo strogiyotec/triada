@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Head of wallet , first 4 lines in wallet txt file
+ */
 public final class HeadOfWallet implements Head {
 
     private static final Pattern NETWORK_PTN = Pattern.compile("^[a-z]{4,16}$");
@@ -42,6 +45,9 @@ public final class HeadOfWallet implements Head {
         this.head = Arrays.asList(lines);
     }
 
+    /**
+     * @return Network name
+     */
     @Override
     public String network() {
         final String network = this.head.get(0);
@@ -57,6 +63,9 @@ public final class HeadOfWallet implements Head {
         return network;
     }
 
+    /**
+     * @return Protocol
+     */
     @Override
     public String protocol() {
         final String protocol = this.head.get(1);
@@ -72,11 +81,17 @@ public final class HeadOfWallet implements Head {
         return protocol;
     }
 
+    /**
+     * @return Wallet id
+     */
     @Override
     public String id() {
         return this.head.get(2);
     }
 
+    /**
+     * @return Base 64 of public key
+     */
     @Override
     public String key() {
         final String key = this.head.get(3);
