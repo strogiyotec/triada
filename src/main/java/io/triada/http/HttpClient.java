@@ -9,6 +9,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
+/**
+ * Triada http client
+ */
 public final class HttpClient {
 
     private final String url;
@@ -17,6 +20,11 @@ public final class HttpClient {
         this.url = url;
     }
 
+    /**
+     * @param file To write
+     * @return File with new content from http call
+     * @throws Exception if failed
+     */
     public File getFile(final File file) throws Exception {
         final ResponseEntity<byte[]> response = HttpClient.response(this.url);
 
@@ -36,7 +44,10 @@ public final class HttpClient {
         return file;
     }
 
-
+    /**
+     * @param url to Send OCTET_STREAM request
+     * @return File content as byte array
+     */
     private static ResponseEntity<byte[]> response(final String url) {
         final RestTemplate template = new RestTemplate();
         template.getMessageConverters().add(new ByteArrayHttpMessageConverter());
