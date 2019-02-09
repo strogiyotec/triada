@@ -17,7 +17,7 @@ public final class HttpClient {
         this.url = url;
     }
 
-    public File writeToFile(final File file) throws Exception {
+    public File getFile(final File file) throws Exception {
         final ResponseEntity<byte[]> response = HttpClient.response(this.url);
 
         if (response.getStatusCode().isError()) {
@@ -31,7 +31,7 @@ public final class HttpClient {
 
         final byte[] body = response.getBody();
 
-        FileUtils.write(file, new String(body, StandardCharsets.UTF_8), StandardCharsets.UTF_8, true);
+        FileUtils.write(file, new String(body, StandardCharsets.UTF_8), StandardCharsets.UTF_8, false);
 
         return file;
     }
