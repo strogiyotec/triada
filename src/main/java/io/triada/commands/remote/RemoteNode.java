@@ -1,6 +1,7 @@
 package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
+import io.triada.http.HttpFileClient;
 import io.triada.models.score.Score;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,5 +30,16 @@ public final class RemoteNode {
 
     public boolean isMaster() {
         return this.master;
+    }
+
+    public HttpFileClient http(final String path) {
+        return new HttpFileClient(
+                String.format(
+                        "http:://%s:%d/%s",
+                        this.hostAndPort.getHost(),
+                        this.hostAndPort.getPort(),
+                        path
+                )
+        );
     }
 }
