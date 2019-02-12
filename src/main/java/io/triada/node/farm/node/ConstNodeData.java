@@ -19,16 +19,34 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 @AllArgsConstructor
 public final class ConstNodeData implements NodeData {
 
+    /**
+     * Host of node
+     */
     private final String host;
 
+    /**
+     * Port of node
+     */
     private final int port;
 
+    /**
+     * Amount of errors in node
+     */
     private final int errors;
 
+    /**
+     * Does node is masternode
+     */
     private final boolean master;
 
+    /**
+     * Score of node
+     */
     private final int score;
 
+    /**
+     * List of predefined masters
+     */
     public static final List<NodeData> MASTERS = ConstNodeData.masters();
 
     public ConstNodeData(final HostAndPort hostAndPort) {
