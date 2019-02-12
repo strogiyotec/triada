@@ -57,6 +57,10 @@ public final class ConstNodeData implements NodeData {
         this.score = 0;
     }
 
+    /**
+     * Create node from text
+     * @param line Text
+     */
     public ConstNodeData(final String line) {
         final String[] parts = line.split(",");
         this.host = parts[0];
