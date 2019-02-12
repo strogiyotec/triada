@@ -44,6 +44,12 @@ public final class RemoteNodes implements Remotes {
         this.timeout = timeout;
     }
 
+    public RemoteNodes(final File file) {
+        this.file = file;
+        this.network = "test";
+        this.timeout = 60;
+    }
+
     @Override
     public List<NodeData> all() throws Exception {
         final List<NodeData> list = this.load();
