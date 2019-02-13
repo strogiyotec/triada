@@ -4,14 +4,12 @@ import com.google.common.net.HostAndPort;
 import io.triada.node.farm.node.ConstNodeData;
 import io.triada.node.farm.node.NodeData;
 import org.apache.commons.io.FileUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
@@ -136,23 +134,27 @@ public final class RemoteNodes implements Remotes {
      */
     private List<NodeData> load() throws Exception {
         final List<NodeData> rows = new ArrayList<>(16);
-        final String[] lines = FileUtils.readFileToString(
+        final String content = FileUtils.readFileToString(
                 this.file,
                 StandardCharsets.UTF_8
-        ).split(System.lineSeparator());
+        );
 
-        for (final String line : lines) {
-            final String[] row = line.split(",");
-            final HostAndPort hostAndPort = HostAndPort.fromParts(row[0], Integer.parseInt(row[1]));
-            rows.add(
-                    new ConstNodeData(
-                            hostAndPort.getHost(),
-                            hostAndPort.getPort(),
-                            Integer.parseInt(row[3]),
-                            this.master(hostAndPort),
-                            Integer.parseInt(row[2])
-                    )
-            );
+        if (StringUtils.isEmpty(content)) {
+            return Collections.emptyList();
+        } else {
+            for (final String line : content.split(System.lineSeparator())) {
+                final String[] row = line.split(",");
+                final HostAndPort hostAndPort = HostAndPort.fromParts(row[0], Integer.parseInt(row[1]));
+                rows.add(
+                        new ConstNodeData(
+                                hostAndPort.getHost(),
+                                hostAndPort.getPort(),
+                                Integer.parseInt(row[3]),
+                                this.master(hostAndPort),
+                                Integer.parseInt(row[2])
+                        )
+                );
+            }
         }
         return rows;
     }

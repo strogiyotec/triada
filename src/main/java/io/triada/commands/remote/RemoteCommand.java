@@ -40,7 +40,7 @@ public final class RemoteCommand implements Command {
     private static Options remoteOptions() {
         return new Options()
                 .addOption(
-                        new Option("remote clean", false, "Remove all registered remote nodes")
+                        Option.builder().valueSeparator(' ').argName("remote clean").desc("Remove all registered remote nodes").longOpt("remote clean").build()
                 ).addOption(
                         new Option("show", false, "Show all registered remote nodes")
                 ).addOption(
