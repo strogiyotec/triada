@@ -14,12 +14,17 @@ public final class TestRemote extends Assert {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void testClean() throws Exception {
+    public void testUpdateRemote() throws Exception {
         final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
         final RemoteCommand remoteCommand = new RemoteCommand(nodes, new Farm.Empty());
         remoteCommand.run(new String[]{"remote clean"});
 
         assertTrue(nodes.all().isEmpty());
+
+        remoteCommand.run(new String[]{
+               "remote clean"
+        });
+
 
     }
 }

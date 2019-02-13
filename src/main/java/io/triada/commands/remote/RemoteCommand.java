@@ -23,8 +23,11 @@ public final class RemoteCommand implements Command {
     @Override
     public void run(final String[] argc) throws Exception {
         final CommandLine cmd = new DefaultParser().parse(OPTIONS, argc);
-        if (cmd.hasOption("clean")) {
+        if (cmd.hasOption("remote clean")) {
             this.clean();
+        }
+        else if (cmd.hasOption("remote add")) {
+            cmd.getOptionValue("");
         }
     }
 
@@ -49,16 +52,10 @@ public final class RemoteCommand implements Command {
                         new Option("masters", false, "Add all \"master\" nodes to the list")
                 ).addOption(
                         Option.builder()
-                                .numberOfArgs(3)
-                                .argName("add")
-                                .longOpt("add")
-                                .argName("host")
-                                .longOpt("host")
-                                .hasArgs()
-                                .argName("port")
-                                .hasArgs()
-                                .longOpt("port")
-                                .desc(" Add a new remote node")
+                                .argName("remote add")
+                                .numberOfArgs(2)
+                                .longOpt("remote add")
+                                .desc("Add new node")
                                 .build()
                 ).addOption(
                         Option.builder()
