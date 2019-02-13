@@ -1,6 +1,7 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import io.triada.commands.remote.RemoteNodes;
 import io.triada.dates.DateConverters;
 import io.triada.models.hash.BigIntegerHash;
 import io.triada.models.hash.Hash;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 public final class TriadaScore implements Score {
 
+
     /**
      * Max amount of hours a score can stay fresh
      */
@@ -22,6 +24,16 @@ public final class TriadaScore implements Score {
      * Default amount of zeroes for Hash
      */
     public static final int STRENGTH = 8;
+
+    /**
+     * Zero score
+     */
+    public static final TriadaScore ZERO =
+            new TriadaScore(
+                    HostAndPort.fromParts("localhost", RemoteNodes.PORT),
+                    "NOPREFIX@ffffffffffffffff",
+                    STRENGTH
+            );
 
     /**
      * Score time
