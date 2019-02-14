@@ -11,7 +11,7 @@ public interface Remotes extends Iterable<NodeData> {
 
     List<NodeData> all() throws Exception;
 
-    void clean();
+    void clean() throws Exception;
 
     List<NodeData> masters();
 

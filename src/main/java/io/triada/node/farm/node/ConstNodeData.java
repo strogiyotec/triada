@@ -98,11 +98,12 @@ public final class ConstNodeData implements NodeData {
     @Override
     public String asText() {
         return String.format(
-                "%s,%d,%d,%d",
+                "%s,%d,%d,%d%s",
                 this.host,
                 this.port,
                 this.score,
-                this.errors
+                this.errors,
+                System.lineSeparator()
         );
     }
 
@@ -112,7 +113,7 @@ public final class ConstNodeData implements NodeData {
     private static List<NodeData> masters() {
         try {
             final String[] lines = readFileToString(
-                    new File(ConstNodeData.class.getClassLoader().getResource("/masters.txt").getFile()),
+                    new File(ConstNodeData.class.getClassLoader().getResource("masters.txt").getFile()),
                     StandardCharsets.UTF_8
             ).split(System.lineSeparator());
 

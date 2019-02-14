@@ -51,8 +51,8 @@ public final class RemoteNodes implements Remotes {
     @Override
     public List<NodeData> all() throws Exception {
         final List<NodeData> list = this.load();
-        final int maxScore = list.stream().max(Comparator.comparingInt(NodeData::score)).map(NodeData::score).orElse(1);
-        final int maxErrors = list.stream().max(Comparator.comparingInt(NodeData::errors)).map(NodeData::errors).orElse(1);
+        final int maxScore = list.stream().max(Comparator.comparingInt(NodeData::score)).map(NodeData::score).filter(score -> score > 0).orElse(1);
+        final int maxErrors = list.stream().max(Comparator.comparingInt(NodeData::errors)).map(NodeData::errors).filter(score -> score > 0).orElse(1);
 
         return list.stream()
                 .sorted((o1, o2) -> sortValue(o2, maxErrors, maxScore) - sortValue(o1, maxErrors, maxScore))
@@ -60,8 +60,10 @@ public final class RemoteNodes implements Remotes {
     }
 
     @Override
-    public void clean() {
-
+    public void clean() throws Exception {
+        try (final FileWriter writer = new FileWriter(this.file, false)) {
+            writer.write("");
+        }
     }
 
     @Override

@@ -17,14 +17,15 @@ public final class TestRemote extends Assert {
     public void testUpdateRemote() throws Exception {
         final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
         final RemoteCommand remoteCommand = new RemoteCommand(nodes, new Farm.Empty());
-        remoteCommand.run(new String[]{"remote clean"});
+        remoteCommand.run(new String[]{"-rclean"});
 
         assertTrue(nodes.all().isEmpty());
 
-        remoteCommand.run(new String[]{
-               "remote clean"
-        });
+        remoteCommand.run(new String[]{"-radd", "localhost", String.valueOf(RemoteNodes.PORT),"-skip_ping"});
 
+        remoteCommand.run(new String[]{"-radd", "localhost", "2222","-skip_ping"});
+
+        assertTrue(nodes.all().size() == 2);
 
     }
 }
