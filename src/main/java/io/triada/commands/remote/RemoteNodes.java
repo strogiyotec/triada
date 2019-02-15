@@ -1,8 +1,8 @@
 package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
-import io.triada.node.farm.ConstNodeData;
-import io.triada.node.farm.NodeData;
+import io.triada.node.ConstNodeData;
+import io.triada.node.NodeData;
 import org.apache.commons.io.FileUtils;
 import org.springframework.util.StringUtils;
 

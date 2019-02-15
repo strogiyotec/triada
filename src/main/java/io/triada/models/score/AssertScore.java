@@ -1,6 +1,6 @@
 package io.triada.models.score;
 
-import io.triada.node.farm.NodeData;
+import io.triada.node.NodeData;
 import lombok.experimental.UtilityClass;
 
 /**

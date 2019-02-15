@@ -1,7 +1,7 @@
 package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
-import io.triada.node.farm.NodeData;
+import io.triada.node.NodeData;
 
 import java.util.Collections;
 import java.util.Iterator;

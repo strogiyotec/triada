@@ -1,4 +1,4 @@
-package io.triada.node.farm;
+package io.triada.node;
 
 import com.google.gson.JsonObject;
 import io.triada.dates.DateConverters;
