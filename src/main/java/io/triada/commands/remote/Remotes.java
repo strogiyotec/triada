@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public interface Remotes extends Iterable<NodeData> {
+public interface Remotes extends Iterable<RemoteNode> {
 
     List<NodeData> all() throws Exception;
 
@@ -61,7 +61,7 @@ public interface Remotes extends Iterable<NodeData> {
         }
 
         @Override
-        public Iterator<NodeData> iterator() {
+        public Iterator<RemoteNode> iterator() {
             return Collections.emptyIterator();
         }
     }

@@ -119,12 +119,8 @@ public final class RemoteNodes implements Remotes {
     }
 
     @Override
-    public Iterator<NodeData> iterator() {
-        try {
-            return this.load().iterator();
-        } catch (Exception e) {
-            throw new IllegalStateException("Error getting iterator", e);
-        }
+    public Iterator<RemoteNode> iterator() {
+        throw new UnsupportedOperationException("Need to implement after farm");
     }
 
     /**

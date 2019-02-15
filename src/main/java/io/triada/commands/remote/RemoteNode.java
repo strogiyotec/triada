@@ -2,14 +2,13 @@ package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
 import io.triada.http.HttpFileClient;
-import io.triada.models.score.Score;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class RemoteNode {
     private final HostAndPort hostAndPort;
 
-    private final Score score;
+    private final int score;
 
     private final boolean master;
 
@@ -17,7 +16,7 @@ public final class RemoteNode {
 
     public RemoteNode(
             final HostAndPort hostAndPort,
-            final Score score,
+            final int score,
             final boolean master,
             final String network
     ) {

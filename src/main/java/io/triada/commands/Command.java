@@ -35,7 +35,7 @@ public interface Command {
                                 .desc(" Remove the remote node")
                                 .build()
                 ).addOption(
-                        new Option("elect", false, "Pick a random remote node as a target for a bonus awarding")
+                        new Option("r_elect", false, "Pick a random remote node as a target for a bonus awarding")
                 ).addOption(
                         new Option("trim", false, "Remove the least reliable nodes")
                 ).addOption(
