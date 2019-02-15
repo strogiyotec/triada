@@ -2,7 +2,7 @@ package io.triada.commands;
 
 import io.triada.commands.remote.RemoteCommand;
 import io.triada.commands.remote.RemoteNodes;
-import io.triada.node.Farm;
+import io.triada.node.farm.Farm;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

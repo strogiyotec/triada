@@ -5,6 +5,8 @@ import io.triada.dates.DateConverters;
 import io.triada.models.cli.CommandLineInterface;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
+import io.triada.node.farm.Farm;
+import io.triada.node.farm.Farms;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Unchecked;

@@ -1,4 +1,4 @@
-package io.triada.node;
+package io.triada.node.farm;
 
 import io.triada.models.score.Score;
 
