@@ -1,4 +1,4 @@
-package io.triada.node.farm.node;
+package io.triada.node.farm;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;

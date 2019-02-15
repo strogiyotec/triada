@@ -1,4 +1,4 @@
-package io.triada.node.farm.node;
+package io.triada.node.farm;
 
 import io.triada.text.Text;
 

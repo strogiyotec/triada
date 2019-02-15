@@ -3,7 +3,7 @@ package io.triada.commands.remote;
 import com.google.common.net.HostAndPort;
 import io.triada.commands.Command;
 import io.triada.node.farm.Farm;
-import io.triada.node.farm.node.NodeData;
+import io.triada.node.farm.NodeData;
 import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
