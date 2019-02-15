@@ -4,6 +4,7 @@ import io.triada.models.cli.ShellScript;
 import io.triada.models.score.TriadaScore;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.node.farm.PlainFarmer;
+import io.triada.node.farm.ScoreFarm;
 import org.junit.Assert;
 import org.junit.Test;
 
