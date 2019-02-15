@@ -63,23 +63,27 @@ public final class RemoteCommand implements Command {
         final HostAndPort hostAndPort = HostAndPort.fromParts(argc[0], Integer.parseInt(argc[1]));
         if (!cmd.hasOption("-skip_ping") && !RemoteCommand.ping(hostAndPort)) {
             System.out.printf(
-                    "Can't add node [%s:%d] ,Connection timeout or wrong http status code",
+                    "Can't add node [%s:%d] ,Connection timeout or wrong http status code%s",
                     hostAndPort.getHost(),
-                    hostAndPort.getPort()
+                    hostAndPort.getPort(),
+                    System.lineSeparator()
             );
         }
         if (this.remotes.exists(hostAndPort)) {
             System.out.printf(
-                    "Can't add node [%s:%d] Node already exists",
+                    "Can't add node [%s:%d] Node already exists%s",
                     hostAndPort.getHost(),
-                    hostAndPort.getPort()
+                    hostAndPort.getPort(),
+                    System.lineSeparator()
             );
+            return;
         }
         this.remotes.add(hostAndPort);
         System.out.printf(
-                "Node %s:%d was added to the list",
+                "Node %s:%d was added to the list%s",
                 hostAndPort.getHost(),
-                hostAndPort.getPort()
+                hostAndPort.getPort(),
+                System.lineSeparator()
         );
     }
 
