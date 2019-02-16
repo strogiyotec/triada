@@ -7,6 +7,7 @@ import io.triada.models.cli.CommandLineInterface;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
+import io.triada.threads.NamedThreadExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Seq;
@@ -48,7 +49,7 @@ public final class ScoreFarm implements Farm {
 
     private final BlockingQueue<Score> pipeline;
 
-    private final ThreadPoolExecutor threads;
+    private final NamedThreadExecutor threads;
 
     private final int lifetime;
 
@@ -61,7 +62,7 @@ public final class ScoreFarm implements Farm {
     public ScoreFarm(
             final File cache,
             final String invoice,
-            final ThreadPoolExecutor threads,
+            final NamedThreadExecutor threads,
             final int lifetime,
             final int strength,
             final CommandLineInterface<String> cli,
@@ -79,7 +80,7 @@ public final class ScoreFarm implements Farm {
 
     @Override
     public void start(final HostAndPort hostAndPort, final int threads) throws Exception {
-
+        // TODO: 2/16/19 need to impl
     }
 
     @Override
@@ -173,8 +174,11 @@ public final class ScoreFarm implements Farm {
                         )
                 )
         );
-        // TODO: 2/16/19 add mnimo check
-        scores = this.load();
+        scores =
+                this.load()
+                        .stream()
+                        .filter(score -> !this.threads.exists(score.mnemo()))
+                        .collect(toList());
         if (this.pipeline.isEmpty() && !scores.isEmpty()) {
             this.pipeline.add(scores.get(0));
         }
