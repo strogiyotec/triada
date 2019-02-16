@@ -80,4 +80,9 @@ public abstract class ScoreEnvelope implements Score {
     public final boolean valid() {
         return this.origin.valid();
     }
+
+    @Override
+    public final long age() {
+        return this.origin.age();
+    }
 }

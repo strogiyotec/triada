@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.function.Predicate;
 
+// TODO: 2/16/19 Remove this class ,use Score.valid instead
 public final class IsValidScore implements Predicate<Score> {
     @Override
     public boolean test(final Score score) {

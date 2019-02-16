@@ -65,4 +65,9 @@ public interface Score extends Text {
      * @return True if score is valid
      */
     boolean valid();
+
+    /**
+     * @return Age of score in seconds
+     */
+    long age();
 }

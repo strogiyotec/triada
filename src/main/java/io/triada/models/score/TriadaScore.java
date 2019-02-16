@@ -310,7 +310,8 @@ public final class TriadaScore implements Score {
     /**
      * @return Age of score in seconds
      */
-    private long age() {
+    @Override
+    public long age() {
         return Duration.between(DateConverters.toLocalDateTime(this.time), DateConverters.toLocalDateTime(new Date())).getSeconds();
     }
 
