@@ -10,17 +10,12 @@ import lombok.experimental.UtilityClass;
 public final class AssertScore {
 
     /**
-     * Score valid instance
-     */
-    private static final IsValidScore scoreValid = new IsValidScore();
-
-    /**
      * Assert using scoreValid
      *
      * @param score To assert
      */
     public void assertValidScore(final Score score) {
-        if (!scoreValid.test(score)) {
+        if (!score.valid()) {
             throw new AssertionError(
                     String.format(
                             "Invalid score %s",

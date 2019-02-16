@@ -1,8 +1,6 @@
 package io.triada.models;
 
 import com.google.common.net.HostAndPort;
-import io.triada.dates.DateConverters;
-import io.triada.models.score.IsValidScore;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
@@ -15,8 +13,6 @@ import java.util.Arrays;
 import java.util.Date;
 
 public final class ScoreTest extends Assert {
-
-    private final IsValidScore isValidScore = new IsValidScore();
 
     private static final HostAndPort HOST_AND_PORT = HostAndPort.fromParts("localhost", 8888);
 
@@ -51,7 +47,7 @@ public final class ScoreTest extends Assert {
                 new Date()
         );
 
-        assertTrue(this.isValidScore.test(score));
+        assertTrue(score.valid());
         assertTrue(!score.expired(TriadaScore.BEST_BEFORE));
         assertEquals(0, score.value());
     }
@@ -68,7 +64,7 @@ public final class ScoreTest extends Assert {
         );
 
         assertEquals(3, score.value());
-        assertFalse(isValidScore.test(score));
+        assertFalse(score.valid());
     }
 
     @Test
@@ -82,7 +78,7 @@ public final class ScoreTest extends Assert {
         ).next().next().next();
 
         assertEquals(3, score.value());
-        assertTrue(this.isValidScore.test(score));
+        assertTrue(score.valid());
         assertTrue(!score.expired(TriadaScore.BEST_BEFORE));
     }
 
@@ -95,7 +91,7 @@ public final class ScoreTest extends Assert {
                 2,
                 new Date()
         );
-        assertFalse(this.isValidScore.test(score));
+        assertFalse(score.valid());
     }
 
     @Test
@@ -147,7 +143,7 @@ public final class ScoreTest extends Assert {
         final String[] split = line.split(" ", 2);
         final TriadaScore triadaScore = new TriadaScore(split[1]);
         assertEquals(triadaScore.value(), 8);
-        assertTrue(isValidScore.test(triadaScore));
+        assertTrue(triadaScore.valid());
     }
 
     @Test
