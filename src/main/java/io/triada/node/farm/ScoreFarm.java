@@ -38,6 +38,10 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public final class ScoreFarm implements Farm {
 
+    private static final ThreadLocal<Date> start = new ThreadLocal<>();
+
+    private static final ThreadLocal<String> threadId = new ThreadLocal<>();
+
     private final File cache;
 
     private final String invoice;
@@ -128,13 +132,27 @@ public final class ScoreFarm implements Farm {
         return body;
     }
 
-    private void cycle(final HostAndPort hostAndPort, final int threads) {
+    private void cycle(final HostAndPort hostAndPort, final int threads) throws Exception {
         try {
-            final Score take = this.pipeline.take();
-
-        } catch (InterruptedException e) {
+            final Score score = this.pipeline.take();
+            if (this.scoreValid(score, hostAndPort)) {
+                Thread.currentThread().setName(score.mnemo());
+                ScoreFarm.start.set(new Date());
+                final Score next = this.farms.up(score);
+                System.out.printf(
+                        "New score discovered %s",
+                        next.asText()
+                );
+                this.save(threads, singletonList(next));
+                this.cleanUp(hostAndPort, threads);
+            }
+        } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private boolean scoreValid(final Score score, final HostAndPort hostAndPort) {
+        return score.valid() && score.address().equals(hostAndPort) && score.strength() < this.strength;
     }
 
 
