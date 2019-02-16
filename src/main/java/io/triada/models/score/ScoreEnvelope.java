@@ -75,4 +75,9 @@ public abstract class ScoreEnvelope implements Score {
     public final String mnemo() {
         return this.origin.mnemo();
     }
+
+    @Override
+    public final boolean valid() {
+        return this.origin.valid();
+    }
 }

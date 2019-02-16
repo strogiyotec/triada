@@ -288,6 +288,12 @@ public final class TriadaScore implements Score {
         return this.age() > hours * 60 * 60;
     }
 
+    @Override
+    public boolean valid() {
+        return (this.suffixes().isEmpty() || this.hash().endsWith(String.join("", Collections.nCopies(this.strength(), "0"))))
+                && this.time().compareTo(new Date()) < 0;
+    }
+
     /**
      * @return Prefix for the hash calculation
      */

@@ -60,4 +60,9 @@ public interface Score extends Text {
      * @return True if the age of the score is over given hours
      */
     boolean expired(int hours);
+
+    /**
+     * @return True if score is valid
+     */
+    boolean valid();
 }
