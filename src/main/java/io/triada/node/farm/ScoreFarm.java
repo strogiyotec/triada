@@ -19,9 +19,12 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +42,7 @@ public final class ScoreFarm implements Farm {
 
     private final String invoice;
 
-    private final Queue<Score> pipeline;
+    private final BlockingQueue<Score> pipeline;
 
     private final ThreadPoolExecutor threads;
 
@@ -71,12 +74,7 @@ public final class ScoreFarm implements Farm {
     }
 
     @Override
-    public void start() throws Exception {
-
-    }
-
-    @Override
-    public void cleanUp() throws Exception {
+    public void start(final HostAndPort hostAndPort, final int threads) throws Exception {
 
     }
 
@@ -130,8 +128,13 @@ public final class ScoreFarm implements Farm {
         return body;
     }
 
-    private void cycle(final HostAndPort hostAndPort, final ExecutorService threads) {
+    private void cycle(final HostAndPort hostAndPort, final int threads) {
+        try {
+            final Score take = this.pipeline.take();
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
 

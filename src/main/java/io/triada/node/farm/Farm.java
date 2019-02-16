@@ -1,5 +1,6 @@
 package io.triada.node.farm;
 
+import com.google.common.net.HostAndPort;
 import com.google.gson.JsonObject;
 import io.triada.models.score.Score;
 import io.triada.text.Jsonable;
@@ -9,21 +10,14 @@ import java.util.Collections;
 import java.util.List;
 
 public interface Farm extends Text, Jsonable {
-    void start() throws Exception;
-
-    void cleanUp() throws Exception;
+    void start(HostAndPort hostAndPort, int threads) throws Exception;
 
     List<Score> best() throws Exception;
 
     final class Empty implements Farm {
 
         @Override
-        public void start() throws Exception {
-
-        }
-
-        @Override
-        public void cleanUp() throws Exception {
+        public void start(final HostAndPort hostAndPort, final int threads) throws Exception {
 
         }
 
