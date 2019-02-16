@@ -13,8 +13,6 @@ public interface Farm extends Text, Jsonable {
 
     void cleanUp() throws Exception;
 
-    void save();
-
     List<Score> best() throws Exception;
 
     final class Empty implements Farm {
@@ -26,11 +24,6 @@ public interface Farm extends Text, Jsonable {
 
         @Override
         public void cleanUp() throws Exception {
-
-        }
-
-        @Override
-        public void save() {
 
         }
 
