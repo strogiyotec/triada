@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,8 +80,66 @@ public final class ScoreFarm implements Farm {
     }
 
     @Override
-    public void start(final HostAndPort hostAndPort, final int threads) throws Exception {
-        // TODO: 2/16/19 need to impl
+    public void start(
+            final HostAndPort hostAndPort,
+            final int threads,
+            final Runnable runnable
+    ) throws Exception {
+        this.threads.setMaximumPoolSize(threads + 1);
+        if (threads <= 0) {
+            System.out.println("No threads to farm score");
+        }
+        final List<Score> best = this.best();
+        if (best.isEmpty()) {
+            System.out.printf(
+                    "No scores found in the cache at %s \n",
+                    this.cache.toString()
+            );
+        } else {
+            System.out.printf(
+                    "%d scores pre-loaded from %s , the best is %s \n",
+                    best.size(),
+                    this.cache.toString(),
+                    best.get(0).asText()
+            );
+        }
+        for (int i = 0; i < threads; i++) {
+            this.threads.submit(
+                    Unchecked.runnable(
+                            () -> {
+                                while (!Thread.currentThread().isInterrupted()) {
+                                    this.cycle(hostAndPort, threads);
+                                }
+                            }
+                    )
+            );
+        }
+        if (threads > 0) {
+            this.threads.submit(Unchecked.runnable(() -> this.cleanUp(hostAndPort, threads)));
+        }
+        if (threads <= 0) {
+            this.cleanUp(hostAndPort, threads);
+            System.out.printf(
+                    "Farm started with no threads at %s:%d \n",
+                    hostAndPort.getHost(),
+                    hostAndPort.getPort()
+            );
+        } else {
+            System.out.printf(
+                    "Farm started with %d threads , one for cleanup at %s:%d strength is %d",
+                    threads,
+                    hostAndPort.getHost(),
+                    hostAndPort.getPort(),
+                    this.strength
+            );
+        }
+        try{
+            runnable.run();
+        } finally {
+            this.threads.shutdownNow();
+            this.threads.awaitTermination(10, TimeUnit.SECONDS);
+        }
+
     }
 
     @Override
