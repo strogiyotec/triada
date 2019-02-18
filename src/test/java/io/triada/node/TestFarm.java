@@ -5,6 +5,7 @@ import io.triada.models.score.TriadaScore;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.node.farm.PlainFarmer;
 import io.triada.node.farm.ScoreFarm;
+import io.triada.threads.NamedThreadExecutor;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,7 +23,9 @@ public final class TestFarm extends Assert {
         final ScoreFarm scoreFarm = new ScoreFarm(
                 cache,
                 "NOPREFIX6@ffffffffffffffff",
-                new ThreadPoolExecutor(5, 5, 1000L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5)),
+                new NamedThreadExecutor(
+                        new ThreadPoolExecutor(5, 5, 1000L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5))
+                ),
                 24 * 60 * 60,
                 TriadaScore.STRENGTH,
                 new ShellScript(),
