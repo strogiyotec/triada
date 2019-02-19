@@ -4,6 +4,7 @@ import com.google.common.net.HostAndPort;
 import com.google.gson.JsonObject;
 import io.triada.dates.DateConverters;
 import io.triada.models.cli.CommandLineInterface;
+import io.triada.models.cli.ShellScript;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
@@ -20,12 +21,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -42,13 +38,13 @@ public final class ScoreFarm implements Farm {
 
     private static final ThreadLocal<Date> start = new ThreadLocal<>();
 
-    private static final ThreadLocal<String> threadId = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> threadIds = new ThreadLocal<>();
 
     private final File cache;
 
     private final String invoice;
 
-    private final BlockingQueue<Score> pipeline;
+    private final Deque<Score> pipeline;
 
     private final NamedThreadExecutor threads;
 
@@ -71,11 +67,79 @@ public final class ScoreFarm implements Farm {
     ) {
         this.cache = cache;
         this.invoice = invoice;
-        this.pipeline = new ArrayBlockingQueue<>(1);
+        this.pipeline = new ArrayDeque<>();
         this.threads = threads;
         this.lifetime = lifetime;
         this.strength = strength;
         this.cli = cli;
+        this.farms = farms;
+    }
+
+    public ScoreFarm(
+            final File cache,
+            final String invoice,
+            final NamedThreadExecutor threads,
+            final int strength,
+            final CommandLineInterface<String> cli,
+            final Farms farms
+    ) {
+        this.cache = cache;
+        this.invoice = invoice;
+        this.pipeline = new ArrayDeque<>();
+        this.threads = threads;
+        this.lifetime = 24 * 60 * 60;
+        this.strength = strength;
+        this.cli = cli;
+        this.farms = farms;
+    }
+
+    public ScoreFarm(
+            final File cache,
+            final String invoice,
+            final NamedThreadExecutor threads,
+            final CommandLineInterface<String> cli,
+            final Farms farms
+    ) {
+        this.cache = cache;
+        this.invoice = invoice;
+        this.pipeline = new ArrayDeque<>();
+        this.threads = threads;
+        this.lifetime = 24 * 60 * 60;
+        this.strength = TriadaScore.STRENGTH;
+        this.cli = cli;
+        this.farms = farms;
+    }
+
+    public ScoreFarm(
+            final File cache,
+            final String invoice,
+            final NamedThreadExecutor threads,
+            final Farms farms
+    ) {
+        this.cache = cache;
+        this.invoice = invoice;
+        this.pipeline = new ArrayDeque<>();
+        this.threads = threads;
+        this.lifetime = 24 * 60 * 60;
+        this.strength = TriadaScore.STRENGTH;
+        this.cli = new ShellScript();
+        this.farms = farms;
+    }
+
+    public ScoreFarm(
+            final File cache,
+            final String invoice,
+            final NamedThreadExecutor threads,
+            final Farms farms,
+            final int strength
+    ) {
+        this.cache = cache;
+        this.invoice = invoice;
+        this.pipeline = new ArrayDeque<>();
+        this.threads = threads;
+        this.lifetime = 24 * 60 * 60;
+        this.strength = strength;
+        this.cli = new ShellScript();
         this.farms = farms;
     }
 
@@ -86,9 +150,6 @@ public final class ScoreFarm implements Farm {
             final Runnable runnable
     ) throws Exception {
         this.threads.setMaximumPoolSize(threads + 1);
-        if (threads <= 0) {
-            System.out.println("No threads to farm score");
-        }
         final List<Score> best = this.best();
         if (best.isEmpty()) {
             System.out.printf(
@@ -104,9 +165,11 @@ public final class ScoreFarm implements Farm {
             );
         }
         for (int i = 0; i < threads; i++) {
+            final int threadId = i;
             this.threads.submit(
                     Unchecked.runnable(
                             () -> {
+                                threadIds.set(threadId);
                                 while (!Thread.currentThread().isInterrupted()) {
                                     this.cycle(hostAndPort, threads);
                                 }
@@ -115,7 +178,15 @@ public final class ScoreFarm implements Farm {
             );
         }
         if (threads > 0) {
-            this.threads.submit(Unchecked.runnable(() -> this.cleanUp(hostAndPort, threads)));
+            this.threads.submit(
+                    Unchecked.runnable(
+                            () -> {
+                                while (!Thread.currentThread().isInterrupted()) {
+                                    this.cleanUp(hostAndPort, threads);
+                                }
+                            }
+                    )
+            );
         }
         if (threads <= 0) {
             this.cleanUp(hostAndPort, threads);
@@ -133,7 +204,7 @@ public final class ScoreFarm implements Farm {
                     this.strength
             );
         }
-        try{
+        try {
             runnable.run();
         } finally {
             this.threads.shutdownNow();
@@ -154,7 +225,6 @@ public final class ScoreFarm implements Farm {
                 .map(TriadaScore::new)
                 .collect(toList());
     }
-
 
     @Override
     public JsonObject asJson() {
@@ -183,18 +253,19 @@ public final class ScoreFarm implements Farm {
         );
     }
 
-    private static JsonObject threadPoolJO(final ThreadPoolExecutor threads) {
-        final JsonObject body = new JsonObject();
-        body.addProperty("activeCount", threads.getActiveCount());
-        body.addProperty("corePoolSize", threads.getCorePoolSize());
-        body.addProperty("poolSize", threads.getPoolSize());
-
-        return body;
-    }
-
-    private void cycle(final HostAndPort hostAndPort, final int threads) throws Exception {
+    private void cycle(
+            final HostAndPort hostAndPort,
+            final int threads
+    ) throws Exception {
         try {
-            final Score score = this.pipeline.take();
+            Score score = null;
+            while (true) {
+                final Score temp = this.pipeline.pollLast();
+                if (temp != null) {
+                    score = temp;
+                    break;
+                }
+            }
             if (this.scoreValid(score, hostAndPort)) {
                 Thread.currentThread().setName(score.mnemo());
                 ScoreFarm.start.set(new Date());
@@ -215,9 +286,8 @@ public final class ScoreFarm implements Farm {
         return score.valid() && score.address().equals(hostAndPort) && score.strength() < this.strength;
     }
 
-
     private void cleanUp(final HostAndPort hostAndPort, final int threads) throws Exception {
-        List<Score> scores = this.load();
+        final List<Score> scores = this.load();
         final int maxBefore =
                 scores.stream()
                         .map(Unchecked.function(Score::value))
@@ -233,19 +303,20 @@ public final class ScoreFarm implements Farm {
                         )
                 )
         );
-        scores =
+        final List<Score> free =
                 this.load()
                         .stream()
                         .filter(score -> !this.threads.exists(score.mnemo()))
                         .collect(toList());
         if (this.pipeline.isEmpty() && !scores.isEmpty()) {
-            this.pipeline.add(scores.get(0));
+            this.pipeline.add(free.get(0));
         }
         final int maxAfter =
                 scores.stream()
                         .map(Unchecked.function(Score::value))
                         .max(Integer::compareTo)
                         .orElse(0);
+
         if (maxAfter != maxBefore && maxAfter != 0) {
             System.out.printf(
                     "%s : best score of %d is %s",
@@ -282,6 +353,21 @@ public final class ScoreFarm implements Farm {
         ScoreFarm.syncSaveScores(body, this.cache);
     }
 
+    private List<Score> load() throws Exception {
+        return Files.lines(this.cache.toPath())
+                .map(TriadaScore::new)
+                .collect(toList());
+    }
+
+    private static JsonObject threadPoolJO(final ThreadPoolExecutor threads) {
+        final JsonObject body = new JsonObject();
+        body.addProperty("activeCount", threads.getActiveCount());
+        body.addProperty("corePoolSize", threads.getCorePoolSize());
+        body.addProperty("poolSize", threads.getPoolSize());
+
+        return body;
+    }
+
     /**
      * Requires exclusive lock to file and append body
      *
@@ -292,7 +378,7 @@ public final class ScoreFarm implements Farm {
     private static void syncSaveScores(final String body, final File file) throws Exception {
         try (final RandomAccessFile accessFile = new RandomAccessFile(file, "rw")) {
             try (final FileChannel channel = accessFile.getChannel()) {
-                try (final FileLock lock = channel.lock()) {
+                try (final FileLock ignored = channel.lock()) {
                     try (final FileWriter writer = new FileWriter(file, true)) {
                         writer.append(body);
                     }
@@ -301,9 +387,4 @@ public final class ScoreFarm implements Farm {
         }
     }
 
-    private List<Score> load() throws Exception {
-        return Files.lines(this.cache.toPath())
-                .map(TriadaScore::new)
-                .collect(toList());
-    }
 }
