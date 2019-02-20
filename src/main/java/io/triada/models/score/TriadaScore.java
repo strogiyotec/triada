@@ -207,6 +207,7 @@ public final class TriadaScore implements Score {
      */
     @Override
     public Score next() {
+        System.out.println("Called");
         if (this.expired(BEST_BEFORE)) {
             final Date now = new Date();
             return new TriadaScore(

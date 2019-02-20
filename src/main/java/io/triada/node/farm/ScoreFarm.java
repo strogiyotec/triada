@@ -10,7 +10,6 @@ import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
 import io.triada.threads.NamedThreadExecutor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Seq;
 import org.jooq.lambda.Unchecked;
 
@@ -19,7 +18,6 @@ import java.io.FileWriter;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -149,26 +147,20 @@ public final class ScoreFarm implements Farm {
             final int threads,
             final Runnable runnable
     ) throws Exception {
-        this.threads.setMaximumPoolSize(threads + 1);
-        final List<Score> best = this.best();
-        if (best.isEmpty()) {
-            System.out.printf(
-                    "No scores found in the cache at %s \n",
-                    this.cache.toString()
-            );
-        } else {
-            System.out.printf(
-                    "%d scores pre-loaded from %s , the best is %s \n",
-                    best.size(),
-                    this.cache.toString(),
-                    best.get(0).asText()
-            );
-        }
+        this.threads.setCorePoolSize(threads + 1);
+        this.logCachedScores();
+
         for (int i = 0; i < threads; i++) {
             final int threadId = i;
             this.threads.submit(
                     Unchecked.runnable(
                             () -> {
+                                Thread.currentThread().setName(
+                                        String.format(
+                                                "f%d",
+                                                threadId
+                                        )
+                                );
                                 threadIds.set(threadId);
                                 while (!Thread.currentThread().isInterrupted()) {
                                     this.cycle(hostAndPort, threads);
@@ -177,51 +169,34 @@ public final class ScoreFarm implements Farm {
                     )
             );
         }
-        if (threads > 0) {
+        if (threads != 0) {
             this.threads.submit(
                     Unchecked.runnable(
                             () -> {
                                 while (!Thread.currentThread().isInterrupted()) {
-                                    this.cleanUp(hostAndPort, threads);
+                                    try {
+                                        this.cleanUp(hostAndPort, threads);
+                                        TimeUnit.SECONDS.sleep(1);
+                                    } catch (final InterruptedException exc) {
+                                        Thread.currentThread().interrupt();
+                                    }
                                 }
                             }
                     )
             );
         }
-        if (threads <= 0) {
-            this.cleanUp(hostAndPort, threads);
-            System.out.printf(
-                    "Farm started with no threads at %s:%d \n",
-                    hostAndPort.getHost(),
-                    hostAndPort.getPort()
-            );
-        } else {
-            System.out.printf(
-                    "Farm started with %d threads , one for cleanup at %s:%d strength is %d",
-                    threads,
-                    hostAndPort.getHost(),
-                    hostAndPort.getPort(),
-                    this.strength
-            );
-        }
+        this.cleanOnEmptyThreads(threads, hostAndPort);
         try {
-            runnable.run();
-        } finally {
-            this.threads.shutdownNow();
-            this.threads.awaitTermination(10, TimeUnit.SECONDS);
+            ScoreFarm.startAndShutdown(runnable, this.threads);
+        } catch (final InterruptedException exc) {
+            Thread.currentThread().interrupt();
         }
 
     }
 
     @Override
     public List<Score> best() throws Exception {
-        final String content = FileUtils.readFileToString(this.cache, StandardCharsets.UTF_8);
-
-        if (content.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return Stream.of(content.split(System.lineSeparator()))
+        return Files.lines(this.cache.toPath())
                 .map(TriadaScore::new)
                 .collect(toList());
     }
@@ -253,25 +228,45 @@ public final class ScoreFarm implements Farm {
         );
     }
 
-    private void cycle(
-            final HostAndPort hostAndPort,
-            final int threads
-    ) throws Exception {
+    private void cleanOnEmptyThreads(final int threads, final HostAndPort hostAndPort) throws Exception {
+        if (threads <= 0) {
+            this.cleanUp(hostAndPort, threads);
+            System.out.printf(
+                    "Farm started with no threads at %s:%d \n",
+                    hostAndPort.getHost(),
+                    hostAndPort.getPort()
+            );
+        } else {
+            System.out.printf(
+                    "Farm started with %d threads , one for cleanup at %s:%d strength is %d\n",
+                    threads,
+                    hostAndPort.getHost(),
+                    hostAndPort.getPort(),
+                    this.strength
+            );
+        }
+    }
+
+    private void cycle(final HostAndPort hostAndPort, final int threads) throws Exception {
         try {
-            Score score = null;
+            final Score score;
             while (true) {
                 final Score temp = this.pipeline.pollLast();
                 if (temp != null) {
                     score = temp;
                     break;
+                } else {
+                    TimeUnit.MILLISECONDS.sleep(250);
                 }
             }
+            System.out.println("Got value: " + score.asText());
             if (this.scoreValid(score, hostAndPort)) {
+                System.out.println("It's valid");
                 Thread.currentThread().setName(score.mnemo());
                 ScoreFarm.start.set(new Date());
                 final Score next = this.farms.up(score);
                 System.out.printf(
-                        "New score discovered %s",
+                        "New score discovered %s \n",
                         next.asText()
                 );
                 this.save(threads, singletonList(next));
@@ -283,7 +278,7 @@ public final class ScoreFarm implements Farm {
     }
 
     private boolean scoreValid(final Score score, final HostAndPort hostAndPort) {
-        return score.valid() && score.address().equals(hostAndPort) && score.strength() < this.strength;
+        return score.valid() && score.address().equals(hostAndPort) && !(score.strength() < this.strength);
     }
 
     private void cleanUp(final HostAndPort hostAndPort, final int threads) throws Exception {
@@ -308,7 +303,7 @@ public final class ScoreFarm implements Farm {
                         .stream()
                         .filter(score -> !this.threads.exists(score.mnemo()))
                         .collect(toList());
-        if (this.pipeline.isEmpty() && !scores.isEmpty()) {
+        if (this.pipeline.isEmpty() && !free.isEmpty()) {
             this.pipeline.add(free.get(0));
         }
         final int maxAfter =
@@ -319,7 +314,7 @@ public final class ScoreFarm implements Farm {
 
         if (maxAfter != maxBefore && maxAfter != 0) {
             System.out.printf(
-                    "%s : best score of %d is %s",
+                    "%s : best score of %d is %s\n",
                     Thread.currentThread().getName(),
                     scores.size(),
                     new ReducesScore(4, scores.get(0)).asText()
@@ -338,18 +333,22 @@ public final class ScoreFarm implements Farm {
      * @throws Exception if failed
      */
     private void save(final int threads, final List<Score> list) throws Exception {
-        final List<Score> scores = Stream.of(list, this.load()).flatMap(List::stream).collect(toList());
         final int period = this.lifetime / Math.max(threads, 1);
-        final String body = Seq.seq(scores.stream())
-                .filter(Score::valid) //drop not valid
-                .filter(score -> !score.expired(TriadaScore.BEST_BEFORE))//drop expired
-                .filter(score -> score.strength() >= this.strength) // drop less strength
-                .sorted(Comparator.comparingInt(Score::value).reversed())
-                .distinct(Score::time)
-                .distinct(score -> score.age() / period)
-                .map(Score::asText)
-                .distinct()
-                .toString(System.lineSeparator());
+        final String body =
+                Seq.seq(
+                        Stream.of(
+                                list,
+                                this.load()
+                        ).flatMap(List::stream))
+                        .filter(Score::valid) //drop not valid
+                        .filter(score -> !score.expired(TriadaScore.BEST_BEFORE))//drop expired
+                        .filter(score -> score.strength() >= this.strength) // drop less strength
+                        .sorted(Comparator.comparingInt(Score::value).reversed())
+                        .distinct(Score::time)
+                        .distinct(score -> score.age() / period)
+                        .map(Score::asText)
+                        .distinct()
+                        .toString(System.lineSeparator());
         ScoreFarm.syncSaveScores(body, this.cache);
     }
 
@@ -387,4 +386,36 @@ public final class ScoreFarm implements Farm {
         }
     }
 
+    /**
+     * Start runnable and shutdown thread pool after runnable completion
+     *
+     * @param runnable Runnable to start
+     * @param threads  Thread Pool
+     * @throws InterruptedException if failed
+     */
+    private static void startAndShutdown(final Runnable runnable, final ThreadPoolExecutor threads) throws InterruptedException {
+        try {
+            runnable.run();
+        } finally {
+            threads.shutdownNow();
+            threads.awaitTermination(10, TimeUnit.SECONDS);
+        }
+    }
+
+    private void logCachedScores() throws Exception {
+        final List<Score> best = this.best();
+        if (best.isEmpty()) {
+            System.out.printf(
+                    "No scores found in the cache at %s \n",
+                    this.cache.toString()
+            );
+        } else {
+            System.out.printf(
+                    "%d scores pre-loaded from %s , the best is %s \n",
+                    best.size(),
+                    this.cache.toString(),
+                    best.get(0).asText()
+            );
+        }
+    }
 }
