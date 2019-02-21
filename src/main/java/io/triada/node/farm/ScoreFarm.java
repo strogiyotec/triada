@@ -5,19 +5,16 @@ import com.google.gson.JsonObject;
 import io.triada.dates.DateConverters;
 import io.triada.models.cli.CommandLineInterface;
 import io.triada.models.cli.ShellScript;
+import io.triada.models.file.SyncFileWrite;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
+import io.triada.models.score.ScoresFromFile;
 import io.triada.models.score.TriadaScore;
 import io.triada.threads.NamedThreadExecutor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.lambda.Seq;
 import org.jooq.lambda.Unchecked;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -27,7 +24,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.jooq.lambda.Seq.*;
+import static org.jooq.lambda.Seq.seq;
 
 /**
  * Farm scores in background
@@ -145,12 +142,11 @@ public final class ScoreFarm implements Farm {
     @Override
     public void start(
             final HostAndPort hostAndPort,
-            final int threads,
             final Runnable runnable
     ) throws Exception {
-        this.threads.setCorePoolSize(threads + 1);
-        this.logCachedScores();
+        PreloadFarmLog.log(this, this.cache);
 
+        final int threads = this.threads.getMaximumPoolSize();
         for (int i = 0; i < threads; i++) {
             final int threadId = i;
             this.threads.submit(
@@ -284,7 +280,7 @@ public final class ScoreFarm implements Farm {
     }
 
     private void cleanUp(final HostAndPort hostAndPort, final int threads) throws Exception {
-        final List<Score> scores = this.load();
+        final List<Score> scores = ScoresFromFile.load(this.cache);
         final int maxBefore =
                 scores.stream()
                         .map(Unchecked.function(Score::value))
@@ -302,7 +298,7 @@ public final class ScoreFarm implements Farm {
                 )
         );
         final List<Score> free =
-                this.load()
+                ScoresFromFile.load(this.cache)
                         .stream()
                         .filter(score -> {
                             final boolean b = !this.threads.exists(score.mnemo());
@@ -345,7 +341,7 @@ public final class ScoreFarm implements Farm {
     private void save(final int threads, final List<Score> list) throws Exception {
         final int period = this.lifetime / Math.max(threads, 1);
         final String body =
-                seq(Stream.of(list, this.load())
+                seq(Stream.of(list, ScoresFromFile.load(this.cache))
                         .flatMap(List::stream))
                         .filter(Score::valid) //drop not valid
                         .filter(score -> !score.expired(TriadaScore.BEST_BEFORE))//drop expired
@@ -356,13 +352,7 @@ public final class ScoreFarm implements Farm {
                         .map(Score::asText)
                         .distinct()
                         .toString(System.lineSeparator());
-        ScoreFarm.syncSaveScores(body, this.cache);
-    }
-
-    private List<Score> load() throws Exception {
-        return Files.lines(this.cache.toPath())
-                .map(TriadaScore::new)
-                .collect(toList());
+        SyncFileWrite.write(body, this.cache);
     }
 
     private static JsonObject threadPoolJO(final ThreadPoolExecutor threads) {
@@ -372,25 +362,6 @@ public final class ScoreFarm implements Farm {
         body.addProperty("poolSize", threads.getPoolSize());
 
         return body;
-    }
-
-    /**
-     * Requires exclusive lock to file and append body
-     *
-     * @param body Text to append
-     * @param file File to append
-     * @throws Exception if failed
-     */
-    private static void syncSaveScores(final String body, final File file) throws Exception {
-        try (final RandomAccessFile accessFile = new RandomAccessFile(file, "rw")) {
-            try (final FileChannel channel = accessFile.getChannel()) {
-                try (final FileLock ignored = channel.lock()) {
-                    try (final FileWriter writer = new FileWriter(file, true)) {
-                        writer.append(body);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -409,20 +380,4 @@ public final class ScoreFarm implements Farm {
         }
     }
 
-    private void logCachedScores() throws Exception {
-        final List<Score> best = this.best();
-        if (best.isEmpty()) {
-            System.out.printf(
-                    "No scores found in the cache at %s \n",
-                    this.cache.toString()
-            );
-        } else {
-            System.out.printf(
-                    "%d scores pre-loaded from %s , the best is %s \n",
-                    best.size(),
-                    this.cache.toString(),
-                    best.get(0).asText()
-            );
-        }
-    }
 }

@@ -10,14 +10,14 @@ import java.util.Collections;
 import java.util.List;
 
 public interface Farm extends Text, Jsonable {
-    void start(HostAndPort hostAndPort, int threads, Runnable runnable) throws Exception;
+    void start(HostAndPort hostAndPort, Runnable runnable) throws Exception;
 
     List<Score> best() throws Exception;
 
     final class Empty implements Farm {
 
         @Override
-        public void start(final HostAndPort hostAndPort, final int threads, final Runnable runnable) throws Exception {
+        public void start(final HostAndPort hostAndPort, final Runnable runnable) throws Exception {
             runnable.run();
         }
 
