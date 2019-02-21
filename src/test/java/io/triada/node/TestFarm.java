@@ -42,16 +42,22 @@ public final class TestFarm extends Assert {
                 new FakeFile(TriadaWallet.EXT).call(),
                 "NOPREFIX7@ffffffffffffffff",
                 new NamedThreadExecutor(
-                        new ThreadPoolExecutor(5, 5, 1000L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5))
+                        new ThreadPoolExecutor(
+                                5,
+                                5,
+                                1000L,
+                                TimeUnit.SECONDS,
+                                new ArrayBlockingQueue<>(5)
+                        )
                 ),
                 new PlainFarmer(),
                 1
         );
         scoreFarm.start(HostAndPort.fromParts("localhost", 4567), 1, () -> {
             try {
-                Thread.sleep(70000);
+                Thread.sleep(30000);
             } catch (final InterruptedException e) {
-                Thread.currentThread().interrupt();
+                throw new RuntimeException("Main thread can't be interrupted");
             }
         });
         assertTrue(scoreFarm.best().size() == 4);

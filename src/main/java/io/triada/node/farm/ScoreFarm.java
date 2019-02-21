@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.jooq.lambda.Seq.*;
 
 /**
  * Farm scores in background
@@ -259,15 +260,16 @@ public final class ScoreFarm implements Farm {
                     TimeUnit.MILLISECONDS.sleep(250);
                 }
             }
-            System.out.println("Got value: " + score.asText());
+            System.out.println("Got value: " + score.asText() + " " + Thread.currentThread().getName());
             if (this.scoreValid(score, hostAndPort)) {
                 System.out.println("It's valid");
                 Thread.currentThread().setName(score.mnemo());
                 ScoreFarm.start.set(new Date());
                 final Score next = this.farms.up(score);
                 System.out.printf(
-                        "New score discovered %s \n",
-                        next.asText()
+                        "New score discovered %s %s\n",
+                        next.asText(),
+                        Thread.currentThread().getName()
                 );
                 this.save(threads, singletonList(next));
                 this.cleanUp(hostAndPort, threads);
@@ -288,6 +290,7 @@ public final class ScoreFarm implements Farm {
                         .map(Unchecked.function(Score::value))
                         .max(Integer::compareTo)
                         .orElse(0);
+        System.out.println("Max before " + maxBefore + " " + Thread.currentThread().getName());
         this.save(
                 threads,
                 singletonList(
@@ -301,8 +304,15 @@ public final class ScoreFarm implements Farm {
         final List<Score> free =
                 this.load()
                         .stream()
-                        .filter(score -> !this.threads.exists(score.mnemo()))
+                        .filter(score -> {
+                            final boolean b = !this.threads.exists(score.mnemo());
+                            if (b) {
+                                System.out.println("Score mnemo " + score.mnemo() + " " + Thread.currentThread().getName());
+                            }
+                            return b;
+                        })
                         .collect(toList());
+
         if (this.pipeline.isEmpty() && !free.isEmpty()) {
             this.pipeline.add(free.get(0));
         }
@@ -311,7 +321,7 @@ public final class ScoreFarm implements Farm {
                         .map(Unchecked.function(Score::value))
                         .max(Integer::compareTo)
                         .orElse(0);
-
+        System.out.println("Max After " + maxAfter + " " + Thread.currentThread().getName());
         if (maxAfter != maxBefore && maxAfter != 0) {
             System.out.printf(
                     "%s : best score of %d is %s\n",
@@ -335,11 +345,8 @@ public final class ScoreFarm implements Farm {
     private void save(final int threads, final List<Score> list) throws Exception {
         final int period = this.lifetime / Math.max(threads, 1);
         final String body =
-                Seq.seq(
-                        Stream.of(
-                                list,
-                                this.load()
-                        ).flatMap(List::stream))
+                seq(Stream.of(list, this.load())
+                        .flatMap(List::stream))
                         .filter(Score::valid) //drop not valid
                         .filter(score -> !score.expired(TriadaScore.BEST_BEFORE))//drop expired
                         .filter(score -> score.strength() >= this.strength) // drop less strength
