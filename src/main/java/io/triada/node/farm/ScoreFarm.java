@@ -13,6 +13,7 @@ import io.triada.models.score.TriadaScore;
 import io.triada.threads.NamedThreadExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.lambda.Unchecked;
+import org.jooq.lambda.fi.lang.CheckedRunnable;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -142,8 +143,8 @@ public final class ScoreFarm implements Farm {
     @Override
     public void start(
             final HostAndPort hostAndPort,
-            final Runnable runnable
-    ) throws Exception {
+            final CheckedRunnable runnable
+    ) throws Throwable {
         PreloadFarmLog.log(this, this.cache);
 
         final int threads = this.threads.getMaximumPoolSize();

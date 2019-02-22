@@ -9,6 +9,7 @@ import io.triada.models.score.TriadaScore;
 import io.triada.models.threads.Sleep;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.Unchecked;
+import org.jooq.lambda.fi.lang.CheckedRunnable;
 
 import java.io.File;
 import java.util.List;
@@ -33,7 +34,7 @@ public final class SingleThreadScoreFarm implements Farm {
     /**
      * Lock for cache
      */
-    private final ReentrantLock lock;
+    private final ReentrantLock lock = new ReentrantLock();
 
     /**
      * Strength of the score
@@ -45,21 +46,29 @@ public final class SingleThreadScoreFarm implements Farm {
      */
     private final String invoice;
 
-    /**
-     * Life time of score
-     */
-    private final int lifeTime;
 
     @Override
-    public void start(final HostAndPort hostAndPort, final Runnable runnable) throws Exception {
+    public void start(final HostAndPort hostAndPort, final CheckedRunnable runnable) throws Throwable {
         PreloadFarmLog.log(this, this.cache);
-        final ExecutorService service = Executors.newSingleThreadExecutor();
+        final ExecutorService service = Executors.newFixedThreadPool(2);
         this.clean(hostAndPort);
         service.submit(Unchecked.runnable(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 this.start();
             }
         }));
+        service.submit(Unchecked.runnable(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                this.clean(hostAndPort);
+            }
+        }));
+        try {
+            runnable.run();
+        } finally {
+            service.shutdownNow();
+            service.awaitTermination(1, TimeUnit.SECONDS);
+            System.out.println("Farm was stopped after runnable execution");
+        }
 
     }
 
@@ -70,6 +79,10 @@ public final class SingleThreadScoreFarm implements Farm {
             assert !load.isEmpty();
             final Score next = load.get(0).next();
             SyncFileWrite.write(next.asText(), this.cache);
+            System.out.printf(
+                    "New score discovered %s\n",
+                    next.asText()
+            );
         } finally {
             lock.unlock();
         }
@@ -116,11 +129,13 @@ public final class SingleThreadScoreFarm implements Farm {
         return ScoresFromFile.load(this.cache);
     }
 
+    // TODO: 2/22/19 Implement
     @Override
     public JsonObject asJson() {
         return null;
     }
 
+    // TODO: 2/22/19 Implement
     @Override
     public String asText() {
         return null;
