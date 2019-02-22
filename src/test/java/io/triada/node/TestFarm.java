@@ -37,7 +37,7 @@ public final class TestFarm extends Assert {
     }
 
     @Test
-    public void testMakesManyScores() throws Exception {
+    public void testMakesManyScores() throws Throwable {
         final ScoreFarm scoreFarm = new ScoreFarm(
                 new FakeFile(TriadaWallet.EXT).call(),
                 "NOPREFIX7@ffffffffffffffff",
@@ -53,7 +53,7 @@ public final class TestFarm extends Assert {
                 new PlainFarmer(),
                 1
         );
-        scoreFarm.start(HostAndPort.fromParts("localhost", 4567), 1, () -> {
+        scoreFarm.start(HostAndPort.fromParts("localhost", 4567), () -> {
             try {
                 Thread.sleep(30000);
             } catch (final InterruptedException e) {

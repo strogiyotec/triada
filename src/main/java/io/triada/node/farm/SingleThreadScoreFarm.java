@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -75,7 +76,7 @@ public final class SingleThreadScoreFarm implements Farm {
     private void start() throws Exception {
         lock.lock();
         try {
-            final List<Score> load = ScoresFromFile.load(this.cache);
+            final List<Score> load = this.best();
             assert !load.isEmpty();
             final Score next = load.get(0).next();
             SyncFileWrite.write(next.asText(), this.cache);
@@ -126,7 +127,10 @@ public final class SingleThreadScoreFarm implements Farm {
 
     @Override
     public List<Score> best() throws Exception {
-        return ScoresFromFile.load(this.cache);
+        return ScoresFromFile
+                .lazyLoad(this.cache)
+                .sorted(comparingInt(Score::value).reversed())
+                .collect(toList());
     }
 
     // TODO: 2/22/19 Implement
