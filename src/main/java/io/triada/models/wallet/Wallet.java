@@ -8,6 +8,7 @@ import io.triada.models.key.RsaKey;
 import io.triada.models.transaction.SignedTransaction;
 import io.triada.text.Text;
 
+import java.io.File;
 import java.util.List;
 
 public interface Wallet extends Text {
@@ -16,6 +17,11 @@ public interface Wallet extends Text {
      * @return Age of wallet in hours
      */
     long age();
+
+    /**
+     * @return Wallet file
+     */
+    File file();
 
     /**
      * @return Head of wallet

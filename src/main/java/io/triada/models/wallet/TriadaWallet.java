@@ -27,6 +27,11 @@ import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+// TODO: 2/22/19 Ad lazy wallet on non existing file
+
+/**
+ * Main wallet of triada network
+ */
 public final class TriadaWallet implements Wallet {
 
     /**
@@ -34,6 +39,9 @@ public final class TriadaWallet implements Wallet {
      */
     public static final String EXT = ".trd";
 
+    /**
+     * The first transaction id
+     */
     private static final String FIRST_TXN_ID = new HexNumber(4, 1).asText();
 
     /**
@@ -71,6 +79,11 @@ public final class TriadaWallet implements Wallet {
                             .get();
             return Duration.between(DateConverters.toLocalDateTime(minTxn.date()), DateConverters.toLocalDateTime(new Date())).toHours();
         }
+    }
+
+    @Override
+    public File file() {
+        return this.file;
     }
 
     @Override
