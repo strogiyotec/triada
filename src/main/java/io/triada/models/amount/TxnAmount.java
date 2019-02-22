@@ -16,7 +16,7 @@ import java.math.RoundingMode;
 public final class TxnAmount implements Amount<Long> {
 
     /**
-     * Max aount of tridz
+     * Max amount of tridz
      */
     private static final long MAX_TRIDZ = (long) Math.pow(2, 63);
 
@@ -35,14 +35,23 @@ public final class TxnAmount implements Amount<Long> {
      */
     private final Long tridz;
 
+    /**
+     * @param triads Amount of triads
+     */
     public TxnAmount(final BigDecimal triads) {
         this.tridz = new BigDecimal(2).pow(FRACTION).multiply(triads).longValue();
     }
 
-    public TxnAmount(final String triads) {
-        this.tridz = new BigInteger(triads, 16).longValue();
+    /**
+     * @param tridz Amount of tridz in hex
+     */
+    public TxnAmount(final String tridz) {
+        this.tridz = new BigInteger(tridz, 16).longValue();
     }
 
+    /**
+     * @return Value of tridz
+     */
     @Override
     public Long value() {
         return this.tridz;
