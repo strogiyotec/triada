@@ -14,7 +14,7 @@ public final class TxnAmountTest extends Assert {
     public void testParsedTriads() {
         assertThat(
                 new TxnAmount(new BigDecimal("14.95")).toString(),
-                is("14.94TRIADA")
+                is("14.95TRIADA")
         );
     }
 
