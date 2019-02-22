@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 public final class RemoteCommand implements Command {
 
-    private static final Options OPTIONS = Command.remoteOptions();
+    private static final Options OPTIONS = Command.options();
 
     private final Remotes remotes;
 

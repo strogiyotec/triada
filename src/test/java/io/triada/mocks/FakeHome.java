@@ -5,6 +5,9 @@ import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.util.List;
+
 /**
  * Fake home directory
  */
@@ -12,8 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 public final class FakeHome {
 
     /**
-     *
-     * @param id Id of transaction
+     * @param id   Id of transaction
      * @param txns amount of txns
      * @return new Wallet
      * @throws Exception if failed
@@ -22,5 +24,14 @@ public final class FakeHome {
         return new TriadaWallet(
                 new FakeHeadFile().fakeHome(id)
         );
+    }
+
+    /**
+     * @param amount Amount of wallets to create
+     * @return List of files with wallet
+     * @throws Exception if failed
+     */
+    public List<File> createWallets(final int amount) throws Exception {
+        return new FakeHeadFile().fakeHomes(amount);
     }
 }
