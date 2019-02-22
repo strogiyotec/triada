@@ -23,7 +23,7 @@ public final class SyncFileWrite {
             try (final FileChannel channel = accessFile.getChannel()) {
                 try (final FileLock ignored = channel.lock()) {
                     try (final FileWriter writer = new FileWriter(file, true)) {
-                        writer.append(body);
+                        writer.append(body).append(System.lineSeparator());
                     }
                 }
             }
