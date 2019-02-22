@@ -48,6 +48,13 @@ public final class SingleThreadScoreFarm implements Farm {
     private final String invoice;
 
 
+    /**
+     * Run two threads , one of them find new suffixes , second one delete expired scores
+     *
+     * @param hostAndPort Host and port of node
+     * @param runnable    Callback to call
+     * @throws Throwable if failed
+     */
     @Override
     public void start(final HostAndPort hostAndPort, final CheckedRunnable runnable) throws Throwable {
         PreloadFarmLog.log(this, this.cache);
@@ -73,6 +80,11 @@ public final class SingleThreadScoreFarm implements Farm {
 
     }
 
+    /**
+     * Farm new scores
+     *
+     * @throws Exception if failed
+     */
     private void start() throws Exception {
         lock.lock();
         try {
@@ -89,6 +101,12 @@ public final class SingleThreadScoreFarm implements Farm {
         }
     }
 
+    /**
+     * Clean expired scores
+     *
+     * @param hostAndPort Host and port of score
+     * @throws Exception if failed
+     */
     private void clean(final HostAndPort hostAndPort) throws Exception {
         final boolean lock = this.lock.tryLock();
         if (lock) {
@@ -125,6 +143,10 @@ public final class SingleThreadScoreFarm implements Farm {
                 !(score.strength() < this.strength);
     }
 
+    /**
+     * @return Sorted by value scores
+     * @throws Exception if failed
+     */
     @Override
     public List<Score> best() throws Exception {
         return ScoresFromFile
