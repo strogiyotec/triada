@@ -372,7 +372,7 @@ public final class ScoreFarm implements Farm {
      * @param threads  Thread Pool
      * @throws InterruptedException if failed
      */
-    private static void startAndShutdown(final Runnable runnable, final ThreadPoolExecutor threads) throws InterruptedException {
+    private static void startAndShutdown(final CheckedRunnable runnable, final ThreadPoolExecutor threads) throws Throwable {
         try {
             runnable.run();
         } finally {
