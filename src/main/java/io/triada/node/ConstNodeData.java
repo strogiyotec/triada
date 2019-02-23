@@ -3,15 +3,13 @@ package io.triada.node;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 import lombok.AllArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Stream;
-
-import static org.apache.commons.io.FileUtils.readFileToString;
 
 /**
  * Simple data provider for node
@@ -35,11 +33,6 @@ public final class ConstNodeData implements NodeData {
     private final int errors;
 
     /**
-     * Does node is masternode
-     */
-    private final boolean master;
-
-    /**
      * Score of node
      */
     private final int score;
@@ -53,12 +46,12 @@ public final class ConstNodeData implements NodeData {
         this.host = hostAndPort.getHost();
         this.port = hostAndPort.getPort();
         this.errors = 0;
-        this.master = false;
         this.score = 0;
     }
 
     /**
      * Create node from text
+     *
      * @param line Text
      */
     public ConstNodeData(final String line) {
@@ -67,7 +60,6 @@ public final class ConstNodeData implements NodeData {
         this.port = Integer.parseInt(parts[1]);
         this.score = 0;
         this.errors = 0;
-        this.master = false;
     }
 
     @Override
@@ -92,18 +84,28 @@ public final class ConstNodeData implements NodeData {
 
     @Override
     public boolean master() {
-        return this.master;
+        return ConstNodeData.MASTERS.stream().anyMatch(node -> HostAndPort.fromParts(node.host(), node.port()).equals(HostAndPort.fromParts(this.host, this.port)));
+    }
+
+    @Override
+    public String asText(final String host, final int port, final int errors, final int score) {
+        return String.format(
+                "%s,%d,%d,%d\n",
+                host,
+                port,
+                score,
+                errors
+        );
     }
 
     @Override
     public String asText() {
         return String.format(
-                "%s,%d,%d,%d%s",
+                "%s,%d,%d,%d\n",
                 this.host,
                 this.port,
                 this.score,
-                this.errors,
-                System.lineSeparator()
+                this.errors
         );
     }
 
@@ -112,17 +114,13 @@ public final class ConstNodeData implements NodeData {
      */
     private static List<NodeData> masters() {
         try {
-            final String[] lines = readFileToString(
-                    new File(ConstNodeData.class.getClassLoader().getResource("masters.txt").getFile()),
-                    StandardCharsets.UTF_8
-            ).split(System.lineSeparator());
-
-            return Stream
-                    .of(lines)
+            return Files.lines(new File(ConstNodeData.class.getClassLoader().getResource("masters.txt").getFile()).toPath())
+                    .filter(line->!StringUtils.isEmpty(line))
                     .map(ConstNodeData::new)
                     .collect(ImmutableList.toImmutableList());
         } catch (final IOException e) {
             throw new UncheckedIOException("Error loading masters list", e);
         }
     }
+
 }
