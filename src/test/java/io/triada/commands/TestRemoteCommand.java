@@ -8,7 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public final class TestRemote extends Assert {
+public final class TestRemoteCommand extends Assert {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

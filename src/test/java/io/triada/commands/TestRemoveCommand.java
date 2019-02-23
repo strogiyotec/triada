@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.List;
 
-public final class TestRemove extends Assert {
+public final class TestRemoveCommand extends Assert {
 
     @Test
     public void testRemoveOneWallet() throws Exception {
