@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.List;
 
 public interface Farm extends Text, Jsonable {
+
+    Empty EMPTY = new Empty();
+
     void start(HostAndPort hostAndPort, CheckedRunnable runnable) throws Throwable;
 
     List<Score> best() throws Exception;
