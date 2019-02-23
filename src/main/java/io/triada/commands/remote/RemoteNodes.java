@@ -3,16 +3,27 @@ package io.triada.commands.remote;
 import com.google.common.net.HostAndPort;
 import io.triada.node.ConstNodeData;
 import io.triada.node.NodeData;
+import io.triada.node.farm.Farm;
 import org.apache.commons.io.FileUtils;
-import org.springframework.util.StringUtils;
+import org.jooq.lambda.fi.util.function.CheckedConsumer;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.nio.file.Files;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.net.HostAndPort.fromParts;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * All remotes
+ */
 public final class RemoteNodes implements Remotes {
 
     /**
@@ -36,7 +47,11 @@ public final class RemoteNodes implements Remotes {
 
     private final int timeout;
 
-    public RemoteNodes(final File file, final String network, final int timeout) {
+    public RemoteNodes(
+            final File file,
+            final String network,
+            final int timeout
+    ) {
         this.file = file;
         this.network = network;
         this.timeout = timeout;
@@ -59,6 +74,11 @@ public final class RemoteNodes implements Remotes {
                 .collect(toList());
     }
 
+    /**
+     * Clean all remotes
+     *
+     * @throws Exception if failed
+     */
     @Override
     public void clean() throws Exception {
         try (final FileWriter writer = new FileWriter(this.file, false)) {
@@ -67,8 +87,22 @@ public final class RemoteNodes implements Remotes {
     }
 
     @Override
-    public List<NodeData> masters() {
-        return ConstNodeData.MASTERS;
+    public synchronized void error(final HostAndPort hostAndPort) throws Exception {
+        final List<NodeData> load = this.load();
+        try (final FileWriter writer = new FileWriter(this.file, false)) {
+            for (final NodeData node : load) {
+                if (!fromParts(node.host(), node.port()).equals(hostAndPort)) {
+                    writer.append(node.asText());
+                } else {
+                    writer.append(node.asText(node.host(), node.port(), node.errors() + 1, node.score()));
+                }
+            }
+        }
+    }
+
+    @Override
+    public synchronized void unError(final HostAndPort hostAndPort) throws Exception {
+
     }
 
     @Override
@@ -76,7 +110,7 @@ public final class RemoteNodes implements Remotes {
         return this
                 .load()
                 .stream()
-                .anyMatch(node -> HostAndPort.fromParts(node.host(), node.port()).equals(hostAndPort));
+                .anyMatch(node -> fromParts(node.host(), node.port()).equals(hostAndPort));
     }
 
     @Override
@@ -97,30 +131,48 @@ public final class RemoteNodes implements Remotes {
      */
     @Override
     public void remove(final HostAndPort hostAndPort) throws Exception {
-        final List<NodeData> nodes = this.load();
+        final List<NodeData> load = this.load();
         try (final FileWriter writer = new FileWriter(this.file, false)) {
-            for (final NodeData node : nodes) {
-                if (!HostAndPort.fromParts(node.host(), node.port()).equals(hostAndPort)) {
-                    writer.append(
-                            String.format(
-                                    "%s%s",
-                                    node.asText(),
-                                    System.lineSeparator()
-                            )
-                    );
+            for (final NodeData node : load) {
+                if (!fromParts(node.host(), node.port()).equals(hostAndPort)) {
+                    writer.append(node.asText());
                 }
             }
         }
     }
 
     @Override
-    public boolean master(final HostAndPort hostAndPort) {
-        return ConstNodeData.MASTERS.stream().anyMatch(node -> HostAndPort.fromParts(node.host(), node.port()).equals(hostAndPort));
-    }
-
-    @Override
-    public Iterator<RemoteNode> iterator() {
-        throw new UnsupportedOperationException("Need to implement after farm");
+    public void modify(final CheckedConsumer<RemoteNode> consumer, final Farm farm) throws Exception {
+        final ExecutorService service = Executors.newFixedThreadPool(4);
+        final AtomicInteger idx = new AtomicInteger(0);
+        for (final NodeData nodeData : this.load()) {
+            service.submit(() -> {
+                try {
+                    final RemoteNode remoteNode =
+                            new RemoteNode(
+                                    farm,
+                                    nodeData,
+                                    this.network,
+                                    idx.getAndIncrement()
+                            );
+                    consumer.accept(remoteNode);
+                    if (remoteNode.touched()) {
+                        this.unError(remoteNode.address());
+                    }
+                } catch (final Throwable exc) {
+                    final int errors = nodeData.errors() + 1;
+                    final HostAndPort hostAndPort = fromParts(nodeData.host(), nodeData.port());
+                    if (errors > TOLERANCE) {
+                        this.remove(hostAndPort);
+                    } else {
+                        this.error(hostAndPort);
+                    }
+                }
+                return null;//because we need callable instead Runnable
+            });
+        }
+        service.shutdown();
+        service.awaitTermination(this.timeout, TimeUnit.SECONDS);
     }
 
     /**
@@ -131,30 +183,17 @@ public final class RemoteNodes implements Remotes {
      * @throws Exception if failed
      */
     private List<NodeData> load() throws Exception {
-        final List<NodeData> rows = new ArrayList<>(16);
-        final String content = FileUtils.readFileToString(
-                this.file,
-                StandardCharsets.UTF_8
-        );
-
-        if (StringUtils.isEmpty(content)) {
-            return Collections.emptyList();
-        } else {
-            for (final String line : content.split(System.lineSeparator())) {
-                final String[] row = line.split(",");
-                final HostAndPort hostAndPort = HostAndPort.fromParts(row[0], Integer.parseInt(row[1]));
-                rows.add(
-                        new ConstNodeData(
-                                hostAndPort.getHost(),
-                                hostAndPort.getPort(),
-                                Integer.parseInt(row[3]),
-                                this.master(hostAndPort),
-                                Integer.parseInt(row[2])
-                        )
-                );
-            }
-        }
-        return rows;
+        return Files.lines(this.file.toPath())
+                .map(line -> {
+                    final String[] row = line.split(",");
+                    final HostAndPort hostAndPort = fromParts(row[0], Integer.parseInt(row[1]));
+                    return new ConstNodeData(
+                            hostAndPort.getHost(),
+                            hostAndPort.getPort(),
+                            Integer.parseInt(row[3]),
+                            Integer.parseInt(row[2])
+                    );
+                }).collect(toList());
     }
 
     private static int sortValue(final NodeData row, final int maxErrors, final int maxScore) {

@@ -2,18 +2,21 @@ package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
 import io.triada.node.NodeData;
+import io.triada.node.farm.Farm;
+import org.jooq.lambda.fi.util.function.CheckedConsumer;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-public interface Remotes extends Iterable<RemoteNode> {
+public interface Remotes {
 
     List<NodeData> all() throws Exception;
 
     void clean() throws Exception;
 
-    List<NodeData> masters();
+    void error(HostAndPort hostAndPort) throws Exception;
+
+    void unError(HostAndPort hostAndPort) throws Exception;
 
     boolean exists(HostAndPort hostAndPort) throws Exception;
 
@@ -21,7 +24,7 @@ public interface Remotes extends Iterable<RemoteNode> {
 
     void remove(HostAndPort hostAndPort) throws Exception;
 
-    boolean master(HostAndPort hostAndPort);
+    void modify(CheckedConsumer<RemoteNode> consumer, Farm farm) throws Exception;
 
     final class Empty implements Remotes {
 
@@ -36,8 +39,13 @@ public interface Remotes extends Iterable<RemoteNode> {
         }
 
         @Override
-        public List<NodeData> masters() {
-            return Collections.emptyList();
+        public void error(final HostAndPort hostAndPort) throws Exception {
+
+        }
+
+        @Override
+        public void unError(final HostAndPort hostAndPort) throws Exception {
+
         }
 
         @Override
@@ -56,13 +64,8 @@ public interface Remotes extends Iterable<RemoteNode> {
         }
 
         @Override
-        public boolean master(final HostAndPort hostAndPort) {
-            return false;
-        }
+        public void modify(final CheckedConsumer<RemoteNode> consumer, final Farm farm) {
 
-        @Override
-        public Iterator<RemoteNode> iterator() {
-            return Collections.emptyIterator();
         }
     }
 
