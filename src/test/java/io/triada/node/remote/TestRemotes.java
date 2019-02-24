@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.net.HostAndPort.fromParts;
 import static io.triada.commands.remote.RemoteNodes.PORT;
@@ -50,4 +51,42 @@ public final class TestRemotes extends Assert {
         }
 
     }
+
+    @Test
+    public void testIterateWithDelays() throws Exception {
+        final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
+        for (int i = 0; i < 10; i++) {
+            nodes.add(HostAndPort.fromParts("0.0.0.0", i));
+        }
+        final AtomicInteger cnt = new AtomicInteger(0);
+        nodes.modify(remoteNode -> {
+            cnt.incrementAndGet();
+            Thread.sleep(250);
+        }, Farm.EMPTY);
+        final List<NodeData> all = nodes.all();
+        assertTrue(all.size() == 10);
+        assertTrue(cnt.get() == 10);
+    }
+
+    @Test
+    public void testRemoveRemote() throws Exception {
+        final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
+        nodes.add(HostAndPort.fromParts("localhost", 433));
+        nodes.add(HostAndPort.fromParts("127.0.0.1", 433));
+        assertTrue(nodes.all().size() == 2);
+        nodes.remove(HostAndPort.fromParts("127.0.0.1", 433));
+        assertTrue(nodes.all().size() == 1);
+    }
+
+    @Test
+    public void testClean() throws Exception {
+        final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
+        nodes.add(HostAndPort.fromParts("localhost", 433));
+        nodes.add(HostAndPort.fromParts("127.0.0.1", 433));
+        assertTrue(nodes.all().size() == 2);
+        nodes.clean();
+        assertTrue(nodes.all().isEmpty());
+    }
+
+
 }
