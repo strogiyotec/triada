@@ -16,11 +16,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Return list of scores from given Remotes
+ */
 @AllArgsConstructor
 public final class ElectCommand implements ValuableCommand<List<Score>> {
 
+    /**
+     * Remotes
+     */
     private final Remotes remotes;
 
+    /**
+     * Farm
+     */
     private final Farm farm;
 
     @Override

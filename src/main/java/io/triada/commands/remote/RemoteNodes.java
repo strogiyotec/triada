@@ -41,10 +41,19 @@ public final class RemoteNodes implements Remotes {
      */
     public static final int MAX_NODES = 16;
 
+    /**
+     * File to store remotes
+     */
     private final File file;
 
+    /**
+     * Network name
+     */
     private final String network;
 
+    /**
+     * Wait period for all threads to terminate
+     */
     private final int timeout;
 
     public RemoteNodes(
@@ -63,6 +72,10 @@ public final class RemoteNodes implements Remotes {
         this.timeout = 60;
     }
 
+    /**
+     * @return List of nodes from file
+     * @throws Exception if failed
+     */
     @Override
     public List<NodeData> all() throws Exception {
         final List<NodeData> list = this.load();
@@ -86,6 +99,12 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
+    /**
+     * Increment error value for node with given host and port
+     *
+     * @param hostAndPort HostAndPort of node
+     * @throws Exception if failed
+     */
     @Override
     public synchronized void error(final HostAndPort hostAndPort) throws Exception {
         final List<NodeData> load = this.load();
@@ -100,11 +119,17 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
+    // TODO: 2/24/19 Need to implement
     @Override
     public synchronized void unError(final HostAndPort hostAndPort) throws Exception {
 
     }
 
+    /**
+     * @param hostAndPort HostAndPort
+     * @return true if file contains node with given host and port
+     * @throws Exception if failed
+     */
     @Override
     public boolean exists(final HostAndPort hostAndPort) throws Exception {
         return this
@@ -113,6 +138,10 @@ public final class RemoteNodes implements Remotes {
                 .anyMatch(node -> fromParts(node.host(), node.port()).equals(hostAndPort));
     }
 
+    /**
+     * @param hostAndPort Host and port of node to add to file
+     * @throws Exception if failed
+     */
     @Override
     public void add(final HostAndPort hostAndPort) throws Exception {
         FileUtils.write(
@@ -141,6 +170,13 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
+    /**
+     * Accept given consumer to all nodes in file
+     *
+     * @param consumer Consumer
+     * @param farm     Farm
+     * @throws Exception if failed
+     */
     @Override
     public void modify(final CheckedConsumer<RemoteNode> consumer, final Farm farm) throws Exception {
         final ExecutorService service = Executors.newFixedThreadPool(4);
@@ -168,7 +204,7 @@ public final class RemoteNodes implements Remotes {
                         this.error(hostAndPort);
                     }
                 }
-                return null;//because we need callable instead Runnable
+                return null;//because we need callable instead of Runnable
             });
         }
         service.shutdown();
