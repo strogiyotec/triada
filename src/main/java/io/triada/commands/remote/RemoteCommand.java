@@ -3,7 +3,6 @@ package io.triada.commands.remote;
 import com.google.common.net.HostAndPort;
 import io.triada.commands.Command;
 import io.triada.node.farm.Farm;
-import io.triada.node.NodeData;
 import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -14,9 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Remote command
@@ -37,8 +34,6 @@ public final class RemoteCommand implements Command {
             this.clean();
         } else if (cmd.hasOption("-radd")) {
             this.add(cmd.getOptionValues("radd"), cmd);
-        } else if (cmd.hasOption("-r_elect")) {
-
         }
     }
 
@@ -54,12 +49,6 @@ public final class RemoteCommand implements Command {
                 "All %d nodes deleted",
                 size
         );
-    }
-
-    private void elect() throws Exception {
-        final List<NodeData> all = this.remotes.all();
-        final List<NodeData> elects = new ArrayList<>(all.size());
-        throw new UnsupportedOperationException("Need to implement adter iterator method of remoteNodes");
     }
 
     /**
