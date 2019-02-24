@@ -22,7 +22,7 @@ public interface Command {
                 ).addOption(
                         Command.remoteAdd()
                 ).addOption(
-                        new Option("r_elect", false, "Pick a random remote node as a target for a bonus awarding")
+                        elect()
                 ).addOption(
                         new Option("trim", false, "RemoveCommand the least reliable nodes")
                 ).addOption(
@@ -46,9 +46,16 @@ public interface Command {
     static Option remoteAdd() {
         final Option option = new Option("radd", true, "Add new Remote");
         option.setArgs(2);
+        option.setOptionalArg(true);
         option.setValueSeparator(' ');
 
         return option;
+    }
+
+    static Option elect() {
+        final Option elect = new Option("r_elect", true, "Pick a random remote node as a target for a bonus awarding");
+        elect.setArgs(1);
+        return elect;
     }
 
     static Option removeWallet() {
