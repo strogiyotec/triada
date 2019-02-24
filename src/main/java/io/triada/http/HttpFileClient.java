@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,10 +18,20 @@ import java.util.Collections;
 public final class HttpFileClient {
 
     /**
+     * Default read timeout
+     */
+    public static final int READ_TIMEOUT = 2_000;
+
+    /**
      * Url to send request
      */
     private final String url;
 
+    /**
+     * Ctor
+     *
+     * @param url url path
+     */
     public HttpFileClient(final String url) {
         this.url = url;
     }
@@ -46,6 +57,21 @@ public final class HttpFileClient {
                 false
         );
         return file;
+    }
+
+    /**
+     * @param timeout Read timeout
+     * @return Json response
+     * @throws Exception if failed
+     */
+    public JsonObject get(final int timeout) throws Exception {
+        final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(timeout);
+        factory.setReadTimeout(timeout);
+
+        final RestTemplate template = new RestTemplate(factory);
+        final ResponseEntity<String> response = template.getForEntity(this.url, String.class);
+        return new JsonParser().parse(response.getBody()).getAsJsonObject();
     }
 
     /**
