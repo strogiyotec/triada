@@ -6,12 +6,13 @@ import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
 import io.triada.node.NodeData;
 import io.triada.node.farm.Farm;
+import io.triada.text.Text;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 @Slf4j
-public final class RemoteNode {
+public final class RemoteNode implements Text {
     private final HostAndPort hostAndPort;
 
     private final Score score;
@@ -68,6 +69,16 @@ public final class RemoteNode {
                         this.hostAndPort.getPort(),
                         path
                 )
+        );
+    }
+
+    @Override
+    public String asText() {
+        return String.format(
+                "%s:%d/%d\n",
+                this.hostAndPort.getHost(),
+                this.hostAndPort.getPort(),
+                this.idx
         );
     }
 }
