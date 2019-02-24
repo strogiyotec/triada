@@ -1,6 +1,6 @@
 package io.triada.models.score;
 
-import io.triada.node.NodeData;
+import com.google.common.net.HostAndPort;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -42,24 +42,24 @@ public final class AssertScore {
     /**
      * failed if port or host are different
      *
-     * @param score To assert
-     * @param data  Data to compare with
+     * @param score       To assert
+     * @param hostAndPort Data to compare with
      */
-    public void assertScoreOwnership(final Score score, final NodeData data) {
-        if (!score.address().getHost().equals(data.host())) {
+    public void assertScoreOwnership(final Score score, final HostAndPort hostAndPort) {
+        if (!score.address().getHost().equals(hostAndPort.getHost())) {
             throw new AssertionError(
                     String.format(
                             "Masqueraded host %s as %s",
-                            data.host(),
+                            hostAndPort.getHost(),
                             score.address().getHost()
                     )
             );
         }
-        if (score.address().getPort() != data.port()) {
+        if (score.address().getPort() != hostAndPort.getPort()) {
             throw new AssertionError(
                     String.format(
                             "Masqueraded port %d as %d",
-                            data.port(),
+                            hostAndPort.getPort(),
                             score.address().getPort()
                     )
             );
