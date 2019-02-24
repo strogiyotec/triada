@@ -1,6 +1,7 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import com.google.gson.JsonObject;
 import io.triada.commands.remote.RemoteNodes;
 import io.triada.dates.DateConverters;
 import io.triada.models.hash.BigIntegerHash;
@@ -190,6 +191,18 @@ public final class TriadaScore implements Score {
         this.suffixes = suffixes;
         this.created = now;
         this.strength = STRENGTH;
+    }
+
+    /**
+     * Ctor
+     **/
+    public TriadaScore(final JsonObject jo) {
+        this.time = new Date(jo.get("time").getAsLong());
+        this.hostAndPort = HostAndPort.fromParts(jo.get("host").getAsString(), jo.get("port").getAsInt());
+        this.invoice = jo.get("invoice").getAsString();
+        this.suffixes = Arrays.asList(jo.get("suffixes").getAsString().split("_"));
+        this.strength = jo.get("strength").getAsInt();
+        this.created = new Date();
     }
 
     @Override
