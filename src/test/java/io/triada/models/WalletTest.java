@@ -61,7 +61,7 @@ public final class WalletTest extends Assert {
                 "-"
         );
 
-        assertThat(sub.balance().asText(2), is("-79.97"));
+        assertThat(sub.balance().asText(2), is("-79.98"));
     }
 
     @Test

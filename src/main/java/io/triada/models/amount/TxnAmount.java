@@ -113,7 +113,7 @@ public final class TxnAmount implements Amount<Long> {
      */
     @Override
     public String asText(final int digits) {
-        final BigDecimal divide = new BigDecimal(this.tridz).divide(new BigDecimal(2).pow(FRACTION), digits, RoundingMode.CEILING);
+        final BigDecimal divide = new BigDecimal(this.tridz).divide(new BigDecimal(2).pow(FRACTION), digits, RoundingMode.FLOOR);
         return divide.toString();
     }
 
