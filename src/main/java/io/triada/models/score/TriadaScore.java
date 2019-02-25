@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public final class TriadaScore implements Score {
@@ -197,12 +198,12 @@ public final class TriadaScore implements Score {
      * Ctor
      **/
     public TriadaScore(final JsonObject jo) {
-        this.time = new Date(jo.get("time").getAsLong());
-        this.hostAndPort = HostAndPort.fromParts(jo.get("host").getAsString(), jo.get("port").getAsInt());
-        this.invoice = jo.get("invoice").getAsString();
-        this.suffixes = Arrays.asList(jo.get("suffixes").getAsString().split("_"));
-        this.strength = jo.get("strength").getAsInt();
-        this.created = new Date();
+            this.time = new Date(jo.get("time").getAsLong());
+            this.hostAndPort = HostAndPort.fromParts(jo.get("host").getAsString(), jo.get("port").getAsInt());
+            this.invoice = jo.get("invoice").getAsString();
+            this.suffixes = Stream.of(jo.get("suffixes").getAsString().split("_")).filter(suf->!suf.isEmpty()).collect(Collectors.toList());
+            this.strength = jo.get("strength").getAsInt();
+            this.created = new Date();
     }
 
     @Override
@@ -360,10 +361,11 @@ public final class TriadaScore implements Score {
         resJO.addProperty("value", this.value());
         resJO.addProperty("host", this.hostAndPort.getHost());
         resJO.addProperty("port", this.hostAndPort.getPort());
+        resJO.addProperty("invoice",this.invoice);
         resJO.addProperty("time", this.time.getTime());
         resJO.addProperty("suffixes", this.suffixes.stream().collect(Collectors.joining("_")));
         resJO.addProperty("strength", this.strength);
-        resJO.addProperty("hash", this.hash());
+        resJO.addProperty("hash", this.suffixes.isEmpty() ? null : this.hash());
         resJO.addProperty("expired", this.expired(BEST_BEFORE));
         resJO.addProperty("valid", this.valid());
         resJO.addProperty("age", this.age());
