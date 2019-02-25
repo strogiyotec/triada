@@ -1,12 +1,13 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import io.triada.text.Jsonable;
 import io.triada.text.Text;
 
 import java.util.Date;
 import java.util.List;
 
-public interface Score extends Text {
+public interface Score extends Text,Jsonable {
 
     String mnemo();
 

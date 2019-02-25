@@ -353,4 +353,21 @@ public final class TriadaScore implements Score {
                 this.suffixes.stream().collect(Collectors.joining("_"))
         );
     }
+
+    @Override
+    public JsonObject asJson() {
+        final JsonObject resJO = new JsonObject();
+        resJO.addProperty("value", this.value());
+        resJO.addProperty("host", this.hostAndPort.getHost());
+        resJO.addProperty("port", this.hostAndPort.getPort());
+        resJO.addProperty("time", this.time.getTime());
+        resJO.addProperty("suffixes", this.suffixes.stream().collect(Collectors.joining("_")));
+        resJO.addProperty("strength", this.strength);
+        resJO.addProperty("hash", this.hash());
+        resJO.addProperty("expired", this.expired(BEST_BEFORE));
+        resJO.addProperty("valid", this.valid());
+        resJO.addProperty("age", this.age());
+        resJO.addProperty("created", this.created.getTime());
+        return resJO;
+    }
 }

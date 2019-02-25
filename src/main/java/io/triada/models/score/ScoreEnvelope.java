@@ -1,6 +1,7 @@
 package io.triada.models.score;
 
 import com.google.common.net.HostAndPort;
+import com.google.gson.JsonObject;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
@@ -84,5 +85,10 @@ public abstract class ScoreEnvelope implements Score {
     @Override
     public final long age() {
         return this.origin.age();
+    }
+
+    @Override
+    public final JsonObject asJson() {
+        return this.origin.asJson();
     }
 }
