@@ -13,16 +13,34 @@ import java.util.List;
 
 @Slf4j
 public final class RemoteNode implements Text {
+    /**
+     * HostAndPorn of Remote node
+     */
     private final HostAndPort hostAndPort;
 
+    /**
+     * Score of node
+     */
     private final Score score;
 
+    /**
+     * Is score is master
+     */
     private final boolean master;
 
+    /**
+     * Network name
+     */
     private final String network;
 
+    /**
+     * Id of node
+     */
     private final int idx;
 
+    /**
+     * Is Http client from node was touched , become true when http is called
+     */
     private boolean touched = false;
 
     public RemoteNode(
@@ -60,6 +78,10 @@ public final class RemoteNode implements Text {
         return this.master;
     }
 
+    /**
+     * @param path Path
+     * @return HttpClient with this path
+     */
     public HttpTriadaClient http(final String path) {
         this.touched = true;
         return new HttpTriadaClient(
