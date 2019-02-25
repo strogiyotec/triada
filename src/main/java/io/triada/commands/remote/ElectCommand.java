@@ -2,7 +2,7 @@ package io.triada.commands.remote;
 
 import io.triada.commands.Command;
 import io.triada.commands.ValuableCommand;
-import io.triada.http.HttpFileClient;
+import io.triada.http.HttpTriadaClient;
 import io.triada.models.score.AssertScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
@@ -43,12 +43,13 @@ public final class ElectCommand implements ValuableCommand<List<Score>> {
     }
 
     private List<Score> elect(final CommandLine commandLine) throws Exception {
-        final boolean ignoreScoreWeek = commandLine.hasOption("-ignore-score-weakness");
+        final boolean ignoreScoreWeek = commandLine.hasOption("-ignore_score_weakness");
+        final String maxWinners = commandLine.getOptionValue("max-winners");
         final List<Score> scores = new ArrayList<>(16);
         this.remotes.modify(remoteNode -> {
             final TriadaScore score = new TriadaScore(
-                    remoteNode.http("/")
-                            .get(HttpFileClient.READ_TIMEOUT)
+                    remoteNode.http("")
+                            .get(HttpTriadaClient.READ_TIMEOUT)
                             .get("score")
                             .getAsJsonObject()
             );
@@ -67,7 +68,7 @@ public final class ElectCommand implements ValuableCommand<List<Score>> {
         return scores.stream()
                 .peek(score -> System.out.println("Elected: " + score.asText()))
                 .sorted(Comparator.comparingInt(Score::value).reversed())
-                .limit(Integer.parseInt(commandLine.getOptionValue("max-winners")))
+                .limit(maxWinners == null ? 1 : Integer.parseInt(maxWinners))
                 .collect(Collectors.toList());
     }
 }

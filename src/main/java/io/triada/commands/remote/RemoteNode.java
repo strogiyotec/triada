@@ -1,7 +1,7 @@
 package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
-import io.triada.http.HttpFileClient;
+import io.triada.http.HttpTriadaClient;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
 import io.triada.node.NodeData;
@@ -60,11 +60,11 @@ public final class RemoteNode implements Text {
         return this.master;
     }
 
-    public HttpFileClient http(final String path) {
+    public HttpTriadaClient http(final String path) {
         this.touched = true;
-        return new HttpFileClient(
+        return new HttpTriadaClient(
                 String.format(
-                        "http:://%s:%d/%s",
+                        "http://%s:%d/%s",
                         this.hostAndPort.getHost(),
                         this.hostAndPort.getPort(),
                         path

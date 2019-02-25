@@ -37,6 +37,8 @@ public interface Command {
                                 .build()
                 ).addOption(
                         new Option("skip_ping", false, "Skip ping")
+                ).addOption(
+                        new Option("ignore_score_weakness", false, "Skip score weakness")
                 ).addOption(removeWallet());
     }
 
@@ -55,6 +57,7 @@ public interface Command {
     static Option elect() {
         final Option elect = new Option("r_elect", true, "Pick a random remote node as a target for a bonus awarding");
         elect.setArgs(1);
+        elect.setOptionalArg(true);
         return elect;
     }
 
