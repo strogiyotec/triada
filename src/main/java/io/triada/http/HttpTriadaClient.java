@@ -15,7 +15,7 @@ import java.util.Collections;
 /**
  * Triada http client
  */
-public final class HttpFileClient {
+public final class HttpTriadaClient {
 
     /**
      * Default read timeout
@@ -32,7 +32,7 @@ public final class HttpFileClient {
      *
      * @param url url path
      */
-    public HttpFileClient(final String url) {
+    public HttpTriadaClient(final String url) {
         this.url = url;
     }
 
@@ -44,8 +44,8 @@ public final class HttpFileClient {
      * @throws Exception if failed
      */
     public File getFile(final File file) throws Exception {
-        final ResponseEntity<byte[]> response = HttpFileClient.response(this.url);
-        HttpFileClient.validate(response);
+        final ResponseEntity<byte[]> response = HttpTriadaClient.response(this.url);
+        HttpTriadaClient.validate(response);
         final byte[] body = response.getBody();
         FileUtils.write(
                 file,
@@ -70,7 +70,10 @@ public final class HttpFileClient {
         factory.setReadTimeout(timeout);
 
         final RestTemplate template = new RestTemplate(factory);
-        final ResponseEntity<String> response = template.getForEntity(this.url, String.class);
+        final HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+        final HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
+        final ResponseEntity<String> response = template.exchange(this.url, HttpMethod.GET, entity, String.class, Collections.emptyMap());
         return new JsonParser().parse(response.getBody()).getAsJsonObject();
     }
 
@@ -81,8 +84,8 @@ public final class HttpFileClient {
      */
     public JsonObject putFile(final File file) throws Exception {
         final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        final ResponseEntity<String> response = HttpFileClient.response(this.url, content);
-        HttpFileClient.validate(response);
+        final ResponseEntity<String> response = HttpTriadaClient.response(this.url, content);
+        HttpTriadaClient.validate(response);
         return new JsonParser().parse(response.getBody()).getAsJsonObject();
     }
 
