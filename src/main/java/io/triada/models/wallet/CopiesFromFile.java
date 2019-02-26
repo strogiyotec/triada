@@ -31,6 +31,20 @@ public final class CopiesFromFile implements Copies {
 
     private final Path dir;
 
+    /**
+     * Add new Copy to given dir
+     * If file with given content already exists return name if this file
+     * Otherwise create new file with given content
+     * Finally Save New copy with generated name
+     *
+     * @param content     Content
+     * @param hostAndPort HostAndPort
+     * @param score       Score
+     * @param time        Time
+     * @param master      Master
+     * @return Name
+     * @throws IOException if failed
+     */
     @Override
     public String add(
             final String content,
@@ -78,6 +92,12 @@ public final class CopiesFromFile implements Copies {
 
     }
 
+    /**
+     * Remote copy with given host and port
+     *
+     * @param hostAndPort To remove
+     * @throws IOException if failed
+     */
     @Override
     public void remove(final HostAndPort hostAndPort) throws IOException {
         final List<CsvCopy> load = this.load();
@@ -94,6 +114,12 @@ public final class CopiesFromFile implements Copies {
         logDeleted(deleted, hostAndPort);
     }
 
+    /**
+     * Delete files with content which were added using add method, main file (scores.zc) still exists
+     *
+     * @return number of deleted files
+     * @throws IOException if failed
+     */
     @Override
     public int clean() throws IOException {
         final List<CsvCopy> list =
@@ -114,6 +140,12 @@ public final class CopiesFromFile implements Copies {
         return deleted;
     }
 
+    /**
+     * Group copies by name and collect them to list of {@link AllCopy}
+     *
+     * @return List of allCopies
+     * @throws IOException if failed
+     */
     @Override
     public List<AllCopy> all() throws IOException {
         final Map<String, List<CsvCopy>> groupBy =
@@ -133,6 +165,12 @@ public final class CopiesFromFile implements Copies {
                 )).collect(Collectors.toList());
     }
 
+    /**
+     * Load {@link CsvCopy} from scores file
+     *
+     * @return List of {@link CsvCopy}
+     * @throws IOException if failed
+     */
     @Override
     public List<CsvCopy> load() throws IOException {
         final Path file = this.file();
@@ -151,22 +189,46 @@ public final class CopiesFromFile implements Copies {
                 )).collect(Collectors.toList());
     }
 
+    /**
+     * @return Scores file
+     */
     private Path file() {
         return this.dir.resolve("scores" + EXT);
     }
 
+    /**
+     * @return Array of files with saved content @see add
+     */
     private File[] files() {
         return this.dir.toFile().listFiles((dir, name) -> removeExtension(name).matches("^[0-9]+$"));
     }
 
+    /**
+     * Append Content to scores
+     *
+     * @param copies Content
+     * @throws IOException if failed
+     */
     private void save(final List<String> copies) throws IOException {
         Files.write(this.file(), copies, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
     }
 
+    /**
+     * Rewrite scores with given Content
+     *
+     * @param copies Content
+     * @throws IOException if failed
+     */
     private void rewrite(final List<String> copies) throws IOException {
         Files.write(this.file(), copies, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Log if file was deleted
+     *
+     * @param deleted     Deleted
+     * @param hostAndPort HostAndPort
+     */
     private static void logDeleted(final boolean deleted, final HostAndPort hostAndPort) {
         if (deleted) {
             System.out.printf(
