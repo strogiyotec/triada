@@ -69,7 +69,7 @@ public final class TestHttp extends Assert {
 
     @Test
     public void testDownload() throws Exception {
-        final HttpFileClient httpClient = new HttpFileClient(String.format(
+        final HttpTriadaClient httpClient = new HttpTriadaClient(String.format(
                 "http://localhost:%d%s",
                 TEST_PORT,
                 URL_GET
@@ -82,7 +82,7 @@ public final class TestHttp extends Assert {
 
     @Test
     public void tesUpload() throws Exception {
-        final HttpFileClient httpClient = new HttpFileClient(String.format(
+        final HttpTriadaClient httpClient = new HttpTriadaClient(String.format(
                 "http://localhost:%d%s",
                 TEST_PORT,
                 URL_PUT
@@ -94,7 +94,7 @@ public final class TestHttp extends Assert {
 
     @Test(expected = ResourceAccessException.class)
     public void testBrokenUrl() throws Exception {
-        final HttpFileClient httpClient = new HttpFileClient(String.format(
+        final HttpTriadaClient httpClient = new HttpTriadaClient(String.format(
                 "http://localhost:4444%s",
                 URL_GET
         ));
