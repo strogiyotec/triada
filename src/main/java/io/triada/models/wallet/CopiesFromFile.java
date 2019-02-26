@@ -17,7 +17,13 @@ public final class CopiesFromFile implements Copies {
     private final File file;
 
     @Override
-    public void add(final String content, final HostAndPort hostAndPort, final int score, final Date time, final boolean master) {
+    public void add(
+            final String content,
+            final HostAndPort hostAndPort,
+            final int score,
+            final Date time,
+            final boolean master
+    ) {
 
     }
 
