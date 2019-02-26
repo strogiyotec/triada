@@ -9,6 +9,7 @@ import io.triada.models.transaction.SignedTransaction;
 import io.triada.text.Text;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 public interface Wallet extends Text {
@@ -49,7 +50,11 @@ public interface Wallet extends Text {
      * @return Wallet with subtracted transaction
      * @throws Exception if Failed
      */
-    Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details) throws Exception;
+    Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details, Date date) throws Exception;
+
+    default Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details) throws Exception {
+        return this.substract(amount, prefix, id, pvt, details, new Date());
+    }
 
     /**
      * @return List of txns

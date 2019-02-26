@@ -128,13 +128,14 @@ public final class TriadaWallet implements Wallet {
             final String prefix,
             final LongId id,
             final RsaKey pvt,
-            final String details
+            final String details,
+            final Date date
     ) throws Exception {
         final TxnAmount negative = amount.mpy(-1L);
         final String tid = this.maxTxnId();
         final ValidatedTxn validatedTxn = new ValidatedTxn(
                 tid,
-                new Date(),
+                date,
                 negative,
                 prefix,
                 id,
