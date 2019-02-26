@@ -52,7 +52,7 @@ public final class ConstCsvCopy implements CsvCopy {
     @Override
     public String asText() {
         return String.format(
-                "%s,%s,%d,%d,%d,%s\n",
+                "%s,%s,%d,%d,%d,%s",
                 this.name,
                 this.host,
                 this.port,
