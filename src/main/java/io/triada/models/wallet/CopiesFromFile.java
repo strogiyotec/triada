@@ -4,7 +4,6 @@ import com.google.common.hash.Hashing;
 import com.google.common.net.HostAndPort;
 import io.triada.text.Text;
 import lombok.AllArgsConstructor;
-import org.jooq.lambda.Seq;
 import org.jooq.lambda.Unchecked;
 
 import java.io.File;
@@ -14,10 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,20 +72,17 @@ public final class CopiesFromFile implements Copies {
             name = String.valueOf(max + 1);
             Files.write(this.dir.resolve(name + EXT), content.getBytes(StandardCharsets.UTF_8));
         }
-        this.save(
-                Seq.seq(this.load().stream())
-                        .filter(csv -> !csv.host().equals(hostAndPort.getHost()) && csv.port() != hostAndPort.getPort())//remove element with same host and port
-                        .append(new ConstCsvCopy(
-                                name,
-                                hostAndPort.getHost(),
-                                hostAndPort.getPort(),
-                                score,
-                                time,
-                                master
-                        ))
-                        .map(Text::asText)
-                        .toList()
-        );
+        final List<CsvCopy> load = this.load();
+        logDeleted(load.removeIf(csv -> csv.port() == hostAndPort.getPort() && csv.host().equals(hostAndPort.getHost())), hostAndPort);
+        load.add(new ConstCsvCopy(
+                name,
+                hostAndPort.getHost(),
+                hostAndPort.getPort(),
+                score,
+                time,
+                master
+        ));
+        this.rewrite(load.stream().map(CsvCopy::asText).collect(Collectors.toList()));
         return name;
 
     }
@@ -159,10 +154,16 @@ public final class CopiesFromFile implements Copies {
                         line.getValue().size(),
                         line.getValue().stream().anyMatch(CsvCopy::master),
                         line.getValue().stream()
-                                .filter(copy -> copy.time().compareTo(new Date(System.currentTimeMillis() - 24 * 60 * 60)) >= 0)
+                                .filter(copy -> copy.time().compareTo(Date.from(Instant.now().minus(Duration.ofDays(1)))) >= 0)
                                 .mapToInt(CsvCopy::score)
                                 .sum()
-                )).collect(Collectors.toList());
+                )
+        ).sorted(
+                Comparator.comparing(AllCopy::master)
+                        .reversed()
+                        .thenComparing(AllCopy::score)
+                        .reversed()
+        ).collect(Collectors.toList());
     }
 
     /**

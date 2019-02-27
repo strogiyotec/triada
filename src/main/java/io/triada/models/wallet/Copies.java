@@ -14,6 +14,10 @@ public interface Copies {
         return this.add(content, hostAndPort, score, new Date(), false);
     }
 
+    default String add(String content, HostAndPort hostAndPort, int score,boolean master) throws Exception {
+        return this.add(content, hostAndPort, score, new Date(), master);
+    }
+
     void remove(HostAndPort hostAndPort) throws IOException;
 
     int clean() throws IOException;

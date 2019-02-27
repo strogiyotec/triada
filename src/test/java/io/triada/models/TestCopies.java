@@ -6,6 +6,7 @@ import io.triada.mocks.FakeHome;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
+import io.triada.models.wallet.AllCopy;
 import io.triada.models.wallet.CopiesFromFile;
 import io.triada.models.wallet.Wallet;
 import org.junit.Assert;
@@ -18,6 +19,9 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 
 public final class TestCopies extends Assert {
 
@@ -47,7 +51,62 @@ public final class TestCopies extends Assert {
                         .score(),
                 11
         );
+    }
 
+    @Test
+    public void testSortByScore() throws Exception {
+        final File file = temporaryFolder.newFolder();
+        final CopiesFromFile copies = new CopiesFromFile(file.toPath());
+        copies.add(this.content("content-1"), HostAndPort.fromParts("192.168.0.1", 80), 1);
+        copies.add(this.content("content-2"), HostAndPort.fromParts("192.168.0.2", 80), 2);
+        copies.add(this.content("content-3"), HostAndPort.fromParts("192.168.0.3", 80), 50);
+        copies.add(this.content("content-4"), HostAndPort.fromParts("192.168.0.4", 80), 3);
+
+        assertArrayEquals(new int[]{50, 3, 2, 1}, copies.all().stream().mapToInt(AllCopy::score).toArray());
+    }
+
+    @Test
+    public void testIgnoreTooOldScores() throws Exception {
+
+    }
+
+    @Test
+    public void testListEmptyDir() throws Exception {
+        final File file = temporaryFolder.newFolder();
+        final CopiesFromFile copiesFromFile = new CopiesFromFile(file.toPath());
+        assertTrue(copiesFromFile.all().isEmpty());
+
+    }
+
+    @Test
+    public void testOverwriteHost() throws Exception {
+        final File file = temporaryFolder.newFolder();
+        final CopiesFromFile copiesFromFile = new CopiesFromFile(file.toPath());
+        copiesFromFile.add(this.content("z1"), HostAndPort.fromParts("localhost", 80), 5);
+        copiesFromFile.add(this.content("z1"), HostAndPort.fromParts("localhost", 80), 6);
+        copiesFromFile.add(this.content("z1"), HostAndPort.fromParts("localhost", 80), 7);
+
+        assertEquals(copiesFromFile.all().size(), 1);
+        assertEquals(7, copiesFromFile.all().get(0).score());
+    }
+
+    @Test
+    public void testMasterFirst() throws Exception {
+        final File file = temporaryFolder.newFolder();
+        final CopiesFromFile copiesFromFile = new CopiesFromFile(file.toPath());
+        copiesFromFile.add(this.content("z1"), HostAndPort.fromParts("master", 80), 5, true);
+        copiesFromFile.add(this.content("z2"), HostAndPort.fromParts("edge", 80), 6);
+
+        assertTrue(copiesFromFile.all().get(0).master());
+    }
+
+    @Test
+    public void testIgnoreOldScores() throws Exception {
+        final File file = temporaryFolder.newFolder();
+        final CopiesFromFile copiesFromFile = new CopiesFromFile(file.toPath());
+        copiesFromFile.add(this.content("beta"), HostAndPort.fromParts("192.168.0.3", 80), 7, Date.from(Instant.now().minus(Duration.ofDays(10))), false);
+
+        assertEquals(0,copiesFromFile.all().get(0).score());
     }
 
     private String content(final String text) throws Exception {
