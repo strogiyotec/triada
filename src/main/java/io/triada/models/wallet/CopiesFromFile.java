@@ -120,7 +120,7 @@ public final class CopiesFromFile implements Copies {
         final List<CsvCopy> list =
                 this.load()
                         .stream()
-                        .filter(copy -> copy.time().compareTo(new Date(System.currentTimeMillis() - 24 * 60 * 60)) >= 0)
+                        .filter(copy -> copy.time().compareTo(Date.from(Instant.now().minus(Duration.ofDays(1)))) >= 0)
                         .collect(Collectors.toList());
         this.rewrite(list.stream().map(Text::asText).collect(Collectors.toList()));
         int deleted = 0;
@@ -160,7 +160,6 @@ public final class CopiesFromFile implements Copies {
                 )
         ).sorted(
                 Comparator.comparing(AllCopy::master)
-                        .reversed()
                         .thenComparing(AllCopy::score)
                         .reversed()
         ).collect(Collectors.toList());

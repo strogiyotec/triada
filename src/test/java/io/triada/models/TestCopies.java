@@ -66,11 +66,6 @@ public final class TestCopies extends Assert {
     }
 
     @Test
-    public void testIgnoreTooOldScores() throws Exception {
-
-    }
-
-    @Test
     public void testListEmptyDir() throws Exception {
         final File file = temporaryFolder.newFolder();
         final CopiesFromFile copiesFromFile = new CopiesFromFile(file.toPath());
