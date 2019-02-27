@@ -39,7 +39,8 @@ public interface Command {
                         new Option("skip_ping", false, "Skip ping")
                 ).addOption(
                         new Option("ignore_score_weakness", false, "Skip score weakness")
-                ).addOption(removeWallet());
+                ).addOption(removeWallet())
+                .addOption(clean());
     }
 
     /**
@@ -59,6 +60,10 @@ public interface Command {
         elect.setArgs(1);
         elect.setOptionalArg(true);
         return elect;
+    }
+
+    static Option clean() {
+        return new Option("clean", true, "Clean expired copies");
     }
 
     static Option removeWallet() {
