@@ -17,7 +17,7 @@ public final class CleanCommand implements Command {
         if (cmd.hasOption("-clean")) {
             this.copies.clean();
         } else {
-            throw new IllegalStateException("Command -r_elect was not provided");
+            throw new IllegalStateException("Command -clean was not provided");
         }
     }
 }
