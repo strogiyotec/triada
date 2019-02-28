@@ -40,7 +40,8 @@ public interface Command {
                 ).addOption(
                         new Option("ignore_score_weakness", false, "Skip score weakness")
                 ).addOption(removeWallet())
-                .addOption(clean());
+                .addOption(clean())
+                .addOption(fetch());
     }
 
     /**
@@ -69,6 +70,14 @@ public interface Command {
     static Option removeWallet() {
         final Option option = new Option("remove", true, "Remove wallet from dir");
         option.setArgs(1);
+        option.setOptionalArg(true);
+        option.setValueSeparator(' ');
+        return option;
+    }
+
+    static Option fetch() {
+        final Option option = new Option("fetch", true, "Fetch wallets from network");
+        option.setArgs(10);
         option.setOptionalArg(true);
         option.setValueSeparator(' ');
         return option;

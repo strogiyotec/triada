@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
+// TODO: 2/28/19 Add test
 @AllArgsConstructor
 public final class CleanCommand implements Command {
 
