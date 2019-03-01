@@ -60,4 +60,7 @@ public interface Wallet extends Text {
      * @return List of txns
      */
     List<SignedTransaction> transactions();
+
+    @Override
+    boolean equals(Object other);
 }

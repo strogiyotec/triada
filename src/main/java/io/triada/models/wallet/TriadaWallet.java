@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -155,6 +156,18 @@ public final class TriadaWallet implements Wallet {
     @Override
     public String asText() {
         return this.head.id();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        final Wallet other = (Wallet) obj;
+        return Objects.equals(this.head.id(), other.head().id());
     }
 
     /**

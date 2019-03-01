@@ -1,6 +1,5 @@
 package io.triada.models.wallet;
 
-import io.triada.models.id.LongId;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 
@@ -18,15 +17,13 @@ public final class Wallets {
     /**
      * @return List of wallets IDs
      */
-    public List<LongId> all() {
+    public List<String> all() {
         return Stream.of(Objects.requireNonNull(this.dir.listFiles((dir, name) -> name.endsWith(TriadaWallet.EXT))))
                 .map(file -> FilenameUtils.removeExtension(file.getName()))
-                .map(LongId::new)
                 .collect(Collectors.toList());
     }
 
     /**
-     *
      * @return Amount of wallets
      */
     public int count() {
