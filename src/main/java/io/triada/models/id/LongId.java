@@ -21,7 +21,7 @@ public final class LongId implements Id<Long> {
     /**
      * Root wallet
      */
-    private static final Id<Long> ROOT = new LongId("0000000000000000");
+    public static final Id<Long> ROOT = new LongId("0000000000000000");
 
     /**
      * Id
