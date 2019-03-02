@@ -22,18 +22,28 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
+/**
+ * This class contains copies of wallets
+ * One file with name 'scores' is a csv file with names of each wallet fail .For example name = 1
+ * that means , we have file with name '1' in the dir , this file represent wallet with wallet information like head and transactions
+ */
 @AllArgsConstructor
-public final class CopiesFromFile implements Copies {
+public final class CopiesFromFile implements Copies<File> {
 
     private static final String EXT = ".zc";
 
     private final Path dir;
 
+    @Override
+    public File root() {
+        return dir.toFile().getParentFile();
+    }
+
     /**
      * Add new Copy to given dir
-     * If file with given content already exists return name if this file
+     * If file with given content already exists return name of this file
      * Otherwise create new file with given content
-     * Finally Save New copy with generated name
+     * Finally Save new wallet copy's name to scores.zc file
      *
      * @param content     Content
      * @param hostAndPort HostAndPort
