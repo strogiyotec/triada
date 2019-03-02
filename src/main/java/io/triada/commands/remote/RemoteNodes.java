@@ -172,6 +172,7 @@ public final class RemoteNodes implements Remotes {
 
     /**
      * Accept given consumer to all nodes in file
+     * If exception was thrown ,increment error for remote
      *
      * @param consumer Consumer
      * @param farm     Farm

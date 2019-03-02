@@ -6,7 +6,7 @@ import io.triada.mocks.FakeHome;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
-import io.triada.models.wallet.AllCopy;
+import io.triada.models.wallet.WalletCopy;
 import io.triada.models.wallet.CopiesFromFile;
 import io.triada.models.wallet.Wallet;
 import org.junit.Assert;
@@ -43,13 +43,13 @@ public final class TestCopies extends Assert {
         copies.clean();
         assertEquals(2, copies.all().size());
         assertEquals(
+                11,
                 copies.all()
                         .stream()
                         .filter(csv -> csv.name().equals("1"))
                         .findFirst()
                         .get()
-                        .score(),
-                11
+                        .score()
         );
     }
 
@@ -62,7 +62,7 @@ public final class TestCopies extends Assert {
         copies.add(this.content("content-3"), HostAndPort.fromParts("192.168.0.3", 80), 50);
         copies.add(this.content("content-4"), HostAndPort.fromParts("192.168.0.4", 80), 3);
 
-        assertArrayEquals(new int[]{50, 3, 2, 1}, copies.all().stream().mapToInt(AllCopy::score).toArray());
+        assertArrayEquals(new int[]{50, 3, 2, 1}, copies.all().stream().mapToInt(WalletCopy::score).toArray());
     }
 
     @Test
@@ -101,7 +101,7 @@ public final class TestCopies extends Assert {
         final CopiesFromFile copiesFromFile = new CopiesFromFile(file.toPath());
         copiesFromFile.add(this.content("beta"), HostAndPort.fromParts("192.168.0.3", 80), 7, Date.from(Instant.now().minus(Duration.ofDays(10))), false);
 
-        assertEquals(0,copiesFromFile.all().get(0).score());
+        assertEquals(0, copiesFromFile.all().get(0).score());
     }
 
     private String content(final String text) throws Exception {
