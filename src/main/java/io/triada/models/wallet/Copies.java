@@ -19,7 +19,7 @@ public interface Copies<T> {
 
     int clean() throws IOException;
 
-    List<AllCopy> all() throws IOException;
+    List<WalletCopy> all() throws IOException;
 
     List<CsvCopy> load() throws IOException;
 

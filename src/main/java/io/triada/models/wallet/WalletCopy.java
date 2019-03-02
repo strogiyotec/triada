@@ -2,7 +2,7 @@ package io.triada.models.wallet;
 
 import java.io.File;
 
-public interface AllCopy {
+public interface WalletCopy {
     String name();
 
     File path();

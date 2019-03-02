@@ -146,19 +146,19 @@ public final class CopiesFromFile implements Copies<File> {
     }
 
     /**
-     * Group copies by name and collect them to list of {@link AllCopy}
+     * Group copies by name and collect them to list of {@link WalletCopy}
      *
      * @return List of allCopies
      * @throws IOException if failed
      */
     @Override
-    public List<AllCopy> all() throws IOException {
+    public List<WalletCopy> all() throws IOException {
         final Map<String, List<CsvCopy>> groupBy =
                 this.load()
                         .stream()
                         .collect(Collectors.groupingBy(CsvCopy::name));
         return groupBy.entrySet().stream().map(line ->
-                new ConstAllCopy(
+                new ConstWalletCopy(
                         line.getKey(),
                         this.dir.resolve(line.getKey() + EXT).toFile(),
                         line.getValue().size(),
@@ -169,8 +169,8 @@ public final class CopiesFromFile implements Copies<File> {
                                 .sum()
                 )
         ).sorted(
-                Comparator.comparing(AllCopy::master)
-                        .thenComparing(AllCopy::score)
+                Comparator.comparing(WalletCopy::master)
+                        .thenComparing(WalletCopy::score)
                         .reversed()
         ).collect(Collectors.toList());
     }

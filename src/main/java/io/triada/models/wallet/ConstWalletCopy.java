@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import java.io.File;
 
 @AllArgsConstructor
-public final class ConstAllCopy implements AllCopy {
+public final class ConstWalletCopy implements WalletCopy {
 
     private final String name;
 
