@@ -23,7 +23,7 @@ public final class FakeHeadFile {
             final String head = String.join(
                     System.lineSeparator(),
                     Triada.TEST_NETWORK,
-                    "322",
+                    Triada.PROTOCOL,
                     id.toString(),
                     new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/id_rsa.pub"))).asPublic(),
                     "\r"
@@ -44,7 +44,7 @@ public final class FakeHeadFile {
                 final String head = String.join(
                         System.lineSeparator(),
                         "test",
-                        "322",
+                        Triada.PROTOCOL,
                         id.toString(),
                         new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/id_rsa.pub"))).asPublic(),
                         "\r"
