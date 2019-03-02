@@ -8,4 +8,6 @@ public interface Triada {
     String VERSION = "0.0.0";
 
     String PROTOCOL = "1";
+
+    String TEST_NETWORK = "test";
 }

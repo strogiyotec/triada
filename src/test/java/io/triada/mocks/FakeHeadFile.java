@@ -1,6 +1,7 @@
 package io.triada.mocks;
 
 import com.google.common.io.Files;
+import io.triada.Triada;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.wallet.TriadaWallet;
@@ -11,6 +12,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+//// TODO: 3/2/19 Maybe use TempFolder rule ? Need to check it
 public final class FakeHeadFile {
 
     public File fakeHome(final LongId id) throws Exception {
@@ -20,7 +22,7 @@ public final class FakeHeadFile {
         try (final FileWriter writer = new FileWriter(tempFile)) {
             final String head = String.join(
                     System.lineSeparator(),
-                    "test",
+                    Triada.TEST_NETWORK,
                     "322",
                     id.toString(),
                     new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/id_rsa.pub"))).asPublic(),
