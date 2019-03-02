@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
+import java.io.File;
+
 // TODO: 2/28/19 Add test
 @AllArgsConstructor
 public final class CleanCommand implements Command {
 
-    private final Copies copies;
+    private final Copies<File> copies;
 
     @Override
     public void run(final String[] argc) throws Exception {
