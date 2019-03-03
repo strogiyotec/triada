@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Delegate thread pool and store name of each thread inside this pool
+ */
 public final class NamedThreadExecutor extends ThreadPoolExecutor {
 
     private final List<String> threadNames;
@@ -26,11 +29,21 @@ public final class NamedThreadExecutor extends ThreadPoolExecutor {
         this.threadNames = new ArrayList<>(this.executor.getPoolSize());
     }
 
+    /**
+     * Save name of this thread
+     *
+     * @param t Thread
+     * @param r Runnable
+     */
     @Override
     protected void beforeExecute(final Thread t, final Runnable r) {
         threadNames.add(t.getName());
     }
 
+    /**
+     * @param name Name of Thread
+     * @return TRUE if thread's name exists
+     */
     public boolean exists(final String name) {
         return threadNames.contains(name);
     }
