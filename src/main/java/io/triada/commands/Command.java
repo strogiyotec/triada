@@ -41,7 +41,10 @@ public interface Command {
                         new Option("ignore_score_weakness", false, "Skip score weakness")
                 ).addOption(removeWallet())
                 .addOption(clean())
-                .addOption(fetch());
+                .addOption(fetch())
+                .addOption(pay())
+                .addOption(invoice())
+                .addOption(propagate());
     }
 
     /**
@@ -76,11 +79,27 @@ public interface Command {
     }
 
     static Option fetch() {
-        final Option option = new Option("fetch", true, "Fetch wallets from network");
-        option.setArgs(10);
+        return getOption("fetch", "Fetch wallets from network", 10);
+    }
+
+    static Option invoice() {
+        return getOption("invoice", "Generate invoice", 10);
+    }
+
+    static Option propagate() {
+        return getOption("propagate", "Returns list of Wallet IDs which were affected", 1);
+    }
+
+    static Option getOption(final String fetch, final String s, final int i) {
+        final Option option = new Option(fetch, true, s);
+        option.setArgs(i);
         option.setOptionalArg(true);
         option.setValueSeparator(' ');
         return option;
+    }
+
+    static Option pay() {
+        return getOption("pay", "Money send command", 8);
     }
 
 }
