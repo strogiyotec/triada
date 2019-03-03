@@ -50,6 +50,7 @@ final class PayParams {
     public Tax taxes(final Wallets wallets) throws Exception {
         final Wallet wallet = wallets.acq(this.payerWalletId());
         // TODO: 3/3/19 Need taxes command
+        return null;
     }
 
     public String details() {
