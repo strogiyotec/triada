@@ -35,6 +35,21 @@ public interface Wallet extends Text {
     Amount<Long> balance();
 
     /**
+     * @param id  txn id
+     * @param bnf Beneficiary id
+     * @return Returns TRUE if the wallet contains a payment received with the specified
+     * which was sent by the specified beneficiary.
+     */
+    boolean exists(int id, LongId bnf);
+
+    /**
+     * @param prefix Prefix
+     * @return TRUE if the public key of the wallet includes this payment
+     * prefix of the invoice.
+     */
+    boolean prefix(String prefix);
+
+    /**
      * @param transaction New Transaction
      * @return Wallet with new Transaction
      * @throws Exception if Failed
@@ -52,10 +67,6 @@ public interface Wallet extends Text {
      */
     Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details, Date date) throws Exception;
 
-    default Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details) throws Exception {
-        return this.substract(amount, prefix, id, pvt, details, new Date());
-    }
-
     /**
      * @return List of txns
      */
@@ -63,4 +74,8 @@ public interface Wallet extends Text {
 
     @Override
     boolean equals(Object other);
+
+    default Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details) throws Exception {
+        return this.substract(amount, prefix, id, pvt, details, new Date());
+    }
 }

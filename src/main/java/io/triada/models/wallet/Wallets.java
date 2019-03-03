@@ -29,4 +29,9 @@ public final class Wallets {
     public int count() {
         return Objects.requireNonNull(this.dir.listFiles((dir, name) -> name.endsWith(TriadaWallet.EXT))).length;
     }
+
+    public Wallet acq(final String id) throws Exception {
+        return new TriadaWallet(this.dir.toPath().resolve(id + TriadaWallet.EXT).toFile());
+
+    }
 }

@@ -106,6 +106,19 @@ public final class TriadaWallet implements Wallet {
     }
 
     @Override
+    public boolean exists(final int id, final LongId bnf) {
+        return this.transactions()
+                .stream()
+                .map(ParsedTxnData::new)
+                .anyMatch(p -> p.id() == id && p.bnf().equals(bnf));
+    }
+
+    @Override
+    public boolean prefix(final String prefix) {
+        return this.head.key().contains(prefix);
+    }
+
+    @Override
     public Wallet add(final SignedTransaction transaction) throws IOException {
         try (final FileWriter writer = new FileWriter(this.file, true)) {
             writer.append(
