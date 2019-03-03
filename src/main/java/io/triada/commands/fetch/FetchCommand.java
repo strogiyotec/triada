@@ -39,7 +39,7 @@ public final class FetchCommand implements Command {
     public void run(final String[] argc) throws Exception {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
         if (cmd.hasOption("-fetch")) {
-            final FetchArgc fetchArgc = new FetchArgc(Arrays.asList(cmd.getOptionValues("fetch")));
+            final FetchParams fetchArgc = new FetchParams(Arrays.asList(cmd.getOptionValues("fetch")));
             for (final String id : fetchArgc.wallets(this.wallets.all())) {
                 this.fetch(fetchArgc, id, new CopiesFromFile(copies.resolve(id)));
             }
@@ -48,7 +48,7 @@ public final class FetchCommand implements Command {
         }
     }
 
-    private void fetch(final FetchArgc argc, final String id, final Copies<File> cps) throws Exception {
+    private void fetch(final FetchParams argc, final String id, final Copies<File> cps) throws Exception {
         // TODO: 3/2/19 Why nodes and done ??
         final AtomicInteger nodes = new AtomicInteger(0);
         final AtomicInteger total = new AtomicInteger(0);
@@ -91,7 +91,7 @@ public final class FetchCommand implements Command {
             final String id,
             final RemoteNode remoteNode,
             final Copies<File> copies,
-            final FetchArgc argc
+            final FetchParams argc
     ) {
         final String remoteStr = remoteNode.asText();
         if (argc.ignoreNodes().contains(remoteStr)) {
@@ -142,7 +142,7 @@ public final class FetchCommand implements Command {
 
     private static void assertWallet(
             final String id,
-            final FetchArgc argc,
+            final FetchParams argc,
             final Wallet wallet
     ) {
         if (!wallet.head().protocol().equals(Triada.PROTOCOL)) {
@@ -190,7 +190,7 @@ public final class FetchCommand implements Command {
 
     private static void assertScore(
             final RemoteNode remoteNode,
-            final FetchArgc argc,
+            final FetchParams argc,
             final Score score
     ) {
         AssertScore.assertValidScore(score);

@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 @AllArgsConstructor
-public final class FetchArgc {
+final class FetchParams {
 
     private final List<String> params;
 
