@@ -1,4 +1,4 @@
-package io.triada.commands;
+package io.triada.commands.merge;
 
 import io.triada.models.id.LongId;
 
