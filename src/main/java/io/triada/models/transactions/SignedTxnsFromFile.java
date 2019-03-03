@@ -7,6 +7,7 @@ import io.triada.models.transaction.SignedTxnFromText;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,7 +26,7 @@ public final class SignedTxnsFromFile implements SignedTxns<SignedTxnFromText> {
 
     public SignedTxnsFromFile(final File file) throws IOException {
         this(
-                Stream.of(readFileToString(file, UTF_8).split(System.getProperty("line.separator"))),
+                Files.lines(file.toPath()),
                 file
         );
     }
