@@ -33,6 +33,10 @@ public final class LongId implements Id<Long> {
         this.id = new BigInteger(id, 16).longValue();
     }
 
+    public LongId(final Long id) {
+        this.id = id;
+    }
+
     /**
      * Create random id
      */
