@@ -16,6 +16,7 @@ public final class ParsedTxnData implements TriadaTxn.Data {
     private final String prefix;
     private final String details;
     private final SignedTransaction signed;
+    private final LongId bnf;
 
     public ParsedTxnData(final SignedTransaction signed) {
         final JsonObject jsonObject = signed.origin().asJson();
@@ -26,6 +27,7 @@ public final class ParsedTxnData implements TriadaTxn.Data {
         this.prefix = jsonObject.get("prefix").getAsString();
         this.details = jsonObject.get("details").getAsString();
         this.signed = signed;
+        this.bnf = new LongId(jsonObject.get("bnf").getAsLong());
     }
 
     @Override
@@ -50,7 +52,7 @@ public final class ParsedTxnData implements TriadaTxn.Data {
 
     @Override
     public LongId bnf() {
-        return null;
+        return this.bnf;
     }
 
     @Override
