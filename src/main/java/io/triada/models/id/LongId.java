@@ -50,20 +50,11 @@ public final class LongId implements Id<Long> {
     }
 
     /**
-     *
      * @return Id
      */
     @Override
     public Long id() {
         return this.id;
-    }
-
-    /**
-     * @return 16 chars length representation of id in hex
-     */
-    @Override
-    public String toString() {
-        return new HexNumber(16, this.id).asText();
     }
 
     /**
@@ -80,5 +71,13 @@ public final class LongId implements Id<Long> {
                     )
             );
         }
+    }
+
+    /**
+     * @return 16 chars length representation of id in hex
+     */
+    @Override
+    public String asText() {
+        return new HexNumber(16, this.id).asText();
     }
 }
