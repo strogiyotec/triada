@@ -44,7 +44,8 @@ public interface Command {
                 .addOption(fetch())
                 .addOption(pay())
                 .addOption(invoice())
-                .addOption(propagate());
+                .addOption(propagate())
+                .addOption(taxes());
     }
 
     /**
@@ -81,6 +82,11 @@ public interface Command {
     static Option fetch() {
         return getOption("fetch", "Fetch wallets from network", 10);
     }
+
+    static Option taxes() {
+        return getOption("taxes", "Taxes Command", 10);
+    }
+
 
     static Option invoice() {
         return getOption("invoice", "Generate invoice", 10);
