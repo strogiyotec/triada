@@ -61,6 +61,13 @@ public final class SignedTxnsFromFile implements SignedTxns<SignedTxnFromText> {
         return new SignedTxnsFromFile(this.file);
     }
 
+    /**
+     * Append new Txn to given file
+     *
+     * @param file To save
+     * @param txn  TO save
+     * @throws IOException if failed
+     */
     private static void appendTxnToFile(final File file, final SignedTransaction txn) throws IOException {
         final ParsedTxnData txnData = new ParsedTxnData(txn);
         try (final FileWriter writer = new FileWriter(file, true)) {
