@@ -37,4 +37,8 @@ final class TaxesParams {
                 .map(p -> Arrays.asList(p.split(",")))
                 .orElse(Collections.emptyList());
     }
+
+    public boolean ignoreScoreWeakness() {
+        return this.params.contains("ignore-score-weakness");
+    }
 }
