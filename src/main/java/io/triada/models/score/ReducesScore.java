@@ -28,4 +28,13 @@ public final class ReducesScore extends ScoreEnvelope {
             );
         });
     }
+
+    /**
+     * Default amount is 4
+     *
+     * @param origin Origin score
+     */
+    public ReducesScore(final Score origin) {
+        this(4, origin);
+    }
 }
