@@ -59,12 +59,17 @@ public final class TxnTaxes implements Tax {
     /**
      * Max amount allowed amount in one txn
      */
-    private static final TxnAmount MAX_PAYMENT = new TxnAmount(new BigDecimal("1"));
+    private static final TxnAmount MAX_PAYMENT = new TxnAmount(new BigDecimal("16"));
 
     /**
      * Text prefix for taxes
      */
     private static final String PREFIX = "TAXES";
+
+    /**
+     * Tolerate debt
+     */
+    public static final TxnAmount TRIAL = new TxnAmount(new BigDecimal("1"));
 
     private final Wallet wallet;
 
