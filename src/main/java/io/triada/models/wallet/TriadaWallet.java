@@ -1,6 +1,7 @@
 package io.triada.models.wallet;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Hashing;
 import io.triada.dates.DateConverters;
 import io.triada.models.amount.Amount;
 import io.triada.models.amount.TxnAmount;
@@ -20,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Date;
@@ -131,6 +133,17 @@ public final class TriadaWallet implements Wallet {
             );
         }
         return new TriadaWallet(this.file);
+    }
+
+    @Override
+    public String mnemo() throws Exception {
+        return String.join(
+                ",",
+                this.head.id(),
+                this.balance().asText(4),
+                String.valueOf(this.txns.txns().size()) + "t",
+                Hashing.sha256().hashBytes(Files.readAllBytes(this.file.toPath())).toString().substring(0, 6)
+        );
     }
 
     /**

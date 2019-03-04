@@ -57,6 +57,11 @@ public interface Wallet extends Text {
     Wallet add(SignedTransaction transaction) throws Exception;
 
     /**
+     * @return String representation of wallet to log
+     */
+    String mnemo() throws Exception;
+
+    /**
      * @param amount  To sub
      * @param prefix  Of txn
      * @param id      is the wallet ID of the paying or receiving wallet
