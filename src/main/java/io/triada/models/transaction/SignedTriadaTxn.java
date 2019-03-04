@@ -18,8 +18,8 @@ public final class SignedTriadaTxn implements SignedTransaction {
 
     /**
      * @param origin   The origin txn
-     * @param prvtKey  Private key
-     * @param walletId Wallet Id
+     * @param prvtKey  Private key of wallet
+     * @param walletId Owner wallet id
      * @throws Exception If failed
      */
     public SignedTriadaTxn(final Transaction origin, final Key prvtKey, final Id<Long> walletId) throws Exception {

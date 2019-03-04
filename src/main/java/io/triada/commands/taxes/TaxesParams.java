@@ -41,4 +41,16 @@ final class TaxesParams {
     public boolean ignoreScoreWeakness() {
         return this.params.contains("ignore-score-weakness");
     }
+
+    public boolean ignoreNodesAbsence() {
+        return this.params.contains("ignore-nodes-absence");
+    }
+
+    public String privateKey() {
+        return this.params.stream()
+                .filter(p -> p.contains("private-key="))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Provide private key path "));
+    }
 }

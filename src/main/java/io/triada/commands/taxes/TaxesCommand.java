@@ -3,10 +3,13 @@ package io.triada.commands.taxes;
 import com.google.gson.JsonObject;
 import io.triada.commands.Command;
 import io.triada.commands.remote.Remotes;
+import io.triada.models.key.RsaKey;
 import io.triada.models.score.AssertScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
+import io.triada.models.tax.TaxMetadata;
 import io.triada.models.tax.TxnTaxes;
+import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 import io.triada.node.farm.Farm;
@@ -14,6 +17,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -59,9 +63,8 @@ public final class TaxesCommand implements Command {
 
     private void pay(final String id, final TaxesParams params) throws Exception {
         final Wallet wallet = this.wallets.acq(id);
-        final TxnTaxes taxes = new TxnTaxes(wallet);
-        final long debt = taxes.debt();
-        final long total = debt;
+        TxnTaxes taxes = new TxnTaxes(wallet);
+        long debt = taxes.debt();
         System.out.printf(
                 "The current debt of %s is %d tridz the balance is %s : %s\n",
                 wallet.mnemo(),
@@ -72,6 +75,42 @@ public final class TaxesCommand implements Command {
         if (debt < TRIAL.value()) {
             System.out.printf("No need to pay taxes yet , while the debt is less than %d\n", TRIAL.value());
             return;
+        }
+        final List<Score> top = bestScores(params);
+        final List<Score> everyBody = new ArrayList<>(top);
+        int paid = 0;
+        while (debt > TxnTaxes.TRIAL.value()) {
+            if (top.isEmpty()) {
+                final String message =
+                        String.format(
+                                "There were %d remote nodes as tax collecting candidates",
+                                everyBody.size()
+                        );
+                if (!params.ignoreNodesAbsence()) {
+                    throw new IllegalStateException(message);
+                } else {
+                    System.out.println(message);
+                    break;
+                }
+            }
+            final Score best = top.remove(0);
+            if (taxes.exists(TaxMetadata.detais(best))) {
+                System.out.printf("The score has already been taxes : %s\n", best.asText());
+                continue;
+            }
+            taxes = taxes.pay(new RsaKey(new File(params.privateKey())), best);
+            final ParsedTxnData data = new ParsedTxnData(taxes.last().get());
+            debt += data.amount().value();
+            paid++;
+            System.out.printf(
+                    "%d of taxes paid from %s to %s Payment number %d ,txn %d/%d left to pay\n",
+                    data.amount().value(),
+                    wallet.head().id(),
+                    data.bnf().asText(),
+                    paid,
+                    data.id(),
+                    wallet.transactions().size()
+            );
         }
 
     }
