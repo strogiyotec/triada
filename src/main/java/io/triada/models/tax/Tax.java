@@ -13,11 +13,12 @@ public interface Tax extends Text {
 
     Tax pay(RsaKey rsaKey, Score score) throws Exception;
 
-    long paid() throws Exception;
+    long paid();
 
-    long debt() throws Exception;
+    long debt();
 
     Optional<SignedTransaction> last();
 
     String details(Score score);
+
 }

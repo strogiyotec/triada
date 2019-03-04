@@ -64,17 +64,26 @@ public final class TxnTaxes implements Tax {
     /**
      * Text prefix for taxes
      */
-    private static final String PREFIX = "TAXES";
+    public static final String PREFIX = "TAXES";
 
     /**
      * Tolerate debt
      */
     public static final TxnAmount TRIAL = new TxnAmount(new BigDecimal("1"));
 
+    /**
+     * Wallet
+     */
     private final Wallet wallet;
 
+    /**
+     * Should ignore score weakness
+     */
     private final boolean ignoreScoreWeakness;
 
+    /**
+     * Current strength
+     */
     private final int strength;
 
     public TxnTaxes(
@@ -136,10 +145,9 @@ public final class TxnTaxes implements Tax {
      * // TODO: 2/7/19 remove throws
      *
      * @return Sum of amounts in wallet
-     * @throws Exception if failed
      */
     @Override
-    public long paid() throws Exception {
+    public long paid() {
         final List<SignedTransaction> txns = this.wallet.transactions();
         final AtomicLong amount = new AtomicLong(0L);
 
@@ -164,10 +172,9 @@ public final class TxnTaxes implements Tax {
      * Debt of transaction , if less than 1 TRIADA can skip taxes
      *
      * @return Debt of wallet
-     * @throws Exception if failed
      */
     @Override
-    public long debt() throws Exception {
+    public long debt() {
         return FEE.value() * this.wallet.transactions().size() * this.wallet.age() - this.paid();
     }
 
@@ -207,15 +214,6 @@ public final class TxnTaxes implements Tax {
 
     private static boolean isScoreValid(final Score score) {
         return scoreValidator.test(score) && score.value() == EXACT_SCORE;
-    }
-
-    private static boolean isDateAndAmountValid(
-            final Score score,
-            final ParsedTxnData txnData,
-            final Date date,
-            final Integer strength
-    ) {
-        return txnData.date().compareTo(date) < 0 && score.strength() >= strength && txnData.amount().less(MAX_PAYMENT.value());
     }
 
     private static boolean isDetailsValid(final String[] details) {
