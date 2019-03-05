@@ -24,7 +24,7 @@ public final class FakeHeadFile {
                     System.lineSeparator(),
                     Triada.TEST_NETWORK,
                     Triada.PROTOCOL,
-                    id.toString(),
+                    id.asText(),
                     new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/id_rsa.pub"))).asPublic(),
                     "\r"
             );
