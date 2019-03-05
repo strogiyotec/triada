@@ -4,19 +4,24 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.net.HostAndPort;
 import com.google.gson.JsonObject;
 import io.triada.commands.remote.RemoteNodes;
+import io.triada.commands.taxes.TaxesCommand;
 import io.triada.dates.DateConverters;
 import io.triada.mocks.FakeHome;
+import io.triada.models.amount.Amount;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.score.Score;
 import io.triada.models.score.TriadaScore;
+import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.SignedTriadaTxn;
 import io.triada.models.transaction.ValidatedTxn;
+import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 import org.junit.Assert;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.http.MediaType;
 import org.springframework.util.ResourceUtils;
@@ -29,12 +34,15 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 public final class TestTaxCommand extends Assert {
 
     @Rule
-    public WireMockRule fileService = new WireMockRule(options().port(80), false);
+    public WireMockRule fileService = new WireMockRule(options().port(9098), false);
 
     @Rule
     public final TemporaryFolder folder = new TemporaryFolder();
 
+
+    @Test
     public void testPayTaxes() throws Exception {
+
         Wallet wallet = new FakeHome().createWallet(new LongId(), 0);
         final Wallets wallets = new Wallets(wallet.file().getParentFile());
         final TxnAmount fund = new TxnAmount(new BigDecimal("19.99"));
@@ -55,14 +63,14 @@ public final class TestTaxCommand extends Assert {
                     )
             );
         }
-        Score score = new TriadaScore(HostAndPort.fromParts("localhost", 80), "NOPREFIX@0000000000000000", 1);
+        Score score = new TriadaScore(HostAndPort.fromParts("localhost", 9098), "NOPREFIX@0000000000000000", 1);
         final RemoteNodes nodes = new RemoteNodes(this.folder.newFile("remotes"));
         nodes.add(score.address());
         for (int i = 0; i < 10; i++) {
             score = score.next();
         }
         this.fileService.stubFor(
-                put(urlEqualTo("/"))
+                get(urlEqualTo("/"))
                         .withHeader("Accept", equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
                         .willReturn(
                                 okJson(body(score))
@@ -70,6 +78,23 @@ public final class TestTaxCommand extends Assert {
                                         .withStatus(200)
                         )
         );
+        final Amount<Long> before = wallet.balance();
+        final TxnTaxes tax = new TxnTaxes(wallet, true);
+        final long debt = tax.debt();
+        new TaxesCommand(wallets, nodes)
+                .run(
+                        new String[]{
+                                "-taxes",
+                                "ignore-score-weakness",
+                                "private-key=" + ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")).getAbsolutePath(),
+                                "pay",
+                                "wallet=" + wallet.head().id()
+                        }
+                );
+        final TriadaWallet after = new TriadaWallet(wallet.file());
+        final TxnTaxes taxesAfter = new TxnTaxes(after);
+        assertTrue(taxesAfter.paid() > 0);
+        assertEquals(before.substract(debt).asText(6), after.balance().asText(6));
     }
 
 

@@ -89,7 +89,7 @@ final class TriadaTxn implements Transaction {
                 String.valueOf(this.date.getTime()),
                 new HexNumber(16, this.amount.value()).asText(),
                 this.prefix,
-                this.bnf.toString(),
+                this.bnf.asText(),
                 this.details
         );
     }
