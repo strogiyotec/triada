@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.OffsetDateTime.parse;
 
@@ -98,6 +97,15 @@ public final class TxnTaxes implements Tax {
 
     public TxnTaxes(
             final Wallet wallet,
+            final boolean ignoreScoreWeakness
+    ) {
+        this.wallet = wallet;
+        this.ignoreScoreWeakness = ignoreScoreWeakness;
+        this.strength = TriadaScore.STRENGTH;
+    }
+
+    public TxnTaxes(
+            final Wallet wallet,
             final int strength
     ) {
         this.wallet = wallet;
@@ -142,14 +150,12 @@ public final class TxnTaxes implements Tax {
     }
 
     /**
-     * // TODO: 2/7/19 remove throws
-     *
      * @return Sum of amounts in wallet
      */
     @Override
     public long paid() {
         final List<SignedTransaction> txns = this.wallet.transactions();
-        final AtomicLong amount = new AtomicLong(0L);
+        long amount = 0;
 
         for (final SignedTransaction txn : txns) {
             final ParsedTxnData txnData = new ParsedTxnData(txn);
@@ -159,13 +165,13 @@ public final class TxnTaxes implements Tax {
                 if (TxnTaxes.isScoreValid(score)) {
                     if (this.isStrengthValid(score)) {
                         if (txnData.amount().less(MAX_PAYMENT.value())) {
-                            amount.addAndGet(txnData.amount().value());
+                            amount += txnData.amount().value();
                         }
                     }
                 }
             }
         }
-        return amount.get() * -1;
+        return amount * -1;
     }
 
     /**
@@ -209,7 +215,7 @@ public final class TxnTaxes implements Tax {
     }
 
     private boolean isStrengthValid(final Score score) {
-        return score.strength() == this.strength || this.ignoreScoreWeakness;
+        return score.strength() <= this.strength && !this.ignoreScoreWeakness;
     }
 
     private static boolean isScoreValid(final Score score) {
