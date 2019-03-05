@@ -62,4 +62,16 @@ final class PayParams {
                 .orElse("-");
     }
 
+    public boolean dontPayTaxes() {
+        return this.params.stream()
+                .anyMatch(p -> p.equals("dont-pay-taxes"));
+    }
+
+    public String privateKey() {
+        return this.params.stream()
+                .filter(p -> p.contains("private-key="))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Provide private key path "));
+    }
 }
