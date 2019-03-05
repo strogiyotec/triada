@@ -31,7 +31,7 @@ public final class SignedTxnFromText implements SignedTransaction {
                     String.join(
                             ";",
                             "(?<id>[0-9a-f]{4})",
-                            "(?<date>[0-9]{10,15})",
+                            "(?<date>(?:-)?[0-9]{10,15})",
                             "(?<amount>[0-9a-f]{16})",
                             "(?<prefix>[a-zA-Z0-9]+)",
                             "(?<bnf>[0-9a-f]{16})",
