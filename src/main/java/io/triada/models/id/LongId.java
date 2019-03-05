@@ -73,6 +73,11 @@ public final class LongId implements Id<Long> {
         }
     }
 
+    @Override
+    public String toString() {
+        return this.asText();
+    }
+
     /**
      * @return 16 chars length representation of id in hex
      */
