@@ -2,13 +2,15 @@ package io.triada.commands.pay;
 
 import com.google.common.collect.Iterables;
 import io.triada.commands.Command;
+import io.triada.commands.propagate.PropagateCommand;
 import io.triada.commands.remote.Remotes;
 import io.triada.commands.taxes.TaxesCommand;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
+import io.triada.models.tax.Tax;
 import io.triada.models.tax.TxnTaxes;
-import io.triada.models.transaction.SignedTransaction;
+import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 import lombok.AllArgsConstructor;
@@ -40,10 +42,14 @@ public final class PayCommand implements Command {
         if (cmd.hasOption("-pay")) {
             final PayParams params = new PayParams(Arrays.asList(cmd.getOptionValues("pay")));
             final String id = params.payerWalletId();
-
             this.taxes(id, params);
-            final Wallet wallet = this.wallets.acq(id);
-
+            new PropagateCommand(this.wallets)
+                    .run(
+                            new String[]{
+                                    "propagate",
+                                    "wallet=" + id
+                            }
+                    );
         } else {
             throw new IllegalArgumentException("Need to add pay option");
         }
@@ -67,7 +73,7 @@ public final class PayCommand implements Command {
         }
     }
 
-    private SignedTransaction pay(final Wallet from, final PayParams params) throws Exception {
+    private Tax pay(final Wallet from, final PayParams params) throws Exception {
         // TODO: 3/3/19 check on @
         final String[] invoice = params.invoice().split("@");
         final TxnAmount amount = params.amount();
@@ -93,7 +99,14 @@ public final class PayCommand implements Command {
                 details
 
         );
-        // TODO: 3/6/19 Need propagate to be completed
-        return Iterables.getLast(substracted.transactions());
+        final ParsedTxnData last = new ParsedTxnData(Iterables.getLast(substracted.transactions()));
+        System.out.printf(
+                "%d sent from %s to %s\n",
+                last.amount().value(),
+                from.head().id(),
+                last.bnf().asText()
+        );
+        return new TxnTaxes(from);
+
     }
 }
