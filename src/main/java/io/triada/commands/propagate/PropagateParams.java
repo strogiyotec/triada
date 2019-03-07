@@ -19,4 +19,12 @@ final class PropagateParams {
                 .map(p -> Arrays.asList(p.split(",")))
                 .orElse(orElse);
     }
+
+    public String privateKey() {
+        return this.params.stream()
+                .filter(p -> p.contains("private-key="))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Provide private key path "));
+    }
 }
