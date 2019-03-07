@@ -3,6 +3,7 @@ package io.triada.commands.propagate;
 import io.triada.commands.Command;
 import io.triada.commands.ValuableCommand;
 import io.triada.models.id.LongId;
+import io.triada.models.key.RsaKey;
 import io.triada.models.transaction.InversedTxn;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTransaction;
@@ -13,6 +14,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,18 +33,19 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
         if (cmd.hasOption("-propagate")) {
             final PropagateParams propagateParams = new PropagateParams(Arrays.asList(cmd.getOptionValues("propagate")));
-            return this.propagate(propagateParams.ids(this.wallets.all()));
+            return this.propagate(propagateParams);
         } else {
             throw new IllegalArgumentException("Need to add propagate option");
         }
 
     }
 
-    private List<String> propagate(final List<String> ids) throws Exception {
+    private List<String> propagate(final PropagateParams params) throws Exception {
+        final List<String> ids = params.ids(this.wallets.all());
         final List<String> modified = new ArrayList<>(16);
-        int total = 0;
         for (final String id : ids) {
             final Wallet wallet = this.wallets.acq(id);
+            int total = 0;
             for (final SignedTransaction txn : wallet.transactions()) {
                 total++;
                 final ParsedTxnData data = new ParsedTxnData(txn);
@@ -53,7 +56,7 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
                 final Wallet target = this.wallets.acq(data.bnf().asText());
                 final String network = target.head().network();
                 final String propagateNetwork = wallet.head().network();
-                if (!target.head().network().equals(wallet.head().network())) {
+                if (!network.equals(wallet.head().network())) {
                     System.out.printf(
                             "Network mismatch %s!=%s",
                             network,
@@ -72,14 +75,28 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
                     );
                     continue;
                 }
+                final LongId walletId = new LongId(id);
                 target.add(
                         new SignedTriadaTxn(
-                                new InversedTxn(data, new LongId(id)),
-                                null,
-                                null
-                        ));
+                                new InversedTxn(
+                                        data,
+                                        walletId
+                                ),
+                                new RsaKey(
+                                        new File(params.privateKey())
+                                ),
+                                walletId
+                        )
+                );
+                System.out.printf(
+                        "%d arrived to %s\n",
+                        data.amount().value() * -1,
+                        data.bnf().asText()
+                );
+                modified.add(data.bnf().asText());
             }
+            System.out.printf("Wallet %s propagated, %d txns", wallet.head().id(), total);
         }
-        return null;
+        return modified;
     }
 }
