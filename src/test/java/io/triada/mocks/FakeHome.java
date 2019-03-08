@@ -34,8 +34,8 @@ public final class FakeHome {
 
     public Wallet createWallet(final Wallet origin) throws Exception {
         return new TriadaWallet(
-                new FakeHeadFile().fakeHome(new LongId(), origin);
-        )
+                new FakeHeadFile().fakeHome(new LongId(), origin)
+        );
     }
 
     /**
