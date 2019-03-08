@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 
 public final class TxnAmountTest extends Assert {
 
+    // TODO: 3/8/19 This test is broken
     @Test
     public void testParsedTriads() {
         assertThat(
@@ -35,18 +36,26 @@ public final class TxnAmountTest extends Assert {
         assertTrue(walletAmount != TxnAmount.ZERO);
     }
 
+
+    // TODO: 3/8/19 This test is broken
+    @Test
+    public void testFromBigDecimalToText() {
+        final TxnAmount amount = new TxnAmount(new BigDecimal("14.95"));
+        assertEquals("14.95", amount.asText(2));
+    }
+
     @Test
     public void testParsedTridz() {
         final TxnAmount walletAmount = new TxnAmount(900_000_000L);
         assertThat(walletAmount.toString(), is("0.20TRIADA"));
     }
 
+    // TODO: 3/8/19 This test is broken
     @Test
     public void testAdd() {
         assertThat(new TxnAmount(new BigDecimal("39.99")).add(new TxnAmount(new BigDecimal("39.99")).value()).asText(2), is("79.98"));
     }
 
-    // TODO: 2/22/19 result is not correct now it's 0.02 need to fix
     @Test
     public void testSub() {
         assertThat(new TxnAmount(new BigDecimal("39.99")).substract(new TxnAmount(new BigDecimal("39.98")).value()).asText(2), is("0.01"));
