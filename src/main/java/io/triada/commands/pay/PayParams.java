@@ -29,7 +29,7 @@ final class PayParams {
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .findFirst()
                 .filter(Predicates.not(String::isEmpty))
-                .orElseThrow(() -> new IllegalStateException("Payer wallet ID is required as the first argument"));
+                .orElseThrow(() -> new IllegalStateException("Recipient wallet ID is required as the first argument"));
     }
 
     public TxnAmount amount() {
@@ -60,6 +60,11 @@ final class PayParams {
                 .findFirst()
                 .filter(Predicates.not(String::isEmpty))
                 .orElse("-");
+    }
+
+    public boolean force() {
+        return this.params.stream()
+                .anyMatch(p -> p.equals("force"));
     }
 
     public boolean dontPayTaxes() {

@@ -1,6 +1,5 @@
 package io.triada.commands.pay;
 
-import com.google.common.collect.Iterables;
 import io.triada.commands.Command;
 import io.triada.commands.propagate.PropagateCommand;
 import io.triada.commands.remote.Remotes;
@@ -8,7 +7,7 @@ import io.triada.commands.taxes.TaxesCommand;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
-import io.triada.models.tax.Tax;
+import io.triada.models.prefix.PaymentPrefix;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.wallet.Wallet;
@@ -19,6 +18,8 @@ import org.apache.commons.cli.DefaultParser;
 
 import java.io.File;
 import java.util.Arrays;
+
+import static com.google.common.collect.Iterables.getLast;
 
 /**
  * Money sending command
@@ -43,10 +44,11 @@ public final class PayCommand implements Command {
             final PayParams params = new PayParams(Arrays.asList(cmd.getOptionValues("pay")));
             final String id = params.payerWalletId();
             this.taxes(id, params);
+            this.pay(this.wallets.acq(id), params);
             new PropagateCommand(this.wallets)
                     .run(
                             new String[]{
-                                    "propagate",
+                                    "-propagate",
                                     "wallet=" + id
                             }
                     );
@@ -55,7 +57,10 @@ public final class PayCommand implements Command {
         }
     }
 
-    private void taxes(final String walletId, final PayParams payParams) throws Exception {
+    private void taxes(
+            final String walletId,
+            final PayParams payParams
+    ) throws Exception {
         final Wallet wallet = this.wallets.acq(walletId);
         final boolean debt = new TxnTaxes(wallet).debt() > TxnTaxes.TRIAL.value() && !payParams.dontPayTaxes();
         if (debt) {
@@ -73,11 +78,32 @@ public final class PayCommand implements Command {
         }
     }
 
-    private Tax pay(final Wallet from, final PayParams params) throws Exception {
-        // TODO: 3/3/19 check on @
-        final String[] invoice = params.invoice().split("@");
+    private void pay(final Wallet from, final PayParams params) throws Exception {
+        // TODO: 3/8/19 Add invoice command
+        final String invoice = this.normalizedInvoice(params.invoice());
         final TxnAmount amount = params.amount();
         final String details = params.details();
+        if (!params.force()) {
+            checkBalance(from, amount);
+        }
+        final RsaKey rsaKey = new RsaKey(new File(params.privateKey()));
+        final Wallet substracted = from.substract(
+                amount,
+                invoice,
+                rsaKey,
+                details
+
+        );
+        final ParsedTxnData last = new ParsedTxnData(getLast(substracted.transactions()));
+        System.out.printf(
+                "%d sent from %s to %s\n",
+                last.amount().value(),
+                from.head().id(),
+                last.bnf().asText()
+        );
+    }
+
+    private static void checkBalance(final Wallet from, final TxnAmount amount) {
         if (amount.lessOrEq(0L)) {
             throw new IllegalArgumentException("Amount can't be negative");
         }
@@ -90,23 +116,23 @@ public final class PayCommand implements Command {
                     )
             );
         }
-        final RsaKey rsaKey = new RsaKey(new File(params.privateKey()));
-        final Wallet substracted = from.substract(
-                amount,
-                invoice[0],
-                new LongId(invoice[1]),
-                rsaKey,
-                details
+    }
 
-        );
-        final ParsedTxnData last = new ParsedTxnData(Iterables.getLast(substracted.transactions()));
-        System.out.printf(
-                "%d sent from %s to %s\n",
-                last.amount().value(),
-                from.head().id(),
-                last.bnf().asText()
-        );
-        return new TxnTaxes(from);
-
+    /**
+     * If invoice doesn't contain @ it means that invoice is recipient wallet id
+     * In this case need to get prefix from recipient
+     *
+     * @param invoice Invoice
+     * @return Normalized invoice
+     * @throws Exception if failed
+     */
+    private String normalizedInvoice(final String invoice) throws Exception {
+        if (!invoice.contains("@")) {
+            final Wallet recipient = this.wallets.acq(invoice);
+            final String prefix = new PaymentPrefix(new RsaKey(recipient.head().key())).create();
+            return prefix + "@" + invoice;
+        } else {
+            return invoice;
+        }
     }
 }
