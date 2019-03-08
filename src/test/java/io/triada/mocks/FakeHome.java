@@ -32,6 +32,12 @@ public final class FakeHome {
         );
     }
 
+    public Wallet createWallet(final Wallet origin) throws Exception {
+        return new TriadaWallet(
+                new FakeHeadFile().fakeHome(new LongId(), origin);
+        )
+    }
+
     /**
      * @param amount Amount of wallets to create
      * @return List of files with wallet
