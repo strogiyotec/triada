@@ -62,7 +62,7 @@ public interface Wallet extends Text {
     String mnemo() throws Exception;
 
     /**
-     * @param amount  To sub
+     * @param amount  Amount To sub
      * @param prefix  Of txn
      * @param id      is the wallet ID of the paying or receiving wallet
      * @param pvt     Private key to sign txn
@@ -80,7 +80,40 @@ public interface Wallet extends Text {
     @Override
     boolean equals(Object other);
 
+    /**
+     * Substract txn with current date
+     *
+     * @param amount  Amount to sub
+     * @param prefix  Prefix of txn
+     * @param id      Wallet id
+     * @param pvt     Private key to sign txn
+     * @param details Details
+     * @return Wallet with new Txn
+     * @throws Exception if failed
+     */
     default Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt, String details) throws Exception {
         return this.substract(amount, prefix, id, pvt, details, new Date());
     }
+
+    /**
+     * Substract with invoice instead of prefix + id
+     *
+     * @param amount  Txn mount
+     * @param invoice Payment Invoice
+     * @param key     Key to sign
+     * @param details Details
+     * @return new wallet
+     * @throws Exception if failed
+     */
+    default Wallet substract(TxnAmount amount, String invoice, RsaKey key, String details) throws Exception {
+        final String[] splited = invoice.split("@");
+        return this.substract(
+                amount,
+                splited[0],
+                new LongId(splited[1]),
+                key,
+                details
+        );
+    }
+
 }
