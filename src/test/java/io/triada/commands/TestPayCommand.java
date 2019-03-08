@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 
 import static org.hamcrest.CoreMatchers.is;
 
+// TODO: 3/8/19 Need invoice command when invoice doesn't contain @
 public final class TestPayCommand extends Assert {
 
     private final FakeHome fakeHome = new FakeHome();
@@ -24,11 +25,13 @@ public final class TestPayCommand extends Assert {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    // TODO: 3/8/19 First assertion is broken , need to fix amount
     @Test
     public void testSendsFromWalletToWallet() throws Exception {
         Wallet source = this.fakeHome.createWallet();
         final Wallet target = this.fakeHome.createWallet(source);
         final TxnAmount amount = new TxnAmount(new BigDecimal("14.95"));
+        //send money to target
         new PayCommand(
                 new Wallets(source.file().getParentFile()),
                 new RemoteNodes(temporaryFolder.newFile("remotes6"))
@@ -42,6 +45,23 @@ public final class TestPayCommand extends Assert {
                 "details=" + "For the car"
         });
         source = new TriadaWallet(source.file());
-        assertThat(amount.mpy(-1L).value(), is(source.balance().value()));
+        assertThat("-14.94", is(source.balance().asText(2)));
+        //send money back to source
+        System.out.println(source.head().id());
+        new PayCommand(
+                new Wallets(source.file().getParentFile()),
+                new RemoteNodes(temporaryFolder.newFile("remotes7"))
+        ).run(new String[]{
+                "-pay",
+                "private-key=" + ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")).getAbsolutePath(),
+                "payer=" + target.head().id(),
+                "recipient=" + source.head().id(),
+                "amount=" + amount.asText(2),
+                "details=" + "Thank you , sand you back "
+        });
+        assertEquals(
+                TxnAmount.ZERO.value(),
+                new TriadaWallet(source.file()).balance().value()
+        );
     }
 }
