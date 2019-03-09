@@ -2,7 +2,7 @@ package io.triada.models.transaction;
 
 import io.triada.models.id.Id;
 import io.triada.models.key.Key;
-import io.triada.models.sign.TriadaSignature;
+import io.triada.models.sign.TxnSignature;
 
 import java.util.Objects;
 
@@ -26,7 +26,7 @@ public final class SignedTriadaTxn implements SignedTransaction {
      */
     public SignedTriadaTxn(final Transaction origin, final Key prvtKey, final Id<Long> walletId) throws Exception {
         this.origin = origin;
-        this.signature = new TriadaSignature().sign(prvtKey, walletId, origin);
+        this.signature = new TxnSignature().sign(prvtKey, walletId, origin);
     }
 
     @Override

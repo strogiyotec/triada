@@ -3,7 +3,7 @@ package io.triada.models;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
-import io.triada.models.sign.TriadaSignature;
+import io.triada.models.sign.TxnSignature;
 import io.triada.models.transaction.SignedTriadaTxn;
 import io.triada.models.transaction.ValidatedTxn;
 import org.junit.Assert;
@@ -18,7 +18,7 @@ public final class SignatureTest extends Assert {
 
     @Test
     public void testSignAndValdiate() throws Exception {
-        final TriadaSignature sign = new TriadaSignature();
+        final TxnSignature sign = new TxnSignature();
         final RsaKey priv = new RsaKey(
                 ResourceUtils.getFile(
                         this.getClass().getResource("/keys/pkcs8")

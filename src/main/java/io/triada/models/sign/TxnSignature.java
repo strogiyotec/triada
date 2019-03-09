@@ -5,13 +5,13 @@ import io.triada.models.key.Key;
 import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.transaction.Transaction;
 
-public final class TriadaSignature implements Signature {
+public final class TxnSignature implements Signature {
     @Override
     public String sign(final Key privateKey,
                        final Id<Long> id,
                        final Transaction transaction
     ) throws Exception {
-        return privateKey.sign(TriadaSignature.body(transaction, id.id()));
+        return privateKey.sign(TxnSignature.body(transaction, id.id()));
     }
 
     //TODO:add network check
@@ -20,7 +20,7 @@ public final class TriadaSignature implements Signature {
                          final Id<Long> id,
                          final SignedTransaction signedTransaction
     ) throws Exception {
-        return publicKey.verify(signedTransaction.signature(), TriadaSignature.body(signedTransaction.origin(), id.id()));
+        return publicKey.verify(signedTransaction.signature(), TxnSignature.body(signedTransaction.origin(), id.id()));
     }
 
 
