@@ -18,9 +18,9 @@ import static org.apache.commons.io.FileUtils.readFileToString;
 /**
  * Get list of {@link io.triada.models.transaction.SignedTransaction} from File
  */
-public final class SignedTxnsFromFile implements SignedTxns<SignedTxnFromText> {
+public final class SignedTxnsFromFile implements SignedTxns {
 
-    private final List<SignedTxnFromText> txns;
+    private final List<SignedTransaction> txns;
 
     private final File file;
 
@@ -47,17 +47,17 @@ public final class SignedTxnsFromFile implements SignedTxns<SignedTxnFromText> {
     }
 
     @Override
-    public List<SignedTxnFromText> txns() {
+    public List<SignedTransaction> txns() {
         return this.txns;
     }
 
     @Override
     public String asText() {
-        return this.txns.stream().map(SignedTxnFromText::asText).collect(Collectors.joining("\n"));
+        return this.txns.stream().map(SignedTransaction::asText).collect(Collectors.joining("\n"));
     }
 
     @Override
-    public SignedTxns<SignedTxnFromText> add(final SignedTransaction txn) throws Exception {
+    public SignedTxns add(final SignedTransaction txn) throws Exception {
         appendTxnToFile(this.file, txn);
         return new SignedTxnsFromFile(this.file);
     }
