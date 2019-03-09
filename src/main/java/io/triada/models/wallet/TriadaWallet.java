@@ -50,7 +50,7 @@ public final class TriadaWallet implements Wallet {
     /**
      * txns from file
      */
-    private final SignedTxns<SignedTxnFromText> txns;
+    private final SignedTxns txns;
 
     /**
      * Head from file
@@ -66,7 +66,7 @@ public final class TriadaWallet implements Wallet {
 
     @Override
     public long age() {
-        final List<SignedTxnFromText> txns = this.txns.txns();
+        final List<SignedTransaction> txns = this.txns.txns();
         if (txns.isEmpty()) {
             return 0L;
         } else {
