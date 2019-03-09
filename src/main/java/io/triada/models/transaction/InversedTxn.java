@@ -15,4 +15,8 @@ public final class InversedTxn extends TxnEnvelope {
                         origin.details()
                 ));
     }
+
+    public InversedTxn(final SignedTransaction signed, final LongId bnf) {
+        this(new ParsedTxnData(signed), bnf);
+    }
 }
