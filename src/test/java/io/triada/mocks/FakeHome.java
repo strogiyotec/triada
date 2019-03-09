@@ -1,6 +1,7 @@
 package io.triada.mocks;
 
 import io.triada.models.id.LongId;
+import io.triada.models.wallet.EagerWallet;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,20 @@ public final class FakeHome {
         );
     }
 
+    public Wallet createEagerWallet() throws Exception {
+        return new EagerWallet(
+                new FakeHeadFile().fakeHome(new LongId())
+        );
+    }
+
     public Wallet createWallet(final Wallet origin) throws Exception {
         return new TriadaWallet(
+                new FakeHeadFile().fakeHome(new LongId(), origin)
+        );
+    }
+
+    public Wallet createEagerWallet(final Wallet origin) throws Exception {
+        return new EagerWallet(
                 new FakeHeadFile().fakeHome(new LongId(), origin)
         );
     }
