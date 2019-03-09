@@ -10,8 +10,8 @@ import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTransaction;
-import io.triada.models.transaction.SignedTxnFromText;
 import io.triada.models.transaction.ValidatedTxn;
+import io.triada.models.transactions.SignedTxnsFromFile;
 import io.triada.text.NextTxnId;
 import org.apache.commons.io.FileUtils;
 
@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Comparator;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.toList;
 
 /**
  * This class doesn't store all txns in memory ,
@@ -157,12 +155,9 @@ public final class EagerWallet implements Wallet {
     @Override
     public List<SignedTransaction> transactions() {
         try {
-            return Files.readAllLines(this.file.toPath(), StandardCharsets.UTF_8)
-                    .stream()
-                    .map(SignedTxnFromText::new)
-                    .collect(toList());
+            return new SignedTxnsFromFile(this.file).txns();
         } catch (final IOException e) {
-            throw new UncheckedIOException("Can't read txns from file", e);
+            throw new UncheckedIOException("Can't read wallet file ", e);
         }
     }
 
