@@ -15,7 +15,7 @@ import io.triada.models.transaction.SignedTxnFromText;
 import io.triada.models.transaction.ValidatedTxn;
 import io.triada.models.transactions.SignedTxns;
 import io.triada.models.transactions.SignedTxnsFromFile;
-import io.triada.text.HexNumber;
+import io.triada.text.NextTxnId;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -41,11 +41,6 @@ public final class TriadaWallet implements Wallet {
      * The extension of the wallet file
      */
     public static final String EXT = ".trd";
-
-    /**
-     * The first transaction id
-     */
-    private static final String FIRST_TXN_ID = new HexNumber(4, 1).asText();
 
     /**
      * File with txns
@@ -158,19 +153,16 @@ public final class TriadaWallet implements Wallet {
             final String details,
             final Date date
     ) throws Exception {
-        final TxnAmount negative = amount.mpy(-1L);
-        final String tid = this.maxTxnId();
-        final ValidatedTxn validatedTxn = new ValidatedTxn(
-                tid,
-                date,
-                negative,
-                prefix,
-                id,
-                details
+        return this.add(
+                new ValidatedTxn(
+                        NextTxnId.next(this.transactions()),
+                        date,
+                        amount.mpy(-1L),
+                        prefix,
+                        id,
+                        details
+                ).signed(new LongId(this.head.id()), pvt)
         );
-        final SignedTransaction signed = validatedTxn.signed(new LongId(this.head.id()), pvt);
-
-        return this.add(signed);
     }
 
     @Override
@@ -194,39 +186,6 @@ public final class TriadaWallet implements Wallet {
         }
         final Wallet other = (Wallet) obj;
         return Objects.equals(this.head.id(), other.head().id());
-    }
-
-    /**
-     * Calculate max txn id , if no txns return 0 in hex , otherwise
-     * find last txn id increment it and return in hex
-     *
-     * @return Next txn id
-     */
-    private String maxTxnId() {
-        final List<SignedTxnFromText> transactions = this.txns.txns();
-        if (transactions.isEmpty()) {
-            return FIRST_TXN_ID;
-        } else {
-            final int id = new ParsedTxnData(transactions.get(transactions.size() - 1)).id();
-            return new HexNumber(4, id + 1).asText();
-
-        }
-    }
-
-    /**
-     * Validate extension of given file
-     *
-     * @param file to validate
-     */
-    private static void validate(final File file) {
-        if (!file.getAbsolutePath().contains(EXT)) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Wallet file must end with %s",
-                            EXT
-                    )
-            );
-        }
     }
 
 }
