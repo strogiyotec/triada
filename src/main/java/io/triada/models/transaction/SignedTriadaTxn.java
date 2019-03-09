@@ -29,6 +29,15 @@ public final class SignedTriadaTxn implements SignedTransaction {
         this.signature = new TxnSignature().sign(prvtKey, walletId, origin);
     }
 
+    /**
+     * @param origin    The origin txn
+     * @param signature Signture
+     */
+    public SignedTriadaTxn(final Transaction origin, final String signature) {
+        this.origin = origin;
+        this.signature = signature;
+    }
+
     @Override
     public Transaction origin() {
         return this.origin;
@@ -46,9 +55,6 @@ public final class SignedTriadaTxn implements SignedTransaction {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        return obj instanceof SignedTransaction && Objects.equals(new ParsedTxnData(this), new ParsedTxnData((SignedTransaction) obj));
+        return obj != null && obj instanceof SignedTransaction && Objects.equals(new ParsedTxnData(this), new ParsedTxnData((SignedTransaction) obj));
     }
 }
