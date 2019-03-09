@@ -4,6 +4,8 @@ import io.triada.models.id.Id;
 import io.triada.models.key.Key;
 import io.triada.models.sign.TriadaSignature;
 
+import java.util.Objects;
+
 public final class SignedTriadaTxn implements SignedTransaction {
 
     /**
@@ -40,5 +42,13 @@ public final class SignedTriadaTxn implements SignedTransaction {
     @Override
     public String asText() {
         return new ParsedTxnData(this).asText();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        return obj instanceof SignedTransaction && Objects.equals(new ParsedTxnData(this), new ParsedTxnData((SignedTransaction) obj));
     }
 }

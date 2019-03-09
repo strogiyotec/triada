@@ -5,7 +5,7 @@ import io.triada.text.Text;
 /**
  * Signature of transaction
  */
-public interface SignedTransaction extends Text{
+public interface SignedTransaction extends Text {
 
     /**
      * @return Origin transaction to be signed
@@ -16,4 +16,7 @@ public interface SignedTransaction extends Text{
      * @return Signature of transaction
      */
     String signature();
+
+    @Override
+    boolean equals(Object other);
 }

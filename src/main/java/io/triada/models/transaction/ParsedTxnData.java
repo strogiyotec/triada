@@ -5,6 +5,7 @@ import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Parse data from txn
@@ -68,5 +69,22 @@ public final class ParsedTxnData implements TriadaTxn.Data {
                 this.signed.signature()
 
         );
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof TriadaTxn.Data)) {
+            return false;
+        }
+        final ParsedTxnData data = (ParsedTxnData) obj;
+        return Objects.equals(this.id, data.id) &&
+                Objects.equals(this.bnf.id(), data.bnf.id()) &&
+                Objects.equals(this.date, data.date) &&
+                Objects.equals(this.details, data.prefix) &&
+                Objects.equals(this.details, data.details) &&
+                Objects.equals(this.txnAmount.asText(2), data.txnAmount.asText(2));
     }
 }
