@@ -6,8 +6,6 @@ import org.jooq.lambda.Unchecked;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 
 /**
  * Create wallet with 0 txns
@@ -33,15 +31,17 @@ public final class EmptyWallet extends WalletEnvelope {
                 );
             }
             file.createNewFile();
+            final String head = String.join(
+                    System.lineSeparator(),
+                    network,
+                    Triada.PROTOCOL,
+                    id,
+                    pubKey,
+                    "\r"
+            );
             Files.write(
                     file.toPath(),
-                    Arrays.asList(
-                            network,
-                            Triada.PROTOCOL,
-                            id,
-                            pubKey
-                    ),
-                    StandardCharsets.UTF_8
+                    head.getBytes(StandardCharsets.UTF_8)
             );
             return new TriadaWallet(file);
         }));
