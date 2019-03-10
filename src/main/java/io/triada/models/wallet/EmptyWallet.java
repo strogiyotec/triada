@@ -12,6 +12,7 @@ import java.util.Arrays;
 /**
  * Create wallet with 0 txns
  */
+// TODO: 3/10/19 Add test
 public final class EmptyWallet extends WalletEnvelope {
     // TODO: 3/9/19 Add network validation
     public EmptyWallet(
@@ -40,8 +41,7 @@ public final class EmptyWallet extends WalletEnvelope {
                             id,
                             pubKey
                     ),
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.APPEND
+                    StandardCharsets.UTF_8
             );
             return new TriadaWallet(file);
         }));
