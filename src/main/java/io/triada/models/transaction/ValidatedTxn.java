@@ -10,13 +10,25 @@ import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Create instance of transaction that was validated
+ */
 //TODO: change type of txnamount to amount
 public final class ValidatedTxn implements Transaction {
 
-    private static final Pattern PREFIX_P = Pattern.compile("^[a-zA-Z0-9]+$");
+    /**
+     * Pattern to check PREFIX
+     */
+    private static final Pattern PREFIX_P = Pattern.compile("^[a-zA-Z0-9/+]+$");
 
+    /**
+     * Pattern to check DETAILS
+     */
     private static final Pattern DETAILS_P = Pattern.compile("^[a-zA-Z0-9 @!?*_\\-.:,'/]+$");
 
+    /**
+     * Delegate transaction that was validated
+     */
     @Delegate
     private final Transaction origin;
 
@@ -26,7 +38,7 @@ public final class ValidatedTxn implements Transaction {
                         final String prefix,
                         final LongId bnf,
                         final String details) {
-        ValidatedTxn.vaildate(id, date, amount, bnf, details, prefix);
+        ValidatedTxn.validate(id, date, amount, bnf, details, prefix);
         this.origin = new TriadaTxn(
                 Integer.parseInt(id, 16),
                 date,
@@ -37,7 +49,10 @@ public final class ValidatedTxn implements Transaction {
         );
     }
 
-    private static void vaildate(final String id,
+    /**
+     * Validate data to create transaction
+     */
+    private static void validate(final String id,
                                  final Date date,
                                  final TxnAmount amount,
                                  final LongId bnf,
@@ -52,6 +67,11 @@ public final class ValidatedTxn implements Transaction {
 
     }
 
+    /**
+     * Id should be int
+     *
+     * @param id Txn id
+     */
     private static void validateId(final String id) {
         final boolean matches = id.matches("\\p{XDigit}+");
         if (!matches) {
@@ -64,6 +84,11 @@ public final class ValidatedTxn implements Transaction {
         }
     }
 
+    /**
+     * Date can't be null and represent future time
+     *
+     * @param date Txn Date
+     */
     private static void validateDate(final Date date) {
         requireNonNull(date, "The time can't bu NULL");
         if (date.compareTo(new Date()) > 0) {
@@ -73,6 +98,11 @@ public final class ValidatedTxn implements Transaction {
         }
     }
 
+    /**
+     * Amount can't be null and be zero
+     *
+     * @param amount Txn amount
+     */
     private static void validateAmount(final TxnAmount amount) {
         requireNonNull(amount, "Amount cant bu NULL");
         if (amount.zero()) {
@@ -85,6 +115,11 @@ public final class ValidatedTxn implements Transaction {
         }
     }
 
+    /**
+     * Details can't me empty
+     *
+     * @param details Txn details
+     */
     private static void validateDetails(final String details) {
         if (StringUtils.isEmpty(details)) {
             throw new IllegalArgumentException("Details can't be empty");
@@ -109,6 +144,12 @@ public final class ValidatedTxn implements Transaction {
 
     }
 
+    /**
+     * Prefix can't be null
+     * Length >8 and < 32
+     *
+     * @param prefix Txn prefix
+     */
     private static void validatePrefix(final String prefix) {
         if (StringUtils.isEmpty(prefix)) {
             throw new IllegalArgumentException("Prefix can't be empty");
@@ -141,6 +182,11 @@ public final class ValidatedTxn implements Transaction {
 
     }
 
+    /**
+     * Bnf can't be null
+     *
+     * @param bnf Receiver id
+     */
     private static void validateBnf(final LongId bnf) {
         requireNonNull(bnf, "Bnf can't be null");
     }
