@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+// TODO: 3/10/19 utility class is bad
 @UtilityClass
 public final class DateConverters {
 
@@ -40,5 +41,13 @@ public final class DateConverters {
     public Date nowMinusHours(final int hours) {
         final Instant ins = Instant.now().minus(hours, ChronoUnit.HOURS);
         return Date.from(ins);
+    }
+
+    public boolean isUnix(final String unix) {
+        try {
+            return new Date().getTime() - Long.parseLong(unix) >= 0;
+        } catch (final NumberFormatException exc) {
+            return false;
+        }
     }
 }
