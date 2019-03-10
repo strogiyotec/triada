@@ -96,6 +96,20 @@ public interface Wallet extends Text {
     }
 
     /**
+     * Substract txn with current date
+     *
+     * @param amount  Amount to sub
+     * @param prefix  Prefix of txn
+     * @param id      Wallet id
+     * @param pvt     Private key to sign txn
+     * @return Wallet with new Txn
+     * @throws Exception if failed
+     */
+    default Wallet substract(TxnAmount amount, String prefix, LongId id, RsaKey pvt) throws Exception {
+        return this.substract(amount, prefix, id, pvt, "-", new Date());
+    }
+
+    /**
      * Substract with invoice instead of prefix + id
      *
      * @param amount  Txn mount
@@ -113,6 +127,26 @@ public interface Wallet extends Text {
                 new LongId(splited[1]),
                 key,
                 details
+        );
+    }
+
+    /**
+     * Substract with invoice instead of prefix + id
+     *
+     * @param amount  Txn mount
+     * @param invoice Payment Invoice
+     * @param key     Key to sign
+     * @return new wallet
+     * @throws Exception if failed
+     */
+    default Wallet substract(TxnAmount amount, String invoice, RsaKey key) throws Exception {
+        final String[] splited = invoice.split("@");
+        return this.substract(
+                amount,
+                splited[0],
+                new LongId(splited[1]),
+                key,
+                "-"
         );
     }
 
