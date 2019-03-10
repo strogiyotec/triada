@@ -33,7 +33,7 @@ public final class SignedTxnFromText implements SignedTransaction {
                             "(?<id>[0-9a-f]{4})",
                             "(?<date>(?:-)?[0-9]{10,15})",
                             "(?<amount>[0-9a-f]{16})",
-                            "(?<prefix>[a-zA-Z0-9]+)",
+                            "(?<prefix>[a-zA-Z0-9/+]+)",
                             "(?<bnf>[0-9a-f]{16})",
                             "(?<details>[a-zA-Z0-9 @\\!\\?\\*_\\-\\.:,\\'/]+)",
                             "(?<sign>[A-Za-z0-9+/]+={0,3})?"
