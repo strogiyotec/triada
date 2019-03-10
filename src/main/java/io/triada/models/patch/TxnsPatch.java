@@ -14,12 +14,14 @@ import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -179,24 +181,25 @@ public final class TxnsPatch implements Patch {
 
             }
             this.txns.add(txn);
-            final SignedTriadaTxn withCurrentDate = new SignedTriadaTxn(
-                    new ValidatedTxn(
-                            String.valueOf(data.id()),
-                            new Date(),
-                            data.amount().mpy(-1L),
-                            data.prefix(),
-                            data.bnf(),
-                            data.details()
-                    ),
-                    txn.signature()
-            );
-            if (data.amount().lessOrEq(0L))
+            if (data.amount().lessOrEq(0L)) {
+                final String line = String.join(
+                        ";",
+                        String.valueOf(new Date().getTime()),
+                        String.valueOf(data.id()),
+                        String.valueOf(data.date().getTime()),
+                        wallet.head().id(),
+                        data.bnf().asText(),
+                        data.amount().mpy(-1L).asText(2),
+                        data.prefix(),
+                        data.details(),
+                        System.lineSeparator()
+                );
                 Files.write(
                         ledger.toPath(),
-                        Collections.singletonList(withCurrentDate.asText() + ";" + withCurrentDate.signature()),
-                        StandardCharsets.UTF_8,
+                        line.getBytes(StandardCharsets.UTF_8),
                         StandardOpenOption.APPEND
                 );
+            }
         }
 
 
@@ -221,18 +224,14 @@ public final class TxnsPatch implements Patch {
                 file.getAbsolutePath()
 
         );
-        try (final FileWriter writer = new FileWriter(file, true)) {
-            for (final SignedTransaction transaction : this.txns) {
-                writer.append(
-                        String.format(
-                                "%s%s;%s",
-                                System.lineSeparator(),
-                                transaction.asText(),
-                                transaction.signature()
-                        )
-                );
-            }
+        for (final SignedTransaction transaction : this.txns) {
+            Files.write(
+                    file.toPath(),
+                    (transaction.asText()+"\n").getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.APPEND
+            );
         }
+
         final String after = Hashing.sha256().hashBytes(Files.readAllBytes(file.toPath())).toString();
         return !before.equals(after);
     }
