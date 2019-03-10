@@ -31,6 +31,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * This class doesn't store all txns in memory ,
  * Always read all txns from file
+ * Doesn't store head in memory
  * Not Thread safe
  */
 public final class EagerWallet implements Wallet {
@@ -40,14 +41,8 @@ public final class EagerWallet implements Wallet {
      */
     private final File file;
 
-    /**
-     * Head from file
-     */
-    private final Head head;
-
     public EagerWallet(final File file) throws IOException {
         final String fileContent = FileUtils.readFileToString(file, UTF_8);
-        this.head = new HeadOfWallet(fileContent);
         this.file = file;
     }
 
@@ -73,7 +68,11 @@ public final class EagerWallet implements Wallet {
 
     @Override
     public Head head() {
-        return this.head;
+        try {
+            return new HeadOfWallet(this.file);
+        } catch (final IOException e) {
+            throw new UncheckedIOException("Error reading head", e);
+        }
     }
 
     @Override
@@ -99,7 +98,7 @@ public final class EagerWallet implements Wallet {
 
     @Override
     public boolean prefix(final String prefix) {
-        return this.head.key().contains(prefix);
+        return this.head().key().contains(prefix);
     }
 
     @Override
@@ -121,7 +120,7 @@ public final class EagerWallet implements Wallet {
     public String mnemo() throws Exception {
         return String.join(
                 ",",
-                this.head.id(),
+                this.head().id(),
                 this.balance().asText(4),
                 String.valueOf(this.transactions().size()) + "t",
                 Hashing.sha256().hashBytes(Files.readAllBytes(this.file.toPath())).toString().substring(0, 6)
@@ -148,7 +147,7 @@ public final class EagerWallet implements Wallet {
                         prefix,
                         id,
                         details
-                ).signed(new LongId(this.head.id()), pvt)
+                ).signed(new LongId(this.head().id()), pvt)
         );
     }
 
@@ -164,7 +163,7 @@ public final class EagerWallet implements Wallet {
 
     @Override
     public String asText() {
-        return this.head.id();
+        return this.head().id();
     }
 
     @Override
@@ -176,7 +175,7 @@ public final class EagerWallet implements Wallet {
             return true;
         }
         final Wallet other = (Wallet) obj;
-        return Objects.equals(this.head.id(), other.head().id());
+        return Objects.equals(this.head().id(), other.head().id());
     }
 
 }
