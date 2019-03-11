@@ -1,17 +1,17 @@
 package io.triada.models.patch;
 
 import com.google.common.hash.Hashing;
+import io.triada.functions.CheckedToBooleanFunction;
 import io.triada.models.Exceptionally;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.sign.TxnSignature;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTransaction;
-import io.triada.models.transaction.SignedTriadaTxn;
-import io.triada.models.transaction.ValidatedTxn;
 import io.triada.models.wallet.EmptyWallet;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
+import org.jooq.lambda.fi.util.function.CheckedFunction;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,10 +91,10 @@ public final class TxnsPatch implements Patch {
      *
      * @param wallet Wallet
      * @param ledger Ledger
-     * @param yeild  Callback
+     * @param yield  Callback
      */
     @Override
-    public void join(final Wallet wallet, final File ledger, final Callable<Boolean> yeild) throws Exception {
+    public void join(final Wallet wallet, final File ledger, final CheckedToBooleanFunction<SignedTransaction> yield) throws Exception {
         if (this.id == null) {
             this.id = wallet.head().id();
             this.key = wallet.head().key();
@@ -157,7 +157,7 @@ public final class TxnsPatch implements Patch {
                     continue;
                 }
                 if (Exceptionally.hasException(() -> this.wallets.acq(data.bnf().asText()))) {
-                    if (yeild.call() && Exceptionally.hasException(() -> this.wallets.acq(data.bnf().asText()))) {
+                    if (yield.apply(txn) && Exceptionally.hasException(() -> this.wallets.acq(data.bnf().asText()))) {
                         System.out.printf(
                                 "Paying wallet is absent even after pull %d\n",
                                 data.id()
@@ -227,7 +227,7 @@ public final class TxnsPatch implements Patch {
         for (final SignedTransaction transaction : this.txns) {
             Files.write(
                     file.toPath(),
-                    (transaction.asText()+"\n").getBytes(StandardCharsets.UTF_8),
+                    (transaction.asText() + "\n").getBytes(StandardCharsets.UTF_8),
                     StandardOpenOption.APPEND
             );
         }

@@ -62,9 +62,9 @@ public final class TestPatch extends Assert {
         );
 
         final TxnsPatch patch = new TxnsPatch(new Wallets(first.file().getParentFile()));
-        patch.join(first, () -> false);
-        patch.join(second, () -> false);
-        patch.join(third, () -> false);
+        patch.join(first, (signedTransaction) -> false);
+        patch.join(second, (signedTransaction) -> false);
+        patch.join(third, (signedTransaction) -> false);
 
         assertTrue(patch.save(first.file(), true));
         assertEquals("-53.00", first.balance().asText(2));
@@ -79,8 +79,8 @@ public final class TestPatch extends Assert {
         final TxnAmount amount = new TxnAmount(new BigDecimal("333.0"));
         second.substract(amount, PREFIX, new LongId(), rsaKey);
         final TxnsPatch patch = new TxnsPatch(new Wallets(first.file().getParentFile()));
-        patch.join(first, () -> false);
-        patch.join(second, () -> false);
+        patch.join(first, (signedTransaction) -> false);
+        patch.join(second, (signedTransaction) -> false);
 
         assertTrue(patch.save(first.file(), true));
         assertEquals(amount.mpy(-1L).asText(2), first.balance().asText(2));
@@ -136,8 +136,8 @@ public final class TestPatch extends Assert {
                 )
         );
         final TxnsPatch patch = new TxnsPatch(new Wallets(first.file().getParentFile()));
-        patch.join(first, () -> false);
-        patch.join(second, () -> false);
+        patch.join(first, (signedTransaction) -> false);
+        patch.join(second, (signedTransaction) -> false);
         assertTrue(patch.save(first.file(), true));
         assertEquals(3, first.transactions().size());
         assertEquals("-6.00", first.balance().asText(2));
@@ -160,7 +160,7 @@ public final class TestPatch extends Assert {
 
         final File file = this.temporaryFolder.newFile();
 
-        patch.join(second, file, () -> false);
+        patch.join(second, file, (signedTransaction) -> false);
         final List<String> lines = Files.readAllLines(file.toPath());
         assertEquals(2, lines.size());
 
