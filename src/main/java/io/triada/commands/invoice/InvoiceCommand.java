@@ -3,6 +3,7 @@ package io.triada.commands.invoice;
 import io.triada.commands.Command;
 import io.triada.commands.ValuableCommand;
 import io.triada.commands.remote.Remotes;
+import io.triada.models.prefix.PaymentPrefix;
 import io.triada.models.wallet.Copies;
 import io.triada.models.wallet.Wallets;
 import lombok.AllArgsConstructor;
@@ -28,12 +29,21 @@ public final class InvoiceCommand implements ValuableCommand<String> {
             final InvoiceParams invoiceParams = new InvoiceParams(Arrays.asList(cmd.getOptionValues("invoice")));
             return this.invoice(invoiceParams);
         } else {
-            throw new IllegalArgumentException("Need to add pay option");
+            throw new IllegalArgumentException("Need to add invoice option");
         }
     }
 
-    private String invoice(final InvoiceParams params) {
-        final String receiver = params.receiverId();
-        return null;
+    private String invoice(final InvoiceParams params) throws Exception {
+        final String id = params.receiverId();
+        if (!this.wallets.exists(id)) {
+            // TODO: 3/12/19 Pull command here
+        }
+        return String.format(
+                "%s@%s",
+                new PaymentPrefix(
+                        this.wallets.acq(id)).create(params.length()
+                ),
+                id
+        );
     }
 }

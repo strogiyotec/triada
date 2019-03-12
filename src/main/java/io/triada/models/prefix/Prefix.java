@@ -5,6 +5,8 @@ package io.triada.models.prefix;
  */
 public interface Prefix {
 
+    int DEFAULT_LENGTH = 8;
+
     /**
      * @param length Prefix length
      * @return prefix
@@ -15,6 +17,6 @@ public interface Prefix {
      * @return Prefix length with default length (8)
      */
     default String create() {
-        return this.create(8);
+        return this.create(DEFAULT_LENGTH);
     }
 }
