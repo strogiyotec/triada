@@ -1,15 +1,17 @@
 package io.triada.commands.pay;
 
 import io.triada.commands.Command;
+import io.triada.commands.invoice.InvoiceCommand;
 import io.triada.commands.propagate.PropagateCommand;
 import io.triada.commands.remote.Remotes;
 import io.triada.commands.taxes.TaxesCommand;
 import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
-import io.triada.models.prefix.PaymentPrefix;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.ParsedTxnData;
+import io.triada.models.wallet.Copies;
+import io.triada.models.wallet.EagerWallets;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 import lombok.AllArgsConstructor;
@@ -37,6 +39,8 @@ public final class PayCommand implements Command {
 
     private final Remotes remotes;
 
+    private final Copies<File> copies;
+
     @Override
     public void run(final String[] argc) throws Exception {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
@@ -45,11 +49,11 @@ public final class PayCommand implements Command {
             final String id = params.payerWalletId();
             this.taxes(id, params);
             this.pay(this.wallets.acq(id), params);
-            new PropagateCommand(this.wallets)
+            new PropagateCommand(new EagerWallets(this.wallets.dir()))
                     .run(
                             new String[]{
                                     "-propagate",
-                                    "wallet=" + id
+                                    "ids=" + id
                             }
                     );
         } else {
@@ -128,9 +132,10 @@ public final class PayCommand implements Command {
      */
     private String normalizedInvoice(final String invoice) throws Exception {
         if (!invoice.contains("@")) {
-            final Wallet recipient = this.wallets.acq(invoice);
-            final String prefix = new PaymentPrefix(new RsaKey(recipient.head().key())).create();
-            return prefix + "@" + invoice;
+            return new InvoiceCommand(this.wallets, this.remotes, this.copies).run(new String[]{
+                    "-invoice",
+                    "receiver=" + invoice
+            });
         } else {
             return invoice;
         }

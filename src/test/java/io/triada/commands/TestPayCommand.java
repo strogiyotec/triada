@@ -4,6 +4,7 @@ import io.triada.commands.pay.PayCommand;
 import io.triada.commands.remote.RemoteNodes;
 import io.triada.mocks.FakeHome;
 import io.triada.models.amount.TxnAmount;
+import io.triada.models.wallet.CopiesFromFile;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
@@ -34,7 +35,8 @@ public final class TestPayCommand extends Assert {
         //send money to target
         new PayCommand(
                 new Wallets(source.file().getParentFile()),
-                new RemoteNodes(temporaryFolder.newFile("remotes6"))
+                new RemoteNodes(temporaryFolder.newFile("remotes6")),
+                new CopiesFromFile(target.file().getParentFile().toPath())
         ).run(new String[]{
                 "-pay",
                 "private-key=" + ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")).getAbsolutePath(),
@@ -50,7 +52,8 @@ public final class TestPayCommand extends Assert {
         System.out.println(source.head().id());
         new PayCommand(
                 new Wallets(source.file().getParentFile()),
-                new RemoteNodes(temporaryFolder.newFile("remotes7"))
+                new RemoteNodes(temporaryFolder.newFile("remotes7")),
+                new CopiesFromFile(target.file().getParentFile().toPath())
         ).run(new String[]{
                 "-pay",
                 "private-key=" + ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")).getAbsolutePath(),
