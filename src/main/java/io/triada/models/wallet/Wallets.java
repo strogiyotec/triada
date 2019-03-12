@@ -30,6 +30,20 @@ public final class Wallets {
         return Objects.requireNonNull(this.dir.listFiles((dir, name) -> name.endsWith(TriadaWallet.EXT))).length;
     }
 
+    /**
+     * @param id Wallet id
+     * @return True if wallet file exisrs
+     * @throws Exception if failed
+     */
+    public boolean exists(String id) throws Exception {
+        return this.dir.toPath().resolve(id + TriadaWallet.EXT).toFile().exists();
+    }
+
+    /**
+     * @param id Wallet id
+     * @return Wallet with give id
+     * @throws Exception if failed
+     */
     public Wallet acq(final String id) throws Exception {
         return new TriadaWallet(this.dir.toPath().resolve(id + TriadaWallet.EXT).toFile());
 
