@@ -1,6 +1,7 @@
 package io.triada.models.patch;
 
 import com.google.common.hash.Hashing;
+import io.triada.dates.DateConverters;
 import io.triada.functions.CheckedToBooleanFunction;
 import io.triada.models.Exceptionally;
 import io.triada.models.id.LongId;
@@ -24,8 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-
-import static io.triada.dates.DateConverters.nowMinusHours;
 
 /**
  * This class in not thread safe
@@ -71,7 +70,7 @@ public final class TxnsPatch implements Patch {
     public void legacy(final Wallet wallet, final int hours) {
         for (final SignedTransaction txn : wallet.transactions()) {
             final ParsedTxnData data = new ParsedTxnData(txn);
-            if (data.amount().lessOrEq(0L) && (data.date().compareTo(nowMinusHours(hours)) <= 0)) {
+            if (data.amount().lessOrEq(0L) && (data.date().compareTo(DateConverters.nowMinusHours(hours)) <= 0)) {
                 this.txns.add(txn);
             }
         }
