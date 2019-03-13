@@ -23,6 +23,10 @@ public final class Wallets {
                 .collect(Collectors.toList());
     }
 
+    public File dir() {
+        return this.dir;
+    }
+
     /**
      * @return Amount of wallets
      */
