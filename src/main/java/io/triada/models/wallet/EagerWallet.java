@@ -13,7 +13,6 @@ import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.transaction.ValidatedTxn;
 import io.triada.models.transactions.SignedTxnsFromFile;
 import io.triada.text.NextTxnId;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,8 +24,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class doesn't store all txns in memory ,
@@ -41,8 +38,7 @@ public final class EagerWallet implements Wallet {
      */
     private final File file;
 
-    public EagerWallet(final File file) throws IOException {
-        final String fileContent = FileUtils.readFileToString(file, UTF_8);
+    public EagerWallet(final File file) {
         this.file = file;
     }
 
