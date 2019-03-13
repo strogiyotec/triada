@@ -41,7 +41,6 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
         } else {
             throw new IllegalArgumentException("Need to add propagate option");
         }
-
     }
 
     private List<String> propagate(final String id) throws Exception {
@@ -64,11 +63,7 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
                 System.out.println("Network mismatch");
                 continue;
             }
-            // !txns.find { |t| t.id == id && t.bnf == bnf && !t.amount.negative? }.nil?
-            if (target.transactions().stream().anyMatch(txn -> {
-                final ParsedTxnData txnData = new ParsedTxnData(txn);
-                return data.id() == txnData.id() && data.bnf().asText().equals(txnData.bnf().asText());
-            })) {
+            if (this.include(data.id(), id, target)) {
                 continue;
             }
             if (!target.head().key().contains(data.prefix())) {
@@ -79,5 +74,12 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
         }
         System.out.printf("Wallet %s propagated successfully with %d txns\n", id, total);
         return modified;
+    }
+
+    private boolean include(final int id, final String bnf, final Wallet target) {
+        return target.transactions().stream().anyMatch(txn -> {
+            final ParsedTxnData txnData = new ParsedTxnData(txn);
+            return id == txnData.id() && bnf.equals(txnData.bnf().asText()) && !txnData.amount().lessOrEq(0L);
+        });
     }
 }

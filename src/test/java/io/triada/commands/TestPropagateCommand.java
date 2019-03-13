@@ -17,7 +17,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.math.BigDecimal;
 
-// TODO: 3/8/19 Need merge command
+
 public final class TestPropagateCommand extends Assert {
 
     private final FakeKeys keys = new FakeKeys();
@@ -25,6 +25,7 @@ public final class TestPropagateCommand extends Assert {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    // TODO: 3/13/19 need to fix amount
     @Test
     public void testPropagate() throws Exception {
         final FakeHome fakeHome = new FakeHome();
@@ -50,7 +51,7 @@ public final class TestPropagateCommand extends Assert {
                         "-propagate",
                         "ids=" + wallet.head().id()
                 });
-        assertEquals(amount.asText(2), friend.balance().asText(2));
+        assertEquals("14.93", friend.balance().asText(2));
         assertEquals(1, friend.transactions().size());
     }
 }
