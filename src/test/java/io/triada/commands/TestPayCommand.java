@@ -29,8 +29,8 @@ public final class TestPayCommand extends Assert {
     // TODO: 3/8/19 First assertion is broken , need to fix amount
     @Test
     public void testSendsFromWalletToWallet() throws Exception {
-        Wallet source = this.fakeHome.createWallet();
-        final Wallet target = this.fakeHome.createWallet(source);
+        final Wallet source = this.fakeHome.createEagerWallet();
+        final Wallet target = this.fakeHome.createEagerWallet(source);
         final TxnAmount amount = new TxnAmount(new BigDecimal("14.95"));
         //send money to target
         new PayCommand(
@@ -46,10 +46,8 @@ public final class TestPayCommand extends Assert {
                 "amount=" + amount.asText(2),
                 "details=" + "For the car"
         });
-        source = new TriadaWallet(source.file());
         assertThat("-14.94", is(source.balance().asText(2)));
         //send money back to source
-        System.out.println(source.head().id());
         new PayCommand(
                 new Wallets(source.file().getParentFile()),
                 new RemoteNodes(temporaryFolder.newFile("remotes7")),
@@ -64,7 +62,7 @@ public final class TestPayCommand extends Assert {
         });
         assertEquals(
                 TxnAmount.ZERO.value(),
-                new TriadaWallet(source.file()).balance().value()
+                source.balance().value()
         );
     }
 }
