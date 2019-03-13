@@ -49,31 +49,42 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
         int total = 0;
         for (final SignedTransaction transaction : this.wallets.acq(id).transactions()) {
             final ParsedTxnData data = new ParsedTxnData(transaction);
+            if (data.amount().lessOrEq(0L)) {
+                if (data.bnf().asText().equals(id)) {
+                    System.out.printf("Pay itself in %s %s\n", id, data.asText());
+                    continue;
+                }
+                final Wallet target = this.wallets.acq(data.bnf().asText());
+                if (this.shouldSkip(id, network, data, target)) {
+                    continue;
+                }
+                target.add(new SignedTriadaTxn(new InversedTxn(transaction, new LongId(id)), transaction.signature()));
+                modified.add(data.bnf().asText());
+            }
             total++;
-            if (data.bnf().asText().equals(id)) {
-                System.out.printf("Pay itself in %s %s\n", id, data.asText());
-                continue;
-            }
-            final Wallet target = this.wallets.acq(data.bnf().asText());
-            if (!target.file().exists()) {
-                System.out.printf("Wallet %s is absent\n", data.bnf().asText());
-                continue;
-            }
-            if (!target.head().network().equals(network)) {
-                System.out.println("Network mismatch");
-                continue;
-            }
-            if (this.include(data.id(), id, target)) {
-                continue;
-            }
-            if (!target.head().key().contains(data.prefix())) {
-                System.out.println("Wrong prefix");
-            }
-            target.add(new SignedTriadaTxn(new InversedTxn(transaction, new LongId(id)), transaction.signature()));
-            modified.add(data.bnf().asText());
         }
         System.out.printf("Wallet %s propagated successfully with %d txns\n", id, total);
         return modified;
+    }
+
+    private boolean shouldSkip(final String id, final String network, final ParsedTxnData data, final Wallet target) {
+        if (!target.file().exists()) {
+            System.out.printf("Wallet %s is absent\n", data.bnf().asText());
+            return true;
+        }
+        if (!target.head().network().equals(network)) {
+            System.out.println("Network mismatch");
+            return true;
+        }
+        if (this.include(data.id(), id, target)) {
+            System.out.printf("Wallet %s already has this transaction\n", target.head().id());
+            return true;
+        }
+        if (!target.head().key().contains(data.prefix())) {
+            System.out.println("Wrong prefix");
+            return true;
+        }
+        return false;
     }
 
     private boolean include(final int id, final String bnf, final Wallet target) {
