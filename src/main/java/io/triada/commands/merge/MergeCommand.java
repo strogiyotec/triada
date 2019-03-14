@@ -39,7 +39,7 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
                 if (this.merge(id, new CopiesFromFile(this.copies.resolve(id)), mergeParams)) {
                     modified.add(id);
                     if (!skipPropagate) {
-                        modified.addAll(new PropagateCommand(this.wallets).run(argc));
+                        modified.addAll(new PropagateCommand(new EagerWallets(this.wallets.dir())).run(argc));
                     }
                 }
             }
