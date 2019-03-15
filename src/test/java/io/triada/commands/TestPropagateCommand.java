@@ -39,7 +39,7 @@ public final class TestPropagateCommand extends Assert {
                 new CopiesFromFile(wallet.file().getParentFile().toPath())
         ).run(new String[]{
                 "-pay",
-                "private-key=" + this.keys.privateKey().getAbsolutePath(),
+                "private-key=" + this.keys.privateKeyFile().getAbsolutePath(),
                 "force",
                 "payer=" + wallet.head().id(),
                 "recipient=" + friend.head().id(),
