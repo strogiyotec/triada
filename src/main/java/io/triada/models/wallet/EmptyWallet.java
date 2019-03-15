@@ -47,11 +47,31 @@ public final class EmptyWallet extends WalletEnvelope {
         }));
     }
 
+    /**
+     * Create empty wallet with test network
+     */
     public EmptyWallet(
             final String id,
             final String pubKey,
             final String path
     ) {
         this(id, pubKey, "test", false, path);
+    }
+
+    public EmptyWallet(
+            final String id,
+            final String pubKey,
+            final String network,
+            final String path
+    ) {
+        this(id, pubKey, network, false, path);
+    }
+    public EmptyWallet(
+            final String id,
+            final String pubKey,
+            final String network,
+            final File path
+    ) {
+        this(id, pubKey, network, false, path.getAbsolutePath());
     }
 }
