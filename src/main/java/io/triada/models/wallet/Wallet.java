@@ -15,6 +15,11 @@ import java.util.List;
 public interface Wallet extends Text {
 
     /**
+     * Main network name
+     */
+    String MAINET = "triada";
+
+    /**
      * @return Age of wallet in hours
      */
     long age();
@@ -98,10 +103,10 @@ public interface Wallet extends Text {
     /**
      * Substract txn with current date
      *
-     * @param amount  Amount to sub
-     * @param prefix  Prefix of txn
-     * @param id      Wallet id
-     * @param pvt     Private key to sign txn
+     * @param amount Amount to sub
+     * @param prefix Prefix of txn
+     * @param id     Wallet id
+     * @param pvt    Private key to sign txn
      * @return Wallet with new Txn
      * @throws Exception if failed
      */
