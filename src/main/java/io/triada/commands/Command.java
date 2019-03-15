@@ -45,6 +45,7 @@ public interface Command {
                 .addOption(calculate())
                 .addOption(merge())
                 .addOption(pay())
+                .addOption(create())
                 .addOption(invoice())
                 .addOption(propagate())
                 .addOption(taxes());
@@ -84,6 +85,11 @@ public interface Command {
     static Option fetch() {
         return getOption("fetch", "Fetch wallets from network", 10);
     }
+
+    static Option create() {
+        return getOption("create", "Create new wallet", 10);
+    }
+
 
     static Option merge() {
         return getOption("merge", "Fetch wallets from network", 10);
