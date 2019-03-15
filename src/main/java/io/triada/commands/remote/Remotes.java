@@ -26,6 +26,10 @@ public interface Remotes {
 
     void modify(CheckedConsumer<RemoteNode> consumer, Farm farm) throws Exception;
 
+    default void modify(CheckedConsumer<RemoteNode> consumer) throws Exception {
+        this.modify(consumer, Farm.EMPTY);
+    }
+
     final class Empty implements Remotes {
 
         @Override
