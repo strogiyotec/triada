@@ -35,11 +35,20 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
             final List<String> ids = mergeParams.ids();
             final boolean skipPropagate = mergeParams.skipPropagate();
             final List<String> modified = new ArrayList<>(ids.size());
+            final String[] propagate = propagate(argc);
             for (final String id : ids) {
                 if (this.merge(id, new CopiesFromFile(this.copies.resolve(id)), mergeParams)) {
                     modified.add(id);
                     if (!skipPropagate) {
-                        modified.addAll(new PropagateCommand(new EagerWallets(this.wallets.dir())).run(argc));
+                        modified.addAll(
+                                new PropagateCommand(
+                                        new EagerWallets(
+                                                this.wallets.dir()
+                                        )
+                                ).run(
+                                        propagate
+                                )
+                        );
                     }
                 }
             }
@@ -72,7 +81,8 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
                             copy.score()
                     );
             this.mergeOne(mergeParams, patch, wallet, name);
-            index += copy.score();
+            score += copy.score();
+            index++;
         }
         try {
             final Wallet wallet = this.wallets.acq(id);
@@ -171,7 +181,8 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
             final TxnsPatch patch,
             final Wallets wallets
     ) throws Exception {
-        patch.legacy(wallets.acq(id));
+        final Wallet w = wallets.acq(id);
+        patch.legacy(w);
         System.out.printf(
                 "Local copy of %s merged legacy %s\n",
                 id,
@@ -179,4 +190,9 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
         );
     }
 
+    private String[] propagate(final String[] argc) {
+        final List<String> propagate = new ArrayList<>(Arrays.asList(argc));
+        propagate.set(0, "-propagate");
+        return propagate.toArray(new String[]{});
+    }
 }

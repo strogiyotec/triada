@@ -39,6 +39,6 @@ final class MergeParams {
                 .filter(p -> p.contains("ledger"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Need to provide ledger"));
+                .orElse("/dev/null");
     }
 }
