@@ -78,6 +78,16 @@ public final class HttpTriadaClient {
     }
 
     /**
+     * Call get method with default time out
+     *
+     * @return JsonObject as response
+     * @throws Exception if failed
+     */
+    public JsonObject get() throws Exception {
+        return this.get(READ_TIMEOUT);
+    }
+
+    /**
      * @param file with content
      * @return JsonObject response
      * @throws Exception if failed
