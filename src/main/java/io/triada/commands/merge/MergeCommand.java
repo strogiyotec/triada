@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Merge wallets from remotes into one
+ */
 @AllArgsConstructor
 public final class MergeCommand implements ValuableCommand<List<String>> {
 

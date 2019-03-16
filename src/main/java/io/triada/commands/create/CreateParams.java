@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Cli params for create command
+ */
 @AllArgsConstructor
 final class CreateParams {
 
     private final List<String> params;
-
 
     String publicKey() {
         return this.params.stream()
@@ -38,6 +40,4 @@ final class CreateParams {
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .findFirst();
     }
-
-
 }

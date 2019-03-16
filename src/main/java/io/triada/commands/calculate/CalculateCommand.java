@@ -25,6 +25,12 @@ public final class CalculateCommand implements ValuableCommand<Score> {
         }
     }
 
+    /**
+     * Calculate suffixes until reach max number provided from cli
+     *
+     * @param params Cli params
+     * @return Score
+     */
     private Score calculate(final CalculateParams params) {
         final int strength = params.strength();
         final long start = System.currentTimeMillis();

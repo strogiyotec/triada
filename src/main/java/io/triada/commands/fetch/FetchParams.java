@@ -15,7 +15,7 @@ final class FetchParams {
     /**
      * @return tolerateQuorum number from this.params
      */
-    public int tolerateQuorum() {
+    int tolerateQuorum() {
         return this.params.stream()
                 .filter(param -> param.contains("tolerate-quorum"))
                 .findFirst()
@@ -27,7 +27,7 @@ final class FetchParams {
     /**
      * @return List of ignore nodes which are separated by ','
      */
-    public List<String> ignoreNodes() {
+    List<String> ignoreNodes() {
         return this.params.stream().filter(p -> p.contains("ignore-node"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .map(p -> Arrays.asList(p.split(",")))
@@ -38,7 +38,7 @@ final class FetchParams {
     /**
      * @return network name
      */
-    public String network() {
+    String network() {
         return this.params.stream()
                 .filter(p -> p.contains("network"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -49,7 +49,7 @@ final class FetchParams {
     /**
      * @return wallet id if present or orElse if id is not present
      */
-    public List<String> wallets(final List<String> orElse) {
+    List<String> wallets(final List<String> orElse) {
         return this.params.stream()
                 .filter(p -> p.contains("wallet="))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -58,11 +58,11 @@ final class FetchParams {
                 .orElse(orElse);
     }
 
-    public boolean tolerateEdges() {
+    boolean tolerateEdges() {
         return this.params.contains("tolerate-edges");
     }
 
-    public boolean ignoreScoreWeakness() {
+    boolean ignoreScoreWeakness() {
         return this.params.contains("ignore-score-weakness");
     }
 

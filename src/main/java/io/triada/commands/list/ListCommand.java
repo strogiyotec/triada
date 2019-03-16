@@ -11,11 +11,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Print list of wallets in given path
+ */
 @AllArgsConstructor
 public final class ListCommand implements Command {
 
+    /**
+     * Wallets
+     */
     private final Wallets wallets;
 
+    /**
+     * Root path to copies
+     */
     private final Path copies;
 
     @Override

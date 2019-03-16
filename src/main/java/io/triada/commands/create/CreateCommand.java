@@ -18,11 +18,20 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Create new wallet
+ */
 @AllArgsConstructor
 public final class CreateCommand implements ValuableCommand<String> {
 
+    /**
+     * Wallets
+     */
     private final Wallets wallets;
 
+    /**
+     * Remotes
+     */
     private final Remotes remotes;
 
     @Override
@@ -57,6 +66,14 @@ public final class CreateCommand implements ValuableCommand<String> {
         return id;
     }
 
+    /**
+     * Create new wallet id and check if remotes already have this id,
+     * If id is not unique recalculate it again
+     *
+     * @param params cli params
+     * @return New Id
+     * @throws Exception if failed
+     */
     private String createId(final CreateParams params) throws Exception {
         while (true) {
             final String id = new LongId().asText();

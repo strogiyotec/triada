@@ -11,17 +11,17 @@ final class TaxesParams {
 
     private final List<String> params;
 
-    public boolean show() {
+    boolean show() {
         return this.params.stream()
                 .anyMatch(p -> p.equals("show"));
     }
 
-    public boolean debt() {
+    boolean debt() {
         return this.params.stream()
                 .anyMatch(p -> p.equals("debt"));
     }
 
-    public boolean pay() {
+    boolean pay() {
         return this.params.stream()
                 .anyMatch(p -> p.equals("pay"));
     }
@@ -29,7 +29,7 @@ final class TaxesParams {
     /**
      * @return wallet ids
      */
-    public List<String> wallets() {
+    List<String> wallets() {
         return this.params.stream()
                 .filter(p -> p.contains("wallet="))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -38,15 +38,15 @@ final class TaxesParams {
                 .orElse(Collections.emptyList());
     }
 
-    public boolean ignoreScoreWeakness() {
+    boolean ignoreScoreWeakness() {
         return this.params.contains("ignore-score-weakness");
     }
 
-    public boolean ignoreNodesAbsence() {
+    boolean ignoreNodesAbsence() {
         return this.params.contains("ignore-nodes-absence");
     }
 
-    public String privateKey() {
+    String privateKey() {
         return this.params.stream()
                 .filter(p -> p.contains("private-key="))
                 .map(p -> p.substring(p.indexOf("=") + 1))

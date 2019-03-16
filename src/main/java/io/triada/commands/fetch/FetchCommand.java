@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.io.FileUtils;
-import org.jooq.lambda.fi.util.function.CheckedBiFunction;
+import org.jooq.lambda.fi.util.function.CheckedFunction;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -26,13 +26,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.triada.http.HttpTriadaClient.READ_TIMEOUT;
 import static io.triada.models.id.LongId.ROOT;
 
+/**
+ * Fetch wallets from remotes
+ */
 @AllArgsConstructor
 public final class FetchCommand implements Command {
 
+    /**
+     * Wallets
+     */
     private final Wallets wallets;
 
+    /**
+     * Copies path
+     */
     private final Path copies;
 
+    /**
+     * Remote nodes
+     */
     private final Remotes remotes;
 
     @Override
@@ -87,6 +99,13 @@ public final class FetchCommand implements Command {
 
     }
 
+    /**
+     * @param id         Wallet id
+     * @param remoteNode Remote node
+     * @param copies     Copies
+     * @param argc       cli argc
+     * @return Score value of given remote node
+     */
     private int fetchOne(
             final String id,
             final RemoteNode remoteNode,
@@ -102,44 +121,66 @@ public final class FetchCommand implements Command {
                 id,
                 remoteNode,
                 0,
-                (JsonObject jsonObject, Score score) -> {
-                    assertScore(remoteNode, argc, score);
-                    String copy = null;
-                    for (final WalletCopy walletCopy : copies.all()) {
-                        final String content = FileUtils.readFileToString(walletCopy.path(), StandardCharsets.UTF_8);
-                        if (walletAlreadyExists(jsonObject, content)) {
-                            continue;
-                        }
-                        copy = copies.add(
-                                FileUtils.readFileToString(walletCopy.path(), StandardCharsets.UTF_8),
-                                score.address(),
-                                score.value(),
-                                remoteNode.isMaster()
-                        );
-                        System.out.printf(
-                                "No need to fetch %s from %s it's the same content as copy %s \n",
-                                id,
-                                remoteNode.asText(),
-                                copy
-                        );
-                        break;
-                    }
-                    if (copy == null) {
-                        final File file = remoteNode.http(String.format("/wallet/%s.bin", id)).getFile(File.createTempFile("wallet", TriadaWallet.EXT));
-                        final Wallet wallet = new TriadaWallet(file);
-                        assertWallet(id, argc, wallet);
-                        final String name = copies.add(
-                                FileUtils.readFileToString(file, StandardCharsets.UTF_8),
-                                score.address(),
-                                score.value(),
-                                remoteNode.isMaster()
-                        );
-                        System.out.printf("Copy of wallet %s was saved in file %s", id, name);
-                    }
-                    return score.value();
-                });
+                this.fda(id, remoteNode, copies, argc));
     }
 
+    /**
+     * @param id         Wallet id
+     * @param remoteNode Remote node
+     * @param copies     Copies
+     * @param argc       cli argc
+     * @return Score value of remote node
+     */
+    private CheckedFunction<JsonObject, Integer> fda(
+            final String id,
+            final RemoteNode remoteNode,
+            final Copies<File> copies,
+            final FetchParams argc
+    ) {
+        return jsonObject -> {
+            final Score score = new TriadaScore(jsonObject.get("score").getAsJsonObject());
+            assertScore(remoteNode, argc, score);
+            String copy = null;
+            for (final WalletCopy walletCopy : copies.all()) {
+                final String content = FileUtils.readFileToString(walletCopy.path(), StandardCharsets.UTF_8);
+                if (walletAlreadyExists(jsonObject, content)) {
+                    continue;
+                }
+                copy = copies.add(
+                        FileUtils.readFileToString(walletCopy.path(), StandardCharsets.UTF_8),
+                        score.address(),
+                        score.value(),
+                        remoteNode.isMaster()
+                );
+                System.out.printf(
+                        "No need to fetch %s from %s it's the same content as copy %s \n",
+                        id,
+                        remoteNode.asText(),
+                        copy
+                );
+                break;
+            }
+            if (copy == null) {
+                final File file = remoteNode.http(String.format("/wallet/%s.bin", id)).getFile(File.createTempFile("wallet", TriadaWallet.EXT));
+                final Wallet wallet = new TriadaWallet(file);
+                assertWallet(id, argc, wallet);
+                final String name = copies.add(
+                        FileUtils.readFileToString(file, StandardCharsets.UTF_8),
+                        score.address(),
+                        score.value(),
+                        remoteNode.isMaster()
+                );
+                System.out.printf("Copy of wallet %s was saved in file %s", id, name);
+            }
+            return score.value();
+        };
+    }
+
+    /**
+     * @param id     Walled id
+     * @param argc   cli argc
+     * @param wallet Wallet
+     */
     private static void assertWallet(
             final String id,
             final FetchParams argc,
@@ -188,6 +229,13 @@ public final class FetchCommand implements Command {
                 .equals(Hashing.sha256().hashString(content, StandardCharsets.UTF_8).toString());
     }
 
+    /**
+     * Assert given score
+     *
+     * @param remoteNode Node
+     * @param argc       cli argc
+     * @param score      Score
+     */
     private static void assertScore(
             final RemoteNode remoteNode,
             final FetchParams argc,
@@ -201,17 +249,27 @@ public final class FetchCommand implements Command {
     }
 
     // TODO: 2/28/19 Add retry logic
+
+    /**
+     * Get Json response from given remote node
+     * Call provided yield
+     *
+     * @param id         Wallet id
+     * @param remoteNode REmote node
+     * @param retries    amount of retries
+     * @param yield      Callback
+     * @return value returned from callback
+     */
     private static int readOne(
             final String id,
             final RemoteNode remoteNode,
             final int retries,
-            final CheckedBiFunction<JsonObject, Score, Integer> yield
+            final CheckedFunction<JsonObject, Integer> yield
     ) {
         try {
             final String url = "wallet/" + id;
             final JsonObject body = remoteNode.http(url).get(READ_TIMEOUT);
-            final Score score = new TriadaScore(body.get("score").getAsJsonObject());
-            return yield.apply(body, score);
+            return yield.apply(body);
         } catch (final Throwable exc) {
             // TODO: 2/28/19 Retry
             return 0;

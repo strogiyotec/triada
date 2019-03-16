@@ -13,13 +13,25 @@ import org.apache.commons.cli.DefaultParser;
 import java.io.File;
 import java.util.Arrays;
 
+/**
+ * Create invoice for wallet
+ */
 @AllArgsConstructor
 public final class InvoiceCommand implements ValuableCommand<String> {
 
+    /**
+     * Wallets
+     */
     private final Wallets wallets;
 
+    /**
+     * Remote nodes
+     */
     private final Remotes remotes;
 
+    /**
+     * Copies
+     */
     private final Copies<File> copies;
 
     @Override

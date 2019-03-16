@@ -10,7 +10,7 @@ final class ShowParams {
 
     final List<String> params;
 
-    public Optional<String> id() {
+    Optional<String> id() {
         return this.params.stream()
                 .filter(p -> p.contains("id"))
                 .map(p -> p.substring(p.indexOf("=") + 1))

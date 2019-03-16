@@ -7,12 +7,15 @@ import lombok.AllArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Params arguments for calculate command
+ */
 @AllArgsConstructor
 final class CalculateParams {
 
     private final List<String> params;
 
-    public int strength() {
+    int strength() {
         return this.params.stream()
                 .filter(p -> p.contains("strength"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -21,7 +24,7 @@ final class CalculateParams {
                 .orElse(TriadaScore.STRENGTH);
     }
 
-    public Date time() {
+    Date time() {
         return this.params.stream()
                 .filter(p -> p.contains("time"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -31,7 +34,7 @@ final class CalculateParams {
                 .orElse(new Date());
     }
 
-    public String invoice() {
+    String invoice() {
         return this.params.stream()
                 .filter(p -> p.contains("invoice"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -39,7 +42,7 @@ final class CalculateParams {
                 .orElseThrow(() -> new IllegalArgumentException("Need to provide invoice "));
     }
 
-    public String host() {
+    String host() {
         return this.params.stream()
                 .filter(p -> p.contains("host"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -47,7 +50,7 @@ final class CalculateParams {
                 .orElse("127.0.01");
     }
 
-    public int port() {
+    int port() {
         return this.params.stream()
                 .filter(p -> p.contains("port"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -56,7 +59,7 @@ final class CalculateParams {
                 .orElse(RemoteNodes.PORT);
     }
 
-    public int max() {
+    int max() {
         return this.params.stream()
                 .filter(p -> p.contains("max"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -65,11 +68,11 @@ final class CalculateParams {
                 .orElse(8);
     }
 
-    public boolean hideHash() {
+    boolean hideHash() {
         return this.params.stream().anyMatch(p -> p.contains("hide-hash"));
     }
 
-    public boolean hideTime() {
+    boolean hideTime() {
         return this.params.stream().anyMatch(p -> p.contains("hide-time"));
     }
 }

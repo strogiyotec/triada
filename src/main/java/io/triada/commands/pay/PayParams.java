@@ -14,7 +14,7 @@ import java.util.List;
 final class PayParams {
     private final List<String> params;
 
-    public String payerWalletId() {
+    String payerWalletId() {
         return this.params.stream()
                 .filter(p -> p.contains("payer"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -23,7 +23,7 @@ final class PayParams {
                 .orElseThrow(() -> new IllegalStateException("Payer wallet ID is required as the first argument"));
     }
 
-    public String invoice() {
+    String invoice() {
         return this.params.stream()
                 .filter(p -> p.contains("recipient"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -32,7 +32,7 @@ final class PayParams {
                 .orElseThrow(() -> new IllegalStateException("Recipient wallet ID is required as the first argument"));
     }
 
-    public TxnAmount amount() {
+    TxnAmount amount() {
         return new TxnAmount(
                 new BigDecimal(
                         this.params.stream()
@@ -47,13 +47,13 @@ final class PayParams {
         );
     }
 
-    public Tax taxes(final Wallets wallets) throws Exception {
+    Tax taxes(final Wallets wallets) throws Exception {
         final Wallet wallet = wallets.acq(this.payerWalletId());
         // TODO: 3/3/19 Need taxes command
         return null;
     }
 
-    public String details() {
+    String details() {
         return this.params.stream()
                 .filter(p -> p.contains("details"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -62,17 +62,17 @@ final class PayParams {
                 .orElse("-");
     }
 
-    public boolean force() {
+    boolean force() {
         return this.params.stream()
                 .anyMatch(p -> p.equals("force"));
     }
 
-    public boolean dontPayTaxes() {
+    boolean dontPayTaxes() {
         return this.params.stream()
                 .anyMatch(p -> p.equals("dont-pay-taxes"));
     }
 
-    public String privateKey() {
+    String privateKey() {
         return this.params.stream()
                 .filter(p -> p.contains("private-key="))
                 .map(p -> p.substring(p.indexOf("=") + 1))

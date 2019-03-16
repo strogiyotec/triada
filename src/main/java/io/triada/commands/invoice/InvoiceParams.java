@@ -11,7 +11,7 @@ final class InvoiceParams {
 
     private final List<String> params;
 
-    public String receiverId() {
+    String receiverId() {
         return this.params.stream()
                 .filter(p -> p.contains("receiver"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -20,7 +20,7 @@ final class InvoiceParams {
                 .orElseThrow(() -> new IllegalStateException("Receiver wallet ID is required"));
     }
 
-    public int length() {
+    int length() {
         return this.params.stream()
                 .filter(p -> p.contains("length"))
                 .map(p -> p.substring(p.indexOf("=") + 1))

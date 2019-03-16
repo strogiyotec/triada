@@ -12,7 +12,7 @@ final class MergeParams {
 
     private final List<String> params;
 
-    public List<String> ids() {
+    List<String> ids() {
         return this.params.stream()
                 .filter(p -> p.contains("ids"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
@@ -22,19 +22,19 @@ final class MergeParams {
                 .orElse(Collections.emptyList());
     }
 
-    public boolean skipPropagate() {
+    boolean skipPropagate() {
         return this.params.stream().anyMatch(param -> param.equals("skip-propagate"));
     }
 
-    public boolean skipLegacy() {
+    boolean skipLegacy() {
         return this.params.stream().anyMatch(param -> param.equals("skip-legacy"));
     }
 
-    public boolean shallow() {
+    boolean shallow() {
         return this.params.stream().anyMatch(param -> param.equals("shallow"));
     }
 
-    public String ledger() {
+    String ledger() {
         return this.params.stream()
                 .filter(p -> p.contains("ledger"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
