@@ -24,10 +24,10 @@ public final class TestList extends Assert {
 
     @Test
     public void testListsWalletsWithBalance() throws Exception {
-        final LongId id = new LongId();
+        final String id = new LongId().asText();
         final Wallets wallets = new Wallets(this.folder.newFolder());
         final EmptyWallet wallet = new EmptyWallet(
-                id.asText(),
+                id,
                 this.fakeKeys.publicKey().asPublic(),
                 wallets.dir().toPath().resolve(id + TriadaWallet.EXT).toFile().getAbsolutePath()
         );
