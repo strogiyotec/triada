@@ -157,22 +157,14 @@ public final class CopiesFromFile implements Copies<File> {
                 this.load()
                         .stream()
                         .collect(Collectors.groupingBy(CsvCopy::name));
-        return groupBy.entrySet().stream().map(line ->
-                new ConstWalletCopy(
-                        line.getKey(),
-                        this.dir.resolve(line.getKey() + EXT).toFile(),
-                        line.getValue().size(),
-                        line.getValue().stream().anyMatch(CsvCopy::master),
-                        line.getValue().stream()
-                                .filter(copy -> copy.time().compareTo(Date.from(Instant.now().minus(Duration.ofDays(1)))) >= 0)
-                                .mapToInt(CsvCopy::score)
-                                .sum()
-                )
-        ).sorted(
-                Comparator.comparing(WalletCopy::master)
-                        .thenComparing(WalletCopy::score)
-                        .reversed()
-        ).collect(Collectors.toList());
+        return groupBy.entrySet()
+                .stream()
+                .map(line -> new ConstWalletCopy(line, this.dir))
+                .sorted(
+                        Comparator.comparing(WalletCopy::master)
+                                .thenComparing(WalletCopy::score)
+                                .reversed()
+                ).collect(Collectors.toList());
     }
 
     /**
