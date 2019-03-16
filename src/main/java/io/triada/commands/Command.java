@@ -14,8 +14,6 @@ public interface Command {
                 .addOption(
                         new Option("rclean", false, "RemoveCommand all registered nodes")
                 ).addOption(
-                        new Option("show", false, "Show all registered remote nodes")
-                ).addOption(
                         new Option("reset", false, "Restore it back to the default list of nodes")
                 ).addOption(
                         new Option("masters", false, "Add all \"master\" nodes to the list")
@@ -42,6 +40,7 @@ public interface Command {
                 ).addOption(removeWallet())
                 .addOption(clean())
                 .addOption(fetch())
+                .addOption(show())
                 .addOption(calculate())
                 .addOption(merge())
                 .addOption(pay())
@@ -80,6 +79,10 @@ public interface Command {
         option.setOptionalArg(true);
         option.setValueSeparator(' ');
         return option;
+    }
+
+    static Option show() {
+        return getOption("show", "Sow balance of the wallet", 2);
     }
 
     static Option fetch() {
