@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 /**
@@ -92,7 +92,7 @@ public final class CopiesFromFile implements Copies<File> {
                 time,
                 master
         ));
-        this.rewrite(load.stream().map(CsvCopy::asText).collect(Collectors.toList()));
+        this.rewrite(load.stream().map(CsvCopy::asText).collect(toList()));
         return name;
 
     }
@@ -126,13 +126,17 @@ public final class CopiesFromFile implements Copies<File> {
      * @throws IOException if failed
      */
     @Override
-    public int clean() throws IOException {
+    public int clean(final int days) throws IOException {
         final List<CsvCopy> list =
                 this.load()
                         .stream()
-                        .filter(copy -> copy.time().compareTo(Date.from(Instant.now().minus(Duration.ofDays(1)))) >= 0)
-                        .collect(Collectors.toList());
-        this.rewrite(list.stream().map(Text::asText).collect(Collectors.toList()));
+                        .filter(copy -> copy.time().compareTo(Date.from(Instant.now().minus(Duration.ofDays(days)))) >= 0)
+                        .collect(toList());
+        this.rewrite(
+                list.stream()
+                        .map(Text::asText)
+                        .collect(toList())
+        );
         int deleted = 0;
         for (final File file : this.files()) {
             if (list.stream().anyMatch(csv -> csv.name().equals(removeExtension(file.getName())))) {
@@ -164,7 +168,7 @@ public final class CopiesFromFile implements Copies<File> {
                         Comparator.comparing(WalletCopy::master)
                                 .thenComparing(WalletCopy::score)
                                 .reversed()
-                ).collect(Collectors.toList());
+                ).collect(toList());
     }
 
     /**
@@ -188,7 +192,7 @@ public final class CopiesFromFile implements Copies<File> {
                         Integer.parseInt(split[3]),
                         new Date(Long.parseLong(split[4])),
                         split[5].equals("M")
-                )).collect(Collectors.toList());
+                )).collect(toList());
     }
 
     /**
@@ -203,16 +207,6 @@ public final class CopiesFromFile implements Copies<File> {
      */
     private File[] files() {
         return this.dir.toFile().listFiles((dir, name) -> removeExtension(name).matches("^[0-9]+$"));
-    }
-
-    /**
-     * Append Content to scores
-     *
-     * @param copies Content
-     * @throws IOException if failed
-     */
-    private void save(final List<String> copies) throws IOException {
-        Files.write(this.file(), copies, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
     }
 
     /**

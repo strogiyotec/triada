@@ -17,7 +17,7 @@ public interface Copies<T> {
 
     void remove(HostAndPort hostAndPort) throws IOException;
 
-    int clean() throws IOException;
+    int clean(int days) throws IOException;
 
     List<WalletCopy> all() throws IOException;
 
@@ -25,6 +25,10 @@ public interface Copies<T> {
 
     default String add(String content, HostAndPort hostAndPort, int score) throws Exception {
         return this.add(content, hostAndPort, score, new Date(), false);
+    }
+
+    default String add(String content, HostAndPort hostAndPort, int score,final Date date) throws Exception {
+        return this.add(content, hostAndPort, score, date, false);
     }
 
     default String add(String content, String host, int port, int score) throws Exception {
@@ -35,5 +39,7 @@ public interface Copies<T> {
         return this.add(content, hostAndPort, score, new Date(), master);
     }
 
-
+    default int clean() throws Exception {
+        return this.clean(1);
+    }
 }

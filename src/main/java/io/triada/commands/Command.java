@@ -70,7 +70,7 @@ public interface Command {
     }
 
     static Option clean() {
-        return new Option("clean", true, "Clean expired copies");
+        return getOption("clean", "Clean expired copies", 2);
     }
 
     static Option removeWallet() {
