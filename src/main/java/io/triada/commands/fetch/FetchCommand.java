@@ -51,16 +51,23 @@ public final class FetchCommand implements Command {
     public void run(final String[] argc) throws Exception {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
         if (cmd.hasOption("-fetch")) {
-            final FetchParams fetchArgc = new FetchParams(Arrays.asList(cmd.getOptionValues("fetch")));
-            for (final String id : fetchArgc.wallets(this.wallets.all())) {
-                this.fetch(fetchArgc, id, new CopiesFromFile(copies.resolve(id)));
+            final FetchParams params = new FetchParams(Arrays.asList(cmd.getOptionValues("fetch")));
+            for (final String id : params.wallets(this.wallets.all())) {
+                this.fetch(params, id, new CopiesFromFile(copies.resolve(id)));
             }
         } else {
             throw new IllegalArgumentException("Need to add fetch option");
         }
     }
 
-    private void fetch(final FetchParams argc, final String id, final Copies<File> cps) throws Exception {
+    private void fetch(final FetchParams params, final String id, final Copies<File> cps) throws Exception {
+        if (this.remotes.all().isEmpty()) {
+            if (params.quietIfAbsent()) {
+                return;
+            } else {
+                throw new IllegalStateException("There are no remote nodes");
+            }
+        }
         // TODO: 3/2/19 Why nodes and done ??
         final AtomicInteger nodes = new AtomicInteger(0);
         final AtomicInteger total = new AtomicInteger(0);
@@ -68,7 +75,7 @@ public final class FetchCommand implements Command {
         final AtomicInteger masters = new AtomicInteger(0);
         this.remotes.modify(remoteNode -> {
             nodes.incrementAndGet();
-            total.addAndGet(this.fetchOne(id, remoteNode, cps, argc));
+            total.addAndGet(this.fetchOne(id, remoteNode, cps, params));
             done.incrementAndGet();
             if (remoteNode.isMaster()) {
                 masters.incrementAndGet();
@@ -77,10 +84,10 @@ public final class FetchCommand implements Command {
         if (nodes.get() == 0) {
             throw new IllegalStateException("No nodes");
         }
-        if (masters.get() == 0 && !argc.tolerateEdges()) {
+        if (masters.get() == 0 && !params.tolerateEdges()) {
             throw new IllegalStateException("There are no masternodes");
         }
-        final int quorum = argc.tolerateQuorum();
+        final int quorum = params.tolerateQuorum();
         if (nodes.get() < quorum) {
             throw new IllegalStateException(
                     String.format(

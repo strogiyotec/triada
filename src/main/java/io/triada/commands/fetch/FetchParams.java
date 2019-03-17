@@ -62,6 +62,10 @@ final class FetchParams {
         return this.params.contains("tolerate-edges");
     }
 
+    boolean quietIfAbsent() {
+        return this.params.contains("quiet-if-absent");
+    }
+
     boolean ignoreScoreWeakness() {
         return this.params.contains("ignore-score-weakness");
     }
