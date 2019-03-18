@@ -42,4 +42,8 @@ public interface Copies<T> {
     default int clean() throws Exception {
         return this.clean(1);
     }
+
+    default void remove(String host,int port) throws Exception{
+        this.remove(HostAndPort.fromParts(host,port));
+    }
 }
