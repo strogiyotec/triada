@@ -45,6 +45,12 @@ public final class FakeHome {
         );
     }
 
+    public Wallet createEagerWallet(final LongId id, final Wallet origin) throws Exception {
+        return new EagerWallet(
+                new FakeHeadFile().fakeHome(id, origin)
+        );
+    }
+
     public Wallet createWallet(final Wallet origin) throws Exception {
         return new TriadaWallet(
                 new FakeHeadFile().fakeHome(new LongId(), origin)
