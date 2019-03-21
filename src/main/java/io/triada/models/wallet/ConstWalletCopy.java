@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static io.triada.models.wallet.TriadaWallet.EXT;
 
 @AllArgsConstructor
 public final class ConstWalletCopy implements WalletCopy {
@@ -36,7 +35,7 @@ public final class ConstWalletCopy implements WalletCopy {
     ) {
         this(
                 entry.getKey(),
-                dir.resolve(entry.getKey() + EXT).toFile(),
+                dir.resolve(entry.getKey() + CopiesFromFile.EXT).toFile(),
                 entry.getValue().size(),
                 entry.getValue().stream().anyMatch(CsvCopy::master),
                 entry.getValue().stream()
