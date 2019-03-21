@@ -49,6 +49,21 @@ public final class BlockingEntrance implements Entrance {
 
     private final List<Long> speed = new ArrayList<>(16);
 
+    public BlockingEntrance(
+            final Wallets wallets,
+            final Remotes remotes,
+            final Path copies,
+            final String address,
+            final Path ledger
+    ) {
+        this.wallets = wallets;
+        this.remotes = remotes;
+        this.copies = copies;
+        this.address = address;
+        this.network = "test";
+        this.ledger = ledger;
+    }
+
     @Override
     public void start(final VoidYield runnable) throws Exception {
         runnable.run();
@@ -129,8 +144,7 @@ public final class BlockingEntrance implements Entrance {
                 this.ledger,
                 this.content(f).getBytes(UTF_8)
         );
-
-
+        f.toFile().delete();
         return modified;
     }
 
