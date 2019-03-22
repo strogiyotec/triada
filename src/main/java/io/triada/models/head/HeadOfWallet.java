@@ -14,10 +14,19 @@ import java.util.regex.Pattern;
  */
 public final class HeadOfWallet implements Head {
 
+    /**
+     * NETWORK name pattern
+     */
     private static final Pattern NETWORK_PTN = Pattern.compile("^[a-z]{4,16}$");
 
+    /**
+     * PROTOCOl name pattern
+     */
     private static final Pattern PROTOCOL_PTN = Pattern.compile("^[0-9]+$");
 
+    /**
+     * Head params
+     */
     private final List<String> head;
 
     public HeadOfWallet(final File file) throws IOException {
