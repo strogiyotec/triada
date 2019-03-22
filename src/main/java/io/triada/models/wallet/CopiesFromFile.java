@@ -30,7 +30,7 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 @AllArgsConstructor
 public final class CopiesFromFile implements Copies<File> {
 
-    private static final String EXT = ".zc";
+    public static final String EXT = ".zc";
 
     private final Path dir;
 
