@@ -22,7 +22,7 @@ public abstract class HashEnvelope implements Hash {
     }
 
     @Override
-    public String nonce() {
+    public final String nonce() {
         return this.origin.nonce();
     }
 }
