@@ -3,7 +3,7 @@ package io.triada.commands.remote;
 import com.google.common.net.HostAndPort;
 import io.triada.http.HttpTriadaClient;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.node.NodeData;
 import io.triada.node.farm.Farm;
 import io.triada.text.Text;
@@ -60,7 +60,7 @@ public final class RemoteNode implements Text {
     public RemoteNode(final Farm farm, final NodeData node, final String network, final int idx) throws Exception {
         final List<Score> best = farm.best();
         this.hostAndPort = HostAndPort.fromParts(node.host(), node.port());
-        this.score = best.isEmpty() ? TriadaScore.ZERO : best.get(0);
+        this.score = best.isEmpty() ? SuffixScore.ZERO : best.get(0);
         this.master = node.master();
         this.network = network;
         this.idx = idx;

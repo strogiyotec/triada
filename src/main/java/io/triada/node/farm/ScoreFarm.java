@@ -9,7 +9,7 @@ import io.triada.models.file.SyncFileWrite;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
 import io.triada.models.score.ScoresFromFile;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.threads.NamedThreadExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.lambda.Unchecked;
@@ -102,7 +102,7 @@ public final class ScoreFarm implements Farm {
         this.pipeline = new ArrayDeque<>();
         this.threads = threads;
         this.lifetime = 24 * 60 * 60;
-        this.strength = TriadaScore.STRENGTH;
+        this.strength = SuffixScore.STRENGTH;
         this.cli = cli;
         this.farms = farms;
     }
@@ -118,7 +118,7 @@ public final class ScoreFarm implements Farm {
         this.pipeline = new ArrayDeque<>();
         this.threads = threads;
         this.lifetime = 24 * 60 * 60;
-        this.strength = TriadaScore.STRENGTH;
+        this.strength = SuffixScore.STRENGTH;
         this.cli = new ShellScript();
         this.farms = farms;
     }
@@ -195,7 +195,7 @@ public final class ScoreFarm implements Farm {
     @Override
     public List<Score> best() throws Exception {
         return Files.lines(this.cache.toPath())
-                .map(TriadaScore::new)
+                .map(SuffixScore::new)
                 .collect(toList());
     }
 
@@ -291,7 +291,7 @@ public final class ScoreFarm implements Farm {
         this.save(
                 threads,
                 singletonList(
-                        new TriadaScore(
+                        new SuffixScore(
                                 hostAndPort,
                                 this.invoice,
                                 this.strength
@@ -345,7 +345,7 @@ public final class ScoreFarm implements Farm {
                 seq(Stream.of(list, ScoresFromFile.load(this.cache))
                         .flatMap(List::stream))
                         .filter(Score::valid) //drop not valid
-                        .filter(score -> !score.expired(TriadaScore.BEST_BEFORE))//drop expired
+                        .filter(score -> !score.expired(SuffixScore.BEST_BEFORE))//drop expired
                         .filter(score -> score.strength() >= this.strength) // drop less strength
                         .sorted(Comparator.comparingInt(Score::value).reversed())
                         .distinct(Score::time)

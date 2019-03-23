@@ -5,7 +5,7 @@ import io.triada.commands.ValuableCommand;
 import io.triada.http.HttpTriadaClient;
 import io.triada.models.score.AssertScore;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.node.farm.Farm;
 import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
@@ -47,7 +47,7 @@ public final class ElectCommand implements ValuableCommand<List<Score>> {
         final String maxWinners = commandLine.getOptionValue("max-winners");
         final List<Score> scores = new ArrayList<>(16);
         this.remotes.modify(remoteNode -> {
-            final TriadaScore score = new TriadaScore(
+            final SuffixScore score = new SuffixScore(
                     remoteNode.http("")
                             .get(HttpTriadaClient.READ_TIMEOUT)
                             .get("score")

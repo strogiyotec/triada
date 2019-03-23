@@ -3,7 +3,7 @@ package io.triada.node;
 import com.google.common.net.HostAndPort;
 import io.triada.mocks.FakeFile;
 import io.triada.models.cli.ShellScript;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.node.farm.PlainFarmer;
 import io.triada.node.farm.ScoreFarm;
@@ -28,7 +28,7 @@ public final class TestFarm extends Assert {
                         new ThreadPoolExecutor(5, 5, 1000L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5))
                 ),
                 24 * 60 * 60,
-                TriadaScore.STRENGTH,
+                SuffixScore.STRENGTH,
                 new ShellScript(),
                 new PlainFarmer()
         );

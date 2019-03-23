@@ -5,13 +5,14 @@ import com.google.gson.JsonObject;
 import io.triada.models.file.SyncFileWrite;
 import io.triada.models.score.Score;
 import io.triada.models.score.ScoresFromFile;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.threads.Sleep;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.Unchecked;
 import org.jooq.lambda.fi.lang.CheckedRunnable;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -117,7 +118,7 @@ public final class SingleThreadScoreFarm implements Farm {
                                 .collect(toList());
                 if (load.isEmpty()) {
                     SyncFileWrite.write(
-                            new TriadaScore(
+                            new SuffixScore(
                                     hostAndPort,
                                     this.invoice,
                                     this.strength
@@ -158,12 +159,22 @@ public final class SingleThreadScoreFarm implements Farm {
     // TODO: 2/22/19 Implement
     @Override
     public JsonObject asJson() {
+        new SuffixScore()
         return null;
     }
 
     // TODO: 2/22/19 Implement
     @Override
     public String asText() {
-        return null;
+        return String.format(
+                String.join(
+                        "\n\n",
+                        "Current time %s",
+                        "Threads 1",
+                        "Json: %s"
+                ),
+                new Date().toString(),
+                this.asJson().toString()
+        );
     }
 }

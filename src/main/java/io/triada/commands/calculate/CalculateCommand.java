@@ -4,7 +4,7 @@ import com.google.common.net.HostAndPort;
 import io.triada.commands.Command;
 import io.triada.commands.ValuableCommand;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
@@ -42,7 +42,7 @@ public final class CalculateCommand implements ValuableCommand<Score> {
                     )
             );
         }
-        Score score = new TriadaScore(
+        Score score = new SuffixScore(
                 params.time(),
                 HostAndPort.fromParts(params.host(), params.port()),
                 params.invoice(),

@@ -3,7 +3,7 @@ package io.triada.models.score;
 import java.util.List;
 
 /**
- * Return new TriadaScore with reduced amount of suffixes
+ * Return new SuffixScore with reduced amount of suffixes
  */
 public final class ReducesScore extends ScoreEnvelope {
 
@@ -18,7 +18,7 @@ public final class ReducesScore extends ScoreEnvelope {
                 throw new IllegalArgumentException("Can't reduce empty Score");
             }
             final int min = Math.min(amount, suffixes.size());
-            return new TriadaScore(
+            return new SuffixScore(
                     origin.time(),
                     origin.address(),
                     origin.invoice(),

@@ -1,7 +1,7 @@
 package io.triada.commands.calculate;
 
 import io.triada.commands.remote.RemoteNodes;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
@@ -21,7 +21,7 @@ final class CalculateParams {
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .mapToInt(Integer::parseInt)
                 .findFirst()
-                .orElse(TriadaScore.STRENGTH);
+                .orElse(SuffixScore.STRENGTH);
     }
 
     Date time() {

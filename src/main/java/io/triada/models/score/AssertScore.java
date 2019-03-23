@@ -23,7 +23,7 @@ public final class AssertScore {
                     )
             );
         }
-        if (score.expired(TriadaScore.BEST_BEFORE)) {
+        if (score.expired(SuffixScore.BEST_BEFORE)) {
             throw new AssertionError(
                     String.format(
                             "Expired score %s with time %s",
@@ -67,7 +67,7 @@ public final class AssertScore {
      * @param score to Assert
      */
     public void assertScoreStrength(final Score score) {
-        if (score.strength() < TriadaScore.STRENGTH) {
+        if (score.strength() < SuffixScore.STRENGTH) {
             throw new AssertionError(
                     String.format(
                             "Score %d is too weak",

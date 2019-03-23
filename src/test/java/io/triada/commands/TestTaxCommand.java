@@ -12,7 +12,7 @@ import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.SignedTriadaTxn;
 import io.triada.models.transaction.ValidatedTxn;
@@ -63,7 +63,7 @@ public final class TestTaxCommand extends Assert {
                     )
             );
         }
-        Score score = new TriadaScore(HostAndPort.fromParts("localhost", 9098), "NOPREFIX@0000000000000000", 1);
+        Score score = new SuffixScore(HostAndPort.fromParts("localhost", 9098), "NOPREFIX@0000000000000000", 1);
         final RemoteNodes nodes = new RemoteNodes(this.folder.newFile("remotes"));
         nodes.add(score.address());
         for (int i = 0; i < 10; i++) {

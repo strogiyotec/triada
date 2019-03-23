@@ -8,7 +8,7 @@ import io.triada.commands.remote.RemoteNode;
 import io.triada.commands.remote.Remotes;
 import io.triada.models.score.AssertScore;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.wallet.*;
 import io.triada.node.farm.Farm;
 import lombok.AllArgsConstructor;
@@ -145,7 +145,7 @@ public final class FetchCommand implements Command {
             final FetchParams argc
     ) {
         return jsonObject -> {
-            final Score score = new TriadaScore(jsonObject.get("score").getAsJsonObject());
+            final Score score = new SuffixScore(jsonObject.get("score").getAsJsonObject());
             assertScore(remoteNode, argc, score);
             String copy = null;
             for (final WalletCopy walletCopy : copies.all()) {

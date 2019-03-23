@@ -7,7 +7,7 @@ import io.triada.models.key.RsaKey;
 import io.triada.models.score.IsValidScore;
 import io.triada.models.score.ReducesScore;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.wallet.Wallet;
@@ -101,7 +101,7 @@ public final class TxnTaxes implements Tax {
     ) {
         this.wallet = wallet;
         this.ignoreScoreWeakness = ignoreScoreWeakness;
-        this.strength = TriadaScore.STRENGTH;
+        this.strength = SuffixScore.STRENGTH;
     }
 
     public TxnTaxes(
@@ -116,7 +116,7 @@ public final class TxnTaxes implements Tax {
     public TxnTaxes(final Wallet wallet) {
         this.wallet = wallet;
         this.ignoreScoreWeakness = false;
-        this.strength = TriadaScore.STRENGTH;
+        this.strength = SuffixScore.STRENGTH;
     }
 
     /**
@@ -161,7 +161,7 @@ public final class TxnTaxes implements Tax {
             final ParsedTxnData txnData = new ParsedTxnData(txn);
             final String[] details = txnData.details().split(" ", 2);
             if (TxnTaxes.isDetailsValid(details)) {
-                final TriadaScore score = new TriadaScore(details[1]/*body*/);
+                final SuffixScore score = new SuffixScore(details[1]/*body*/);
                 if (TxnTaxes.isScoreValid(score)) {
                     if (this.isStrengthValid(score)) {
                         if (txnData.amount().less(MAX_PAYMENT.value())) {

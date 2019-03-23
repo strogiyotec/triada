@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public final class TriadaScore implements Score {
+public final class SuffixScore implements Score {
 
 
     /**
@@ -30,8 +30,8 @@ public final class TriadaScore implements Score {
     /**
      * Zero score
      */
-    public static final TriadaScore ZERO =
-            new TriadaScore(
+    public static final SuffixScore ZERO =
+            new SuffixScore(
                     HostAndPort.fromParts("localhost", RemoteNodes.PORT),
                     "NOPREFIX@ffffffffffffffff",
                     STRENGTH
@@ -70,7 +70,7 @@ public final class TriadaScore implements Score {
     /**
      * @param body Text to parse into Score
      */
-    public TriadaScore(final String body) {
+    public SuffixScore(final String body) {
         final String[] parts = body.split(" ");
 
         this.strength = Integer.parseInt(parts[0]);
@@ -89,7 +89,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      */
-    public TriadaScore(
+    public SuffixScore(
             final Date time,
             final HostAndPort hostAndPort,
             final String invoice,
@@ -108,7 +108,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      */
-    public TriadaScore(
+    public SuffixScore(
             final Date time,
             final HostAndPort hostAndPort,
             final String invoice,
@@ -126,7 +126,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      */
-    public TriadaScore(
+    public SuffixScore(
             final Date time,
             final HostAndPort hostAndPort,
             final String invoice,
@@ -144,7 +144,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      */
-    public TriadaScore(
+    public SuffixScore(
             final Date time,
             final HostAndPort hostAndPort,
             final String invoice,
@@ -161,7 +161,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      */
-    public TriadaScore(
+    public SuffixScore(
             final HostAndPort hostAndPort,
             final String invoice,
             final int strength
@@ -179,7 +179,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      */
-    public TriadaScore(
+    public SuffixScore(
             final HostAndPort hostAndPort,
             final String invoice,
             final List<String> suffixes
@@ -197,7 +197,7 @@ public final class TriadaScore implements Score {
     /**
      * Ctor
      **/
-    public TriadaScore(final JsonObject jo) {
+    public SuffixScore(final JsonObject jo) {
             this.time = new Date(jo.get("time").getAsLong());
             this.hostAndPort = HostAndPort.fromParts(jo.get("host").getAsString(), jo.get("port").getAsInt());
             this.invoice = jo.get("invoice").getAsString();
@@ -223,7 +223,7 @@ public final class TriadaScore implements Score {
     public Score next() {
         if (this.expired(BEST_BEFORE)) {
             final Date now = new Date();
-            return new TriadaScore(
+            return new SuffixScore(
                     now,
                     this.hostAndPort,
                     this.invoice,
@@ -237,7 +237,7 @@ public final class TriadaScore implements Score {
                         this.suffixes.isEmpty() ? this.prefix() : hash(),
                         this.strength
                 ).nonce();
-        return new TriadaScore(
+        return new SuffixScore(
                 this.time,
                 this.hostAndPort,
                 this.invoice,

@@ -6,7 +6,7 @@ import io.triada.commands.remote.Remotes;
 import io.triada.models.key.RsaKey;
 import io.triada.models.score.AssertScore;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.tax.TaxMetadata;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.ParsedTxnData;
@@ -142,7 +142,7 @@ public final class TaxesCommand implements Command {
         this.remotes.modify(
                 remoteNode -> {
                     final JsonObject jsonObject = remoteNode.http("").get(READ_TIMEOUT);
-                    final TriadaScore score = new TriadaScore(jsonObject.get("score").getAsJsonObject());
+                    final SuffixScore score = new SuffixScore(jsonObject.get("score").getAsJsonObject());
                     AssertScore.assertValidScore(score);
                     AssertScore.assertScoreOwnership(score, remoteNode.address());
                     if (!params.ignoreScoreWeakness()) {

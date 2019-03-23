@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import io.triada.commands.remote.ElectCommand;
 import io.triada.commands.remote.RemoteNodes;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.node.farm.Farm;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -19,7 +19,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 public final class TestElectCommand extends Assert {
 
     @Rule
-    public final WireMockRule fileService = new WireMockRule(options().port(TriadaScore.ZERO.address().getPort()), false);
+    public final WireMockRule fileService = new WireMockRule(options().port(SuffixScore.ZERO.address().getPort()), false);
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -40,7 +40,7 @@ public final class TestElectCommand extends Assert {
     @Test
     public void testElectARemote() throws Exception {
         final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
-        nodes.add(TriadaScore.ZERO.address());
+        nodes.add(SuffixScore.ZERO.address());
         final List<Score> winners = new ElectCommand(nodes, new Farm.Empty()).run(new String[]{"-r_elect", "-ignore_score_weakness"});
         assertTrue(winners.size()==1);
 
@@ -48,7 +48,7 @@ public final class TestElectCommand extends Assert {
 
     private static String resJO(){
         final JsonObject jsonObject = new JsonObject();
-        jsonObject.add("score",TriadaScore.ZERO.asJson());
+        jsonObject.add("score", SuffixScore.ZERO.asJson());
         return jsonObject.toString();
     }
 }

@@ -3,7 +3,7 @@ package io.triada.node;
 import com.google.common.net.HostAndPort;
 import io.triada.mocks.FakeFile;
 import io.triada.models.score.Score;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.node.farm.Farm;
 import io.triada.node.farm.SingleThreadScoreFarm;
@@ -29,7 +29,7 @@ public final class TestSingleFarm extends Assert {
             final List<Score> best = farm.best();
             assertTrue(!best.isEmpty());
             final Score score = best.get(0);
-            assertTrue(!score.expired(TriadaScore.BEST_BEFORE));
+            assertTrue(!score.expired(SuffixScore.BEST_BEFORE));
             assertEquals(0, score.value());
             assertEquals("localhost", score.address().getHost());
             assertEquals(8080, score.address().getPort());

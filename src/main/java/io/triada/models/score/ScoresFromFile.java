@@ -21,6 +21,6 @@ public final class ScoresFromFile {
     }
 
     public Stream<Score> lazyLoad(final File file) throws Exception {
-        return Files.lines(file.toPath()).map(TriadaScore::new);
+        return Files.lines(file.toPath()).map(SuffixScore::new);
     }
 }

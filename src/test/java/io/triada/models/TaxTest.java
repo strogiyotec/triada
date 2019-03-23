@@ -7,7 +7,7 @@ import io.triada.models.amount.TxnAmount;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.prefix.PaymentPrefix;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.transaction.ParsedTxnData;
 import io.triada.models.transaction.SignedTriadaTxn;
@@ -70,7 +70,7 @@ public final class TaxTest extends Assert {
                     )
             );
         }
-        final TriadaScore score = new TriadaScore(
+        final SuffixScore score = new SuffixScore(
                 HostAndPort.fromParts("localhost", 8080),
                 "NOPREFIX@cccccccccccccccc",
                 Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V")
@@ -138,7 +138,7 @@ public final class TaxTest extends Assert {
                         target.head().id()
                 );
         final TxnTaxes tax = new TxnTaxes(added);
-        final TriadaScore score = new TriadaScore(
+        final SuffixScore score = new SuffixScore(
                 HostAndPort.fromParts("localhost", 80),
                 invoice,
                 Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V")

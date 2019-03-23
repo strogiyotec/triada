@@ -7,7 +7,7 @@ import io.triada.commands.fetch.FetchCommand;
 import io.triada.commands.remote.RemoteNodes;
 import io.triada.mocks.FakeHome;
 import io.triada.models.id.LongId;
-import io.triada.models.score.TriadaScore;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.wallet.CopiesFromFile;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.WalletCopy;
@@ -34,7 +34,7 @@ public final class TestFetchCommand extends Assert {
     @Test
     public void testFetchWallet() throws Exception {
 
-        final WireMockServer server = new WireMockServer(TriadaScore.ZERO.address().getPort());
+        final WireMockServer server = new WireMockServer(SuffixScore.ZERO.address().getPort());
         final WireMockServer server2 = new WireMockServer(9875);
         try {
             final Wallet wallet = new FakeHome().createWallet(new LongId(), 0);
@@ -42,7 +42,7 @@ public final class TestFetchCommand extends Assert {
             final RemoteNodes nodes = new RemoteNodes(temporaryFolder.newFile("remotes"));
             final CopiesFromFile copies = new CopiesFromFile(this.temporaryFolder.newFolder(wallet.head().id()).toPath());
             nodes.clean();
-            nodes.add(HostAndPort.fromParts("localhost", TriadaScore.ZERO.address().getPort()));
+            nodes.add(HostAndPort.fromParts("localhost", SuffixScore.ZERO.address().getPort()));
             nodes.add(HostAndPort.fromParts("localhost", 9875));
             new FetchCommand(
                     new Wallets(wallet.file().getParentFile()),
@@ -61,12 +61,12 @@ public final class TestFetchCommand extends Assert {
 
     @Test
     public void testFetchMultipleWallets() throws Exception {
-        final WireMockServer server = new WireMockServer(TriadaScore.ZERO.address().getPort());
+        final WireMockServer server = new WireMockServer(SuffixScore.ZERO.address().getPort());
         try {
             final List<Wallet> wallets = Arrays.asList(new FakeHome().createWallet(new LongId(), 0), new FakeHome().createWallet(new LongId(), 0));
             configureWiremockForListOfWallets(server, wallets);
             final RemoteNodes remotes = new RemoteNodes(temporaryFolder.newFile("remotes2"));
-            remotes.add(HostAndPort.fromParts("localhost", TriadaScore.ZERO.address().getPort()));
+            remotes.add(HostAndPort.fromParts("localhost", SuffixScore.ZERO.address().getPort()));
             final List<CopiesFromFile> copiesFromFiles =
                     Arrays.asList(
                             new CopiesFromFile(this.temporaryFolder.newFolder(wallets.get(0).head().id()).toPath()),
@@ -91,12 +91,12 @@ public final class TestFetchCommand extends Assert {
 
     @Test(expected = IllegalStateException.class)
     public void testFailsWhenOnlyEdgesNodes() throws Exception {
-        final WireMockServer server = new WireMockServer(TriadaScore.ZERO.address().getPort());
+        final WireMockServer server = new WireMockServer(SuffixScore.ZERO.address().getPort());
         try {
             final Wallet wallet = new FakeHome().createWallet(new LongId(), 0);
             configureWiremockForListOfWallets(server, Collections.singletonList(wallet));
             final RemoteNodes remotes = new RemoteNodes(temporaryFolder.newFile("remotes3"));
-            remotes.add(HostAndPort.fromParts("localhost", TriadaScore.ZERO.address().getPort()));
+            remotes.add(HostAndPort.fromParts("localhost", SuffixScore.ZERO.address().getPort()));
             final CopiesFromFile copy = new CopiesFromFile(this.temporaryFolder.newFolder(wallet.head().id()).toPath());
             new FetchCommand(
                     new Wallets(wallet.file().getParentFile()),
@@ -168,7 +168,7 @@ public final class TestFetchCommand extends Assert {
 
     private JsonObject body() {
         final JsonObject jsonObject = new JsonObject();
-        jsonObject.add("score", TriadaScore.ZERO.asJson());
+        jsonObject.add("score", SuffixScore.ZERO.asJson());
         jsonObject.addProperty("size", 10_000L);
         jsonObject.addProperty("mtime", System.currentTimeMillis());
         return jsonObject;
