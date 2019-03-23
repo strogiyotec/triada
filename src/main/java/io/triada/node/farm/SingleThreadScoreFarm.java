@@ -8,10 +8,14 @@ import io.triada.models.score.ScoresFromFile;
 import io.triada.models.score.SuffixScore;
 import io.triada.models.threads.Sleep;
 import lombok.AllArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Unchecked;
 import org.jooq.lambda.fi.lang.CheckedRunnable;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -156,14 +160,19 @@ public final class SingleThreadScoreFarm implements Farm {
                 .collect(toList());
     }
 
-    // TODO: 2/22/19 Implement
     @Override
     public JsonObject asJson() {
-        new SuffixScore()
-        return null;
+        try {
+            final JsonObject json = new JsonObject();
+            json.addProperty("threads", 1);
+            json.addProperty("best", new SuffixScore(FileUtils.readFileToString(this.cache, StandardCharsets.UTF_8)).mnemo());
+
+            return json;
+        } catch (final IOException exc) {
+            throw new UncheckedIOException("Can't create farm json", exc);
+        }
     }
 
-    // TODO: 2/22/19 Implement
     @Override
     public String asText() {
         return String.format(
