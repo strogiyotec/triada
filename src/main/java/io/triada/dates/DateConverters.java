@@ -33,7 +33,6 @@ public final class DateConverters {
 
     public Date nowMinusYears(final int years) {
         final Calendar cal = Calendar.getInstance();
-        Date today = cal.getTime();
         cal.add(Calendar.YEAR, -1 * years);
         return cal.getTime();
     }
