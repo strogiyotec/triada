@@ -4,17 +4,22 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
+import java.lang.management.ManagementFactory;
 import java.util.Map;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public final class FrontPage extends AbstractVerticle implements AutoCloseable {
 
     private final Map<String, String> argc;
 
     private final Map<String, Object> settings;
+
+    private final int port;
 
     private HttpServer httpServer;
 
@@ -22,17 +27,48 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
     public void start() throws Exception {
         this.httpServer = this.vertx.createHttpServer();
         final Router router = Router.router(this.vertx);
-        router.route(HttpMethod.GET, "/version")
+        this.versionRoute(router);
+        this.protocolRoute(router);
+        this.pidRoute(router);
+
+        this.httpServer.requestHandler(router);
+        this.httpServer.listen(this.port);
+    }
+
+    private void pidRoute(final Router router) {
+        router.route(HttpMethod.GET, "/pid")
                 .handler(routingContext -> routingContext.request().response()
                         .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
-                        .write(this.argc.get("version"))
-                        .end());
+                        .setStatusCode(200)
+                        .end(ManagementFactory.getRuntimeMXBean().getName().split("@")[0])
+                );
+    }
+
+    private void jsonRoute(final Router router) {
+        router.route(HttpMethod.GET, "/")
+                .handler(routingContext -> routingContext.request().response()
+                        .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
+                        .setStatusCode(200)
+                        .end(new JsonObject().put())
+                );
+    }
+
+    private void protocolRoute(final Router router) {
         router.route(HttpMethod.GET, "/protocol")
                 .handler(routingContext -> routingContext.request().response()
                         .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
-                        .write(this.settings.get("protocol").toString())
-                        .end());
-        this.httpServer.requestHandler(router);
+                        .setStatusCode(200)
+                        .end(this.argc.get("protocol"))
+
+                );
+    }
+
+    private void versionRoute(final Router router) {
+        router.route(HttpMethod.GET, "/version")
+                .handler(routingContext -> routingContext.request().response()
+                        .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
+                        .setStatusCode(200)
+                        .end(this.argc.get("version")));
     }
 
     @Override
