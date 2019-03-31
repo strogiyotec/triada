@@ -14,6 +14,10 @@ public final class Wallets {
 
     private final File dir;
 
+    public Wallets(final EagerWallets wallets) {
+        this.dir = wallets.dir();
+    }
+
     /**
      * @return List of wallets IDs
      */

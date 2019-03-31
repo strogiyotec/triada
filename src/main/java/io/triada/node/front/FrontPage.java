@@ -4,7 +4,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +48,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 .handler(routingContext -> routingContext.request().response()
                         .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
                         .setStatusCode(200)
-                        .end(new JsonObject().put())
+                        .end(new JsonObject().toString())
                 );
     }
 
