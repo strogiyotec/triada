@@ -30,6 +30,18 @@ public interface Remotes {
         this.modify(consumer, Farm.EMPTY);
     }
 
+    default void remove(String host, int port) throws Exception {
+        this.remove(HostAndPort.fromParts(host, port));
+    }
+
+    default void add(String host, int port) throws Exception {
+        this.add(HostAndPort.fromParts(host, port));
+    }
+
+    default boolean exists(String host, int port) throws Exception {
+        return this.exists(HostAndPort.fromParts(host, port));
+    }
+
     final class Empty implements Remotes {
 
         @Override
