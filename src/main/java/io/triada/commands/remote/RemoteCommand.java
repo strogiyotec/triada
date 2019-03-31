@@ -8,7 +8,6 @@ import io.triada.node.farm.Farm;
 import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +27,13 @@ public final class RemoteCommand implements Command {
     private final Remotes remotes;
 
     private final Farm farm;
+
+    public RemoteCommand(final Remotes remotes) {
+        this(
+                remotes,
+                Farm.EMPTY
+        );
+    }
 
     @Override
     public void run(final String[] argc) throws Exception {
