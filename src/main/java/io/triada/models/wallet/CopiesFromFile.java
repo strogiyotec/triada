@@ -28,7 +28,7 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
  * that means , we have file with name '1' in the dir , this file represent wallet with wallet information like head and transactions
  */
 @AllArgsConstructor
-public final class CopiesFromFile implements Copies<File> {
+public final class CopiesFromFile implements Copies {
 
     public static final String EXT = ".zc";
 

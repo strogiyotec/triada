@@ -60,7 +60,7 @@ public final class FetchCommand implements Command {
         }
     }
 
-    private void fetch(final FetchParams params, final String id, final Copies<File> cps) throws Exception {
+    private void fetch(final FetchParams params, final String id, final Copies cps) throws Exception {
         if (this.remotes.all().isEmpty()) {
             if (params.quietIfAbsent()) {
                 return;
@@ -116,7 +116,7 @@ public final class FetchCommand implements Command {
     private int fetchOne(
             final String id,
             final RemoteNode remoteNode,
-            final Copies<File> copies,
+            final Copies copies,
             final FetchParams argc
     ) {
         final String remoteStr = remoteNode.asText();
@@ -141,7 +141,7 @@ public final class FetchCommand implements Command {
     private CheckedFunction<JsonObject, Integer> fda(
             final String id,
             final RemoteNode remoteNode,
-            final Copies<File> copies,
+            final Copies copies,
             final FetchParams argc
     ) {
         return jsonObject -> {

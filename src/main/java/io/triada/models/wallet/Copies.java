@@ -2,16 +2,17 @@ package io.triada.models.wallet;
 
 import com.google.common.net.HostAndPort;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-public interface Copies<T> {
+public interface Copies {
 
     /**
      * @return Root of copies
      */
-    T root();
+    File root();
 
     String add(String content, HostAndPort hostAndPort, int score, Date time, boolean master) throws IOException;
 

@@ -128,7 +128,7 @@ public final class BlockingEntrance implements Entrance {
     }
 
     @Override
-    public List<String> merge(final String id, final Copies<File> copies) throws Exception {
+    public List<String> merge(final String id, final Copies copies) throws Exception {
         final Path f = Files.createTempFile("ledger", "");
         final List<String> modified = new MergeCommand(
                 this.wallets,

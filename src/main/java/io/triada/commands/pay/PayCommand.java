@@ -39,7 +39,7 @@ public final class PayCommand implements Command {
 
     private final Remotes remotes;
 
-    private final Copies<File> copies;
+    private final Copies copies;
 
     @Override
     public void run(final String[] argc) throws Exception {

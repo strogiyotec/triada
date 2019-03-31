@@ -13,5 +13,5 @@ public interface Entrance extends Jsonable {
 
     List<String> push(String id, String body) throws Exception;
 
-    List<String> merge(String id, Copies<File> copies) throws Exception;
+    List<String> merge(String id, Copies copies) throws Exception;
 }

@@ -32,7 +32,7 @@ public final class InvoiceCommand implements ValuableCommand<String> {
     /**
      * Copies
      */
-    private final Copies<File> copies;
+    private final Copies copies;
 
     @Override
     public String run(final String[] argc) throws Exception {
