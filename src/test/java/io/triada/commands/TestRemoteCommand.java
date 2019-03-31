@@ -17,13 +17,13 @@ public final class TestRemoteCommand extends Assert {
     public void testUpdateRemote() throws Exception {
         final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
         final RemoteCommand remoteCommand = new RemoteCommand(nodes, new Farm.Empty());
-        remoteCommand.run(new String[]{"-rclean"});
+        remoteCommand.run(new String[]{"-remote", "clean"});
 
         assertTrue(nodes.all().isEmpty());
 
-        remoteCommand.run(new String[]{"-radd", "localhost", String.valueOf(RemoteNodes.PORT), "-skip_ping"});
+        remoteCommand.run(new String[]{"-remote", "add", "port=" + RemoteNodes.PORT, "host=localhost", "skip-ping"});
 
-        remoteCommand.run(new String[]{"-radd", "localhost", "2222", "-skip_ping"});
+        remoteCommand.run(new String[]{"-remote", "add", "port=" + 22, "host=localhost", "skip-ping"});
 
         assertTrue(nodes.all().size() == 2);
 
@@ -33,13 +33,13 @@ public final class TestRemoteCommand extends Assert {
     public void testAddDuplicates() throws Exception {
         final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
         final RemoteCommand remoteCommand = new RemoteCommand(nodes, new Farm.Empty());
-        remoteCommand.run(new String[]{"-rclean"});
+        remoteCommand.run(new String[]{"-remote", "clean"});
 
         assertTrue(nodes.all().isEmpty());
 
-        remoteCommand.run(new String[]{"-radd", "localhost", "4444", "-skip_ping"});
+        remoteCommand.run(new String[]{"-remote", "add", "port=" + RemoteNodes.PORT, "host=localhost", "skip-ping"});
 
-        remoteCommand.run(new String[]{"-radd", "localhost", "4444", "-skip_ping"});
+        remoteCommand.run(new String[]{"-remote", "add", "port=" + RemoteNodes.PORT, "host=localhost", "skip-ping"});
 
         assertTrue(nodes.all().size() == 1);
 

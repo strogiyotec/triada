@@ -11,9 +11,8 @@ public interface Command {
      */
     static Options options() {
         return new Options()
+                .addOption(remote())
                 .addOption(
-                        new Option("rclean", false, "RemoveCommand all registered nodes")
-                ).addOption(
                         new Option("reset", false, "Restore it back to the default list of nodes")
                 ).addOption(
                         new Option("masters", false, "Add all \"master\" nodes to the list")
@@ -84,6 +83,11 @@ public interface Command {
     static Option show() {
         return getOption("show", "Sow balance of the wallet", 2);
     }
+
+    static Option remote() {
+        return getOption("remote", "Remote command", 10);
+    }
+
 
     static Option fetch() {
         return getOption("fetch", "Fetch wallets from network", 10);

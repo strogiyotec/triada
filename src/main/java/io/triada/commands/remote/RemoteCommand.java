@@ -2,6 +2,8 @@ package io.triada.commands.remote;
 
 import com.google.common.net.HostAndPort;
 import io.triada.commands.Command;
+import io.triada.node.ConstNodeData;
+import io.triada.node.NodeData;
 import io.triada.node.farm.Farm;
 import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
@@ -13,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Remote command
@@ -21,20 +25,58 @@ import java.util.Collections;
 @AllArgsConstructor
 public final class RemoteCommand implements Command {
 
-    private static final Options OPTIONS = Command.options();
-
     private final Remotes remotes;
 
     private final Farm farm;
 
     @Override
     public void run(final String[] argc) throws Exception {
-        final CommandLine cmd = new DefaultParser().parse(OPTIONS, argc);
-        if (cmd.hasOption("-rclean")) {
-            this.clean();
-        } else if (cmd.hasOption("-radd")) {
-            this.add(cmd.getOptionValues("radd"), cmd);
+        final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
+        if (cmd.hasOption("-remote")) {
+            final RemoteParams remoteParams = new RemoteParams(Arrays.asList(cmd.getOptionValues("remote")));
+            if (remoteParams.show()) {
+                this.show();
+            }
+            if (remoteParams.clean()) {
+                this.clean();
+            }
+            if (remoteParams.reset()) {
+                this.clean();
+                this.masters(remoteParams);
+            }
+            if (remoteParams.masters()) {
+                this.masters(remoteParams);
+            }
+            if (remoteParams.add()) {
+                this.add(remoteParams);
+            }
+            if (remoteParams.remove()) {
+                this.remove(remoteParams);
+            }
+        } else {
+            throw new IllegalArgumentException("Add remote param");
         }
+
+    }
+
+    /**
+     * Add all masters
+     *
+     * @param remoteParams Params
+     * @throws Exception if failed
+     */
+    private void masters(final RemoteParams remoteParams) throws Exception {
+        for (final NodeData master : ConstNodeData.MASTERS) {
+            if (!remoteParams.ignore(master.host(), master.port())) {
+                this.remotes.add(master.host(), master.port());
+            }
+        }
+        System.out.println("Masters were added to the list");
+    }
+
+    private void remove(final RemoteParams params) throws Exception {
+        this.remotes.remove(params.host(), params.port());
+        System.out.println("Node was removed");
     }
 
     /**
@@ -52,15 +94,42 @@ public final class RemoteCommand implements Command {
     }
 
     /**
-     * Add new node
+     * Show all remotes
      *
-     * @param argc Node params
-     * @param cmd  {@link CommandLine}
      * @throws Exception if failed
      */
-    private void add(final String[] argc, final CommandLine cmd) throws Exception {
-        final HostAndPort hostAndPort = HostAndPort.fromParts(argc[0], Integer.parseInt(argc[1]));
-        if (!cmd.hasOption("-skip_ping") && !RemoteCommand.ping(hostAndPort)) {
+    private void show() throws Exception {
+        final List<NodeData> all = this.remotes.all();
+        for (final NodeData nodeData : all) {
+            System.out.printf(
+                    String.join(
+                            ",",
+                            "%s:%d %d",
+                            " errors : %d",
+                            "master ? %d\n"
+                    ),
+                    nodeData.host(),
+                    nodeData.host(),
+                    nodeData.score(),
+                    nodeData.errors(),
+                    nodeData.master()
+            );
+        }
+    }
+
+    /**
+     * Add new node
+     *
+     * @param params Remote params
+     * @throws Exception if failed
+     */
+    private void add(final RemoteParams params) throws Exception {
+        final HostAndPort hostAndPort = HostAndPort.fromParts(params.host(), params.port());
+        if (params.ignore(hostAndPort.getHost(), hostAndPort.getPort())) {
+            System.out.printf("Can't add remote with address %s:%d because ignore option\n", hostAndPort.getHost(), hostAndPort.getPort());
+            return;
+        }
+        if (!params.skipPing() && !RemoteCommand.ping(hostAndPort)) {
             System.out.printf(
                     "Can't add node [%s:%d] ,Connection timeout or wrong http status code%s",
                     hostAndPort.getHost(),
