@@ -2,24 +2,48 @@ package io.triada.node;
 
 import com.google.common.collect.ImmutableMap;
 import io.triada.Triada;
+import io.triada.commands.remote.RemoteNodes;
+import io.triada.mocks.FakeHome;
+import io.triada.models.wallet.Wallet;
+import io.triada.models.wallet.Wallets;
+import io.triada.node.farm.SingleThreadScoreFarm;
 import io.triada.node.front.FrontPage;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.jooq.lambda.Unchecked;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.Collections;
-
 public final class TestFront extends Assert {
-    private static final FrontPage frontPage = new FrontPage(ImmutableMap.of("protocol", Triada.TEST_NETWORK, "version", Triada.VERSION), Collections.emptyMap(), 8080);
+
+    @ClassRule
+    public static final TemporaryFolder folder = new TemporaryFolder();
+
+    private static final FakeHome fakeHome = new FakeHome();
+
+    private static final Wallet wallet = Unchecked.supplier(fakeHome::createEagerWallet).get();
+
+    private static FrontPage frontPage;
 
     @BeforeClass
     public static void start() {
+        frontPage = new FrontPage(
+                ImmutableMap.of(
+                        "protocol", Triada.TEST_NETWORK,
+                        "version", Triada.VERSION
+                ),
+                new SingleThreadScoreFarm(
+                        Unchecked.supplier(folder::newFolder).get(),
+                        3,
+                        "NOPREFIX@ffffffffffffffff"
+                ),
+                Unchecked.supplier(() -> folder.newFile("ledger.csv")).get(),
+                new Wallets(wallet.file().getParentFile()),
+                new RemoteNodes(Unchecked.supplier(() -> folder.newFolder("remotes")).get()),
+                8080
+        );
         final VertxOptions options = new VertxOptions();
         options.setBlockedThreadCheckInterval(1000 * 60 * 60);
         final Vertx vertx = Vertx.vertx(options);

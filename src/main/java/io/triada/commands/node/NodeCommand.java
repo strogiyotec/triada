@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 
 @AllArgsConstructor
 public final class NodeCommand implements Command {
@@ -73,23 +72,17 @@ public final class NodeCommand implements Command {
                         );
                 Vertx.vertx()
                         .deployVerticle(new FrontPage(
-                                Collections.emptyMap(),
-                                ImmutableMap.<String, Object>builder()
-                                        .put("protocol", Triada.PROTOCOL)
-                                        .put("home", home)
-                                        .put("farm", farm)
-                                        .put("wallets", wallets)
-                                        .put("remotes", remotes)
-                                        .put("copies", copies)
-                                        .put("entrance", blockingEntrance)
-                                        .put("address", address)
-                                        .put("ledger", ledger)
-                                        .put("opts", nodeParams)
-                                        .put("port", nodeParams.bindPort())
-                                        .put("journalDir", journal)
-                                        .build(),
-                                8080//// TODO: 3/31/19 Remove this port , get from params
+                                ImmutableMap.of(
+                                        "protocol", Triada.PROTOCOL,
+                                        "version", Triada.VERSION
+                                ),
+                                farm,
+                                ledger.toFile(),
+                                new Wallets(this.wallets.dir()),
+                                this.remotes,
+                                8080
                         ));
+                System.out.println("Node was started");
             });
 
         } else {
