@@ -72,10 +72,6 @@ public final class RemoteNodes implements Remotes {
         this.timeout = 60;
     }
 
-    /**
-     * @return List of nodes from file
-     * @throws Exception if failed
-     */
     @Override
     public List<NodeData> all() throws Exception {
         final List<NodeData> list = this.load();
@@ -87,11 +83,6 @@ public final class RemoteNodes implements Remotes {
                 .collect(toList());
     }
 
-    /**
-     * Clean all remotes
-     *
-     * @throws Exception if failed
-     */
     @Override
     public void clean() throws Exception {
         try (final FileWriter writer = new FileWriter(this.file, false)) {
@@ -99,12 +90,6 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
-    /**
-     * Increment error value for node with given host and port
-     *
-     * @param hostAndPort HostAndPort of node
-     * @throws Exception if failed
-     */
     @Override
     public synchronized void error(final HostAndPort hostAndPort) throws Exception {
         final List<NodeData> load = this.load();
@@ -119,17 +104,20 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
-    // TODO: 2/24/19 Need to implement
     @Override
     public synchronized void unError(final HostAndPort hostAndPort) throws Exception {
-
+        final List<NodeData> load = this.load();
+        try (final FileWriter writer = new FileWriter(this.file, false)) {
+            for (final NodeData node : load) {
+                if (!fromParts(node.host(), node.port()).equals(hostAndPort)) {
+                    writer.append(node.asText());
+                } else {
+                    writer.append(node.asText(node.host(), node.port(), node.errors() - 1, node.score()));
+                }
+            }
+        }
     }
 
-    /**
-     * @param hostAndPort HostAndPort
-     * @return true if file contains node with given host and port
-     * @throws Exception if failed
-     */
     @Override
     public boolean exists(final HostAndPort hostAndPort) throws Exception {
         return this
@@ -138,10 +126,6 @@ public final class RemoteNodes implements Remotes {
                 .anyMatch(node -> fromParts(node.host(), node.port()).equals(hostAndPort));
     }
 
-    /**
-     * @param hostAndPort Host and port of node to add to file
-     * @throws Exception if failed
-     */
     @Override
     public void add(final HostAndPort hostAndPort) throws Exception {
         FileUtils.write(
@@ -152,12 +136,6 @@ public final class RemoteNodes implements Remotes {
         );
     }
 
-    /**
-     * Rewrite given file without given {@link HostAndPort}
-     *
-     * @param hostAndPort to remove
-     * @throws Exception if failed
-     */
     @Override
     public void remove(final HostAndPort hostAndPort) throws Exception {
         final List<NodeData> load = this.load();
@@ -170,14 +148,7 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
-    /**
-     * Accept given consumer to all nodes in file
-     * If exception was thrown ,increment error for remote
-     *
-     * @param consumer Consumer
-     * @param farm     Farm
-     * @throws Exception if failed
-     */
+
     @Override
     public void modify(final CheckedConsumer<RemoteNode> consumer, final Farm farm) throws Exception {
         final ExecutorService service = Executors.newFixedThreadPool(4);

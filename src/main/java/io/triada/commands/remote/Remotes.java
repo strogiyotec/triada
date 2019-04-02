@@ -10,20 +10,66 @@ import java.util.List;
 
 public interface Remotes {
 
+    /**
+     * @return List of remote nodes
+     * @throws Exception if failed
+     */
     List<NodeData> all() throws Exception;
 
+    /**
+     * Clean all remotes
+     *
+     * @throws Exception if failed
+     */
     void clean() throws Exception;
 
+    /**
+     * Increase amount of errors for given host and port
+     *
+     * @param hostAndPort HostAndPort of node
+     * @throws Exception if failed
+     */
     void error(HostAndPort hostAndPort) throws Exception;
 
+    /**
+     * Decrease amount of errors for given host and port
+     *
+     * @param hostAndPort HostAndPort of node
+     * @throws Exception if failed
+     */
     void unError(HostAndPort hostAndPort) throws Exception;
 
+    /**
+     * @param hostAndPort HostAndPort
+     * @return True if node with given host and port exists
+     * @throws Exception failed
+     */
     boolean exists(HostAndPort hostAndPort) throws Exception;
 
+    /**
+     * Add new node with given host and port
+     *
+     * @param hostAndPort HostAndPort
+     * @throws Exception if failed
+     */
     void add(HostAndPort hostAndPort) throws Exception;
 
+    /**
+     * Remove node with given host and port
+     *
+     * @param hostAndPort HostAndPort
+     * @throws Exception if failed
+     */
     void remove(HostAndPort hostAndPort) throws Exception;
 
+    /**
+     * Accept given consumer to all nodes in file
+     * If exception was thrown ,increment error for remote
+     *
+     * @param consumer Consumer
+     * @param farm     Farm
+     * @throws Exception if failed
+     */
     void modify(CheckedConsumer<RemoteNode> consumer, Farm farm) throws Exception;
 
     default void modify(CheckedConsumer<RemoteNode> consumer) throws Exception {
