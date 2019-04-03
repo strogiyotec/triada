@@ -2,6 +2,7 @@ package io.triada.node.farm;
 
 import com.google.common.net.HostAndPort;
 import com.google.gson.JsonObject;
+import io.triada.functions.CheckedRunnable;
 import io.triada.models.file.SyncFileWrite;
 import io.triada.models.score.Score;
 import io.triada.models.score.ScoresFromFile;
@@ -10,7 +11,6 @@ import io.triada.models.threads.Sleep;
 import lombok.AllArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Unchecked;
-import org.jooq.lambda.fi.lang.CheckedRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,10 +58,10 @@ public final class SingleThreadScoreFarm implements Farm {
      *
      * @param hostAndPort Host and port of node
      * @param runnable    Callback to call
-     * @throws Throwable if failed
+     * @throws Exception if failed
      */
     @Override
-    public void start(final HostAndPort hostAndPort, final CheckedRunnable runnable) throws Throwable {
+    public void start(final HostAndPort hostAndPort, final CheckedRunnable runnable) throws Exception {
         PreloadFarmLog.log(this, this.cache);
         final ExecutorService service = Executors.newFixedThreadPool(2);
         this.clean(hostAndPort);

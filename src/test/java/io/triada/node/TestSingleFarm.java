@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public final class TestSingleFarm extends Assert {
 
     @Test
-    public void testCorrectScoreFromEmptyFarm() throws Throwable {
+    public void testCorrectScoreFromEmptyFarm() throws Exception {
         final Farm farm = new SingleThreadScoreFarm(
                 new FakeFile(TriadaWallet.EXT).call(),
                 1,
@@ -39,7 +39,7 @@ public final class TestSingleFarm extends Assert {
     /**
      * Should farm at list 2 suffixes
      *
-     * @throws Throwable if failed
+     * @throws Exception if failed
      */
     @Test
     public void testMakedBestScore() throws Throwable {
