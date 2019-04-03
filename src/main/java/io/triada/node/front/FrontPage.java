@@ -27,18 +27,39 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public final class FrontPage extends AbstractVerticle implements AutoCloseable {
 
+    /**
+     * Argc
+     */
     private final Map<String, String> argc;
 
+    /**
+     * Farm
+     */
     private final Farm farm;
 
+    /**
+     * Ledger csv file
+     */
     private final File ledger;
 
+    /**
+     * Wallets
+     */
     private final Wallets wallets;
 
+    /**
+     * Remote nodes
+     */
     private final Remotes remotes;
 
+    /**
+     * Front port
+     */
     private final int port;
 
+    /**
+     * instance of http server to be closed in close method
+     */
     private HttpServer httpServer;
 
     @Override
@@ -65,6 +86,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
         }
     }
 
+    /**
+     * Was tested
+     * Pid route
+     *
+     * @param router Router
+     */
     private void pidRoute(final Router router) {
         router.route(HttpMethod.GET, "/pid")
                 .handler(routingContext -> routingContext.request().response()
@@ -74,6 +101,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    /**
+     * Was tested
+     * Wallets route
+     *
+     * @param router Router
+     */
     private void walletsRoute(final Router router) {
         router.route(HttpMethod.GET, "/wallets")
                 .handler(routingContext -> routingContext.request().response()
@@ -83,6 +116,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    /**
+     * Farm route
+     * Was tested
+     *
+     * @param router Router
+     */
     private void farmRoute(final Router router) {
         router.route(HttpMethod.GET, "/farm")
                 .handler(routingContext -> routingContext.request().response()
@@ -92,6 +131,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    /**
+     * Score route
+     * Was tested
+     *
+     * @param router Router
+     */
     private void scoreRoute(final Router router) {
         router.route(HttpMethod.GET, "/score")
                 .handler(routingContext -> routingContext.request().response()
@@ -101,6 +146,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    /**
+     * Ledger route
+     * Was tested
+     *
+     * @param router Router
+     */
     private void ledgerRoute(final Router router) {
         final Supplier<String> content = Unchecked.supplier(() -> {
             if (this.ledger.exists()) {
@@ -117,6 +168,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    /**
+     * Protocol route
+     * Was tested
+     *
+     * @param router Router
+     */
     private void protocolRoute(final Router router) {
         router.route(HttpMethod.GET, "/protocol")
                 .handler(routingContext -> routingContext.request().response()
@@ -127,6 +184,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    // TODO: 4/4/19 Test
     private void remotesLedger(final Router router) {
         router.route(HttpMethod.GET, "/remotes")
                 .handler(routingContext -> routingContext.request().response()
@@ -144,6 +202,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
+    /**
+     * Version route
+     * Was tested
+     *
+     * @param router Router
+     */
     private void versionRoute(final Router router) {
         router.route(HttpMethod.GET, "/version")
                 .handler(routingContext -> routingContext.request().response()
@@ -152,6 +216,10 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                         .end(this.argc.get("version")));
     }
 
+    /**
+     * @return JsonArray of all remotes
+     * @throws Exception if failed
+     */
     private JsonArray allRemotes() throws Exception {
         final JsonArray remotes = new JsonArray();
         this.remotes.all().stream().map(Text::asText).forEach(remotes::add);
@@ -159,6 +227,9 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
         return remotes;
     }
 
+    /**
+     * @return Best score from farm
+     */
     private Supplier<Score> best() {
         return Unchecked.supplier(() -> this.farm.best().get(0));
     }
