@@ -3,6 +3,7 @@ package io.triada.node.front;
 import io.triada.commands.remote.Remotes;
 import io.triada.models.score.Score;
 import io.triada.models.wallet.Wallets;
+import io.triada.node.entrance.Entrance;
 import io.triada.node.farm.Farm;
 import io.triada.text.Text;
 import io.vertx.core.AbstractVerticle;
@@ -20,6 +21,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -57,6 +59,8 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
      */
     private final int port;
 
+    private final Entrance entrance;
+
     /**
      * instance of http server to be closed in close method
      */
@@ -70,7 +74,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
         this.protocolRoute(router);
         this.pidRoute(router);
         this.ledgerRoute(router);
-        this.remotesLedger(router);
+        this.remotesRoute(router);
         this.scoreRoute(router);
         this.farmRoute(router);
         this.walletsRoute(router);
@@ -187,9 +191,10 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
     /**
      * Remotes route
      * Was tested
+     *
      * @param router Router
      */
-    private void remotesLedger(final Router router) {
+    private void remotesRoute(final Router router) {
         router.route(HttpMethod.GET, "/remotes")
                 .handler(routingContext -> routingContext.request().response()
                         .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
@@ -204,6 +209,40 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                         )
 
                 );
+    }
+
+    // TODO: 4/5/19 Add test
+    private void pushWalletRoute(final Router router) {
+        router.delete("/wallet/:id")
+                .handler(routingContext -> {
+                    if (this.argc.containsKey("disable-push")) {
+                        routingContext.response()
+                                .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
+                                .setStatusCode(404)
+                                .end("Push is disabled with --disable-push");
+                    } else {
+                        final String walletId = routingContext.request().getParam("id");
+                        final JsonObject wallet = routingContext.getBodyAsJson();
+                        final List<String> modified = Unchecked.supplier(() -> this.entrance.push(walletId, wallet.toString())).get();
+                        if (modified.isEmpty()) {
+                            routingContext.response()
+                                    .setStatusCode(304)
+                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
+                                    .end("No wallets were modified");
+                        } else {
+                            routingContext.response()
+                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
+                                    .setStatusCode(200)
+                                    .end(
+                                            new JsonObject()
+                                                    .put("score", this.best().get().hash())
+                                                    .put("wallets", this.wallets.count())
+                                                    .toString()
+                                    );
+                        }
+                    }
+
+                });
     }
 
     /**
