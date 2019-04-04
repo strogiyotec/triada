@@ -15,6 +15,8 @@ import io.triada.node.farm.SingleThreadScoreFarm;
 import io.triada.node.front.FrontPage;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.hamcrest.Matchers;
 import org.jooq.lambda.Unchecked;
 import org.junit.*;
@@ -54,6 +56,9 @@ public final class TestFront extends Assert {
                 service
         );
         final File ledger = folder.newFile("ledger.csv");
+        final RemoteNodes nodes = new RemoteNodes(Unchecked.supplier(() -> folder.newFile("remotes")).get());
+        nodes.add("localhost", 22);
+        nodes.add("localhost", 44);
 
         frontPage = new FrontPage(
                 ImmutableMap.of(
@@ -61,9 +66,9 @@ public final class TestFront extends Assert {
                         "version", Triada.VERSION
                 ),
                 farm,
-                Unchecked.supplier(() -> folder.newFile("ledger.csv")).get(),
+                ledger,
                 new Wallets(wallet.file().getParentFile()),
-                new RemoteNodes(Unchecked.supplier(() -> folder.newFolder("remotes")).get()),
+                nodes,
                 8080
         );
         farm.start(HostAndPort.fromParts("localhost", 8080), () -> Thread.sleep(30000));
@@ -87,6 +92,18 @@ public final class TestFront extends Assert {
         assertTrue(pid.hasBody());
         assertEquals(wallets.getBody(), "0000000000003039");// 12345L in hex
         assertTrue(!ledger.hasBody());
+    }
+
+    @Test
+    public void testRemotes() throws Exception {
+        Thread.sleep(5000);//need some time to find suffixes
+        final ResponseEntity<String> remotes = template.getForEntity("http://localhost:8080/remotes", String.class);
+        final JsonObject remoteNodes = new JsonObject(remotes.getBody());
+        assertTrue(remoteNodes.containsKey("remotes"));
+
+        final JsonArray remotesJA = remoteNodes.getJsonArray("remotes");
+        assertThat(remotesJA.getString(0), Matchers.containsString("22"));
+        assertThat(remotesJA.getString(1), Matchers.containsString("44"));
     }
 
     @Test

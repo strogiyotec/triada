@@ -184,7 +184,11 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
-    // TODO: 4/4/19 Test
+    /**
+     * Remotes route
+     * Was tested
+     * @param router Router
+     */
     private void remotesLedger(final Router router) {
         router.route(HttpMethod.GET, "/remotes")
                 .handler(routingContext -> routingContext.request().response()
@@ -195,7 +199,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                                         .put("version", this.argc.get("version"))
                                         .put("score", this.best().get().hash())
                                         .put("time", new Date().toString())
-                                        .put("allRemotes", Unchecked.supplier(this::allRemotes).get())
+                                        .put("remotes", Unchecked.supplier(this::allRemotes).get())
                                         .toString()
                         )
 
