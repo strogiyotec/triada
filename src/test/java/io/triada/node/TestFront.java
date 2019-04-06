@@ -10,6 +10,7 @@ import io.triada.models.id.LongId;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
+import io.triada.node.entrance.BlockingEntrance;
 import io.triada.node.farm.AsyncFarm;
 import io.triada.node.farm.SingleThreadScoreFarm;
 import io.triada.node.front.FrontPage;
@@ -60,6 +61,8 @@ public final class TestFront extends Assert {
         nodes.add("localhost", 22);
         nodes.add("localhost", 44);
 
+        final Wallets wallets = new Wallets(wallet.file().getParentFile());
+
         frontPage = new FrontPage(
                 ImmutableMap.of(
                         "protocol", Triada.TEST_NETWORK,
@@ -67,9 +70,16 @@ public final class TestFront extends Assert {
                 ),
                 farm,
                 ledger,
-                new Wallets(wallet.file().getParentFile()),
+                wallets,
                 nodes,
-                8080
+                8080,
+                new BlockingEntrance(
+                        wallets,
+                        nodes,
+                        wallet.file().getParentFile().toPath(),
+                        Triada.TEST_NETWORK,
+                        ledger.toPath()
+                )
         );
         farm.start(HostAndPort.fromParts("localhost", 8080), () -> Thread.sleep(30000));
         final VertxOptions options = new VertxOptions();
@@ -104,6 +114,11 @@ public final class TestFront extends Assert {
         final JsonArray remotesJA = remoteNodes.getJsonArray("remotes");
         assertThat(remotesJA.getString(0), Matchers.containsString("22"));
         assertThat(remotesJA.getString(1), Matchers.containsString("44"));
+    }
+
+    @Test
+    public void testPutWallet() throws Exception {
+
     }
 
     @Test

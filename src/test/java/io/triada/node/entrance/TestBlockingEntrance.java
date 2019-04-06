@@ -50,7 +50,6 @@ public final class TestBlockingEntrance extends Assert {
                 "details=" + "testing"
         });
         final String body = FileUtils.readFileToString(source.file(), StandardCharsets.UTF_8);
-        System.out.println(body);
         final File ledger = this.folder.newFile("ledger.csv");
         final Path copiesPath = this.path(
                 source.file().getParentFile(),
@@ -67,6 +66,7 @@ public final class TestBlockingEntrance extends Assert {
                 ledger.toPath()
         );
         final List<String> modified = entrance.push(source.head().id(), body);
+
         assertEquals(1, modified.size());
         assertEquals("-19.99", source.balance().asText(2));
         assertEquals("19.98", target.balance().asText(2));

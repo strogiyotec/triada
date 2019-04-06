@@ -78,6 +78,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
         this.scoreRoute(router);
         this.farmRoute(router);
         this.walletsRoute(router);
+        this.pushWalletRoute(router);
 
         this.httpServer.requestHandler(router);
         this.httpServer.listen(this.port);
