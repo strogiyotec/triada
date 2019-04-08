@@ -108,12 +108,6 @@ public final class BlockingEntrance implements Entrance {
             modified.add(id);
         }
         final long sec = System.currentTimeMillis() - start;
-        if (this.history.size() >= 16) {
-            this.history.remove(0);
-        }
-        if (this.speed.size() >= 64) {
-            this.speed.remove(0);
-        }
         final Wallet wallet = this.wallets.acq(id);
         this.history.add(
                 String.format(
