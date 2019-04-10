@@ -18,7 +18,11 @@ public interface Command {
                         new Option("masters", false, "Add all \"master\" nodes to the list")
                 ).addOption(
                         Command.remoteAdd()
-                ).addOption(
+                )
+                .addOption(
+                        push()
+                )
+                .addOption(
                         elect()
                 ).addOption(
                         new Option("trim", false, "RemoveCommand the least reliable nodes")
@@ -91,6 +95,10 @@ public interface Command {
 
     static Option fetch() {
         return getOption("fetch", "Fetch wallets from network", 10);
+    }
+
+    static Option push() {
+        return getOption("push", "Push wallet to network", 10);
     }
 
     static Option create() {

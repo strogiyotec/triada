@@ -1,6 +1,7 @@
 package io.triada.commands.push;
 
 import com.google.gson.JsonObject;
+import io.netty.util.internal.ThrowableUtil;
 import io.triada.commands.Command;
 import io.triada.commands.remote.RemoteNode;
 import io.triada.commands.remote.Remotes;
@@ -85,6 +86,12 @@ public final class PushCommand implements Command {
             }
             return response.value();
         } catch (final Exception exc) {
+            System.out.println("here");
+            final String s = ThrowableUtil.stackTraceToString(exc);
+            System.out.println(s);
+
+            exc.printStackTrace();
+            System.out.printf("Http status error %s", exc.getMessage());
             return 0;
         }
     }
