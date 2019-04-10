@@ -20,8 +20,13 @@ final class PushParams {
         return this.params.stream().anyMatch(param -> param.equals("tolerate-edges"));
     }
 
-    boolean tolerateQuorum() {
-        return this.params.stream().anyMatch(param -> param.equals("tolerate-quorum"));
+    int tolerateQuorum() {
+        return this.params.stream()
+                .filter(p -> p.contains("tolerate-quorum"))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .map(Integer::parseInt)
+                .orElse(4);
     }
 
     boolean quietIfMissed() {

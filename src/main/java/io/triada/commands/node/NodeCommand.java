@@ -80,7 +80,8 @@ public final class NodeCommand implements Command {
                                 ledger.toFile(),
                                 new Wallets(this.wallets.dir()),
                                 this.remotes,
-                                8080
+                                8080,
+                                new BlockingEntrance(new Wallets(this.wallets.dir()), this.remotes, this.copies, address, ledger)
                         ));
                 System.out.println("Node was started");
             });
