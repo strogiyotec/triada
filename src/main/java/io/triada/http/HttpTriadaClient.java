@@ -129,7 +129,7 @@ public final class HttpTriadaClient {
         final RestTemplate template = new RestTemplate();
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
-        final HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
+        final HttpEntity<String> entity = new HttpEntity<>(content, httpHeaders);
 
         return template.exchange(
                 url,
