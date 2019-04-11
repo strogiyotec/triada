@@ -1,6 +1,5 @@
 package io.triada.commands;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.JsonObject;
 import io.triada.commands.push.PushCommand;
@@ -13,7 +12,6 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.http.MediaType;
 
-import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.like;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
@@ -37,20 +35,72 @@ public final class TestPushCommand extends Assert {
         testPushesWallet(fileService);
         testPushesFailsWhenOnlyEdgesNodes(fileService);
         testPushesFailsWhenOnlyOneNode(fileService);
-        testPushesMultypleWallets(fileService);
+        testPushesMultipleWallets(fileService);
     }
 
     @Test
     public void testPushesWallet() throws Exception {
         final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
         nodes.add("localhost", SuffixScore.ZERO.address().getPort());
-        new PushCommand(new EagerWallets(wallets[0].file().getParentFile()), nodes)
-                .run(new String[]{
-                        "-push",
-                        "ids=" + wallets[0].head().id(),
-                        "tolerate-edges",
-                        "tolerate-quorum=1"
-                });
+        new PushCommand(
+                new EagerWallets(
+                        wallets[0].file().getParentFile()
+                ),
+                nodes
+        ).run(new String[]{
+                "-push",
+                "ids=" + wallets[0].head().id(),
+                "tolerate-edges",
+                "tolerate-quorum=1"
+        });
+    }
+
+    @Test
+    public void testPushesMultipleWallets() throws Exception {
+        final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
+        nodes.add("localhost", SuffixScore.ZERO.address().getPort());
+        new PushCommand(
+                new EagerWallets(
+                        wallets[1].file().getParentFile()
+                ),
+                nodes
+        ).run(new String[]{
+                "-push",
+                "ids=" + wallets[1].head().id() + "," + wallets[2].head().id(),
+                "tolerate-edges",
+                "tolerate-quorum=1"
+        });
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testPushesFailsWhenOnlyEdgesNodes() throws Exception {
+        final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
+        nodes.add("localhost", SuffixScore.ZERO.address().getPort());
+        new PushCommand(
+                new EagerWallets(
+                        wallets[3].file().getParentFile()
+                ),
+                nodes
+        ).run(new String[]{
+                "-push",
+                "ids=" + wallets[3].head().id(),
+        });
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testPushesFailsWhenOnlyOneNode() throws Exception {
+        final RemoteNodes nodes = new RemoteNodes(this.temporaryFolder.newFile());
+        nodes.add("localhost", SuffixScore.ZERO.address().getPort());
+        new PushCommand(
+                new EagerWallets(
+                        wallets[4].file().getParentFile()
+                ),
+                nodes
+        ).run(new String[]{
+                "-push",
+                "ids=" + wallets[4].head().id(),
+                "tolerate-edges"
+        });
     }
 
     private static void testPushesWallet(final WireMockRule wireMock) throws Exception {
@@ -63,9 +113,9 @@ public final class TestPushCommand extends Assert {
         wallets[0] = wallet;
     }
 
-    private static void testPushesMultypleWallets(final WireMockRule wireMock) throws Exception {
+    private static void testPushesMultipleWallets(final WireMockRule wireMock) throws Exception {
         final Wallet wallet = fakeHome.createEagerWallet();
-        final Wallet wallet2 = fakeHome.createEagerWallet();
+        final Wallet wallet2 = fakeHome.createEagerWallet(wallet);
         wireMock.stubFor(
                 put(urlEqualTo("/wallet/" + wallet.head().id()))
                         .withHeader("Accept", equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
@@ -119,5 +169,4 @@ public final class TestPushCommand extends Assert {
         );
         wallets[4] = wallet;
     }
-
 }
