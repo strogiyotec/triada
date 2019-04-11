@@ -96,7 +96,7 @@ public final class HttpTriadaClient {
         final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         final ResponseEntity<String> response = HttpTriadaClient.response(this.url, content);
         HttpTriadaClient.validate(response);
-        return new JsonParser().parse(response.getBody()).getAsJsonObject();
+        return new JsonParser().parse(response.getBody() == null ? "{}" : response.getBody()).getAsJsonObject();
     }
 
 
