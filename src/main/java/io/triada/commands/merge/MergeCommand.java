@@ -15,7 +15,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -35,22 +34,16 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
         if (cmd.hasOption("-merge")) {
             final MergeParams mergeParams = new MergeParams(Arrays.asList(cmd.getOptionValues("merge")));
-            final List<String> ids = mergeParams.ids();
-            final boolean skipPropagate = mergeParams.skipPropagate();
-            final List<String> modified = new ArrayList<>(ids.size());
+            final List<String> modified = new ArrayList<>(16);
             final String[] propagate = propagate(argc);
-            for (final String id : ids) {
+            final boolean skipPropagate = mergeParams.skipPropagate();
+
+            for (final String id : mergeParams.ids()) {
                 if (this.merge(id, new CopiesFromFile(this.copies.resolve(id)), mergeParams)) {
                     modified.add(id);
                     if (!skipPropagate) {
                         modified.addAll(
-                                new PropagateCommand(
-                                        new EagerWallets(
-                                                this.wallets.dir()
-                                        )
-                                ).run(
-                                        propagate
-                                )
+                                new PropagateCommand(this.wallets.dir()).run(propagate)
                         );
                     }
                 }
@@ -67,7 +60,6 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
             final MergeParams mergeParams
     ) throws Exception {
         final List<WalletCopy> cps = copies.all();
-        cps.sort(Comparator.comparing(WalletCopy::score).reversed());
         final TxnsPatch patch = new TxnsPatch(this.wallets);
         int score = 0;
         if (!mergeParams.skipLegacy()) {
@@ -185,12 +177,16 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
             final Wallets wallets
     ) throws Exception {
         final Wallet w = wallets.acq(id);
-        patch.legacy(w);
-        System.out.printf(
-                "Local copy of %s merged legacy %s\n",
-                id,
-                patch.asText()
-        );
+        if (w.file().exists()) {
+            patch.legacy(w);
+            System.out.printf(
+                    "Local copy of %s merged legacy %s\n",
+                    id,
+                    patch.asText()
+            );
+        } else {
+            System.out.printf("There is not local copy to merge legacy of %s\n", id);
+        }
     }
 
     private String[] propagate(final String[] argc) {
