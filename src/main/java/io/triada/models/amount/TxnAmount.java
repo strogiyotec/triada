@@ -93,6 +93,11 @@ public final class TxnAmount implements Amount<Long> {
     }
 
     @Override
+    public boolean negative() {
+        return this.less(0L);
+    }
+
+    @Override
     public boolean biggerOrEq(final Long other) {
         return this.bigger(other) || this.tridz.equals(other);
     }

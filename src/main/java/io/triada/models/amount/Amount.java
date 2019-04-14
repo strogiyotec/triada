@@ -21,6 +21,8 @@ public interface Amount<T extends Number> {
 
     boolean bigger(T other);
 
+    boolean negative();
+
     boolean biggerOrEq(T other);
 
     boolean less(T other);
