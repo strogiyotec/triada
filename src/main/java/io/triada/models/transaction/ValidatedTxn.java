@@ -49,6 +49,21 @@ public final class ValidatedTxn implements Transaction {
         );
     }
 
+    public ValidatedTxn(final String id,
+                        final TxnAmount amount,
+                        final String prefix,
+                        final LongId bnf,
+                        final String details) {
+        this(
+                id,
+                new Date(),
+                amount,
+                prefix,
+                bnf,
+                details
+        );
+    }
+
     /**
      * Validate data to create transaction
      */
