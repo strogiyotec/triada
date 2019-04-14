@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,10 @@ import java.util.List;
 public final class PropagateCommand implements ValuableCommand<List<String>> {
 
     private final EagerWallets wallets;
+
+    public PropagateCommand(final File dir) {
+        this.wallets = new EagerWallets(dir);
+    }
 
     @Override
     public List<String> run(final String[] argc) throws Exception {
