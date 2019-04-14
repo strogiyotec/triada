@@ -12,7 +12,6 @@ import io.triada.models.transaction.SignedTransaction;
 import io.triada.models.wallet.EmptyWallet;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
-import org.jooq.lambda.fi.util.function.CheckedFunction;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 /**
@@ -200,8 +198,6 @@ public final class TxnsPatch implements Patch {
                 );
             }
         }
-
-
     }
 
     @Override

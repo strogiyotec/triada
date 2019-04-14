@@ -37,15 +37,16 @@ public final class TestPatch extends Assert {
 
     @Test
     public void testBuildsPatch() throws Exception {
-        Wallet first = this.fakeHome.createWallet();
+        final Wallet first = this.fakeHome.createWallet();
         final Wallet second = this.fakeHome.createEagerWallet(first);
         final Wallet third = this.fakeHome.createEagerWallet(first);
         final RsaKey rsaKey = new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")));
+
         Files.write(second.file().toPath(), Files.readAllBytes(first.file().toPath()));
 
         first.substract(new TxnAmount(new BigDecimal("39.0")), PREFIX + "@" + new LongId().asText(), rsaKey, "-");
         first.substract(new TxnAmount(new BigDecimal("11.0")), PREFIX + "@" + new LongId().asText(), rsaKey, "-");
-        first = first.substract(new TxnAmount(new BigDecimal("3.0")), PREFIX + "@" + new LongId().asText(), rsaKey, "-");
+        first.substract(new TxnAmount(new BigDecimal("3.0")), PREFIX + "@" + new LongId().asText(), rsaKey, "-");
         second.substract(new TxnAmount(new BigDecimal("44.0")), PREFIX + "@" + new LongId().asText(), rsaKey, "-");
 
         Files.write(third.file().toPath(), Files.readAllBytes(first.file().toPath()));
@@ -57,7 +58,6 @@ public final class TestPatch extends Assert {
                                 new LongId()
                         ),
                         txn.signature()
-
                 )
         );
 
@@ -166,14 +166,12 @@ public final class TestPatch extends Assert {
 
         final String[] parts = lines.get(0).split(";");
         assertTrue(DateConverters.isUnix(parts[0]));
-        assertEquals("1",parts[1]);
+        assertEquals("1", parts[1]);
         assertTrue(DateConverters.isUnix(parts[2]));
-        assertEquals(LongId.ROOT.asText(),parts[3]);
-        assertEquals(target.asText(),parts[4]);
-        assertEquals(amount.asText(2),new TxnAmount(new BigDecimal(parts[5])).asText(2));
-        assertEquals(PREFIX,parts[6]);
-        assertEquals("some details",parts[7]);
-
-
+        assertEquals(LongId.ROOT.asText(), parts[3]);
+        assertEquals(target.asText(), parts[4]);
+        assertEquals(amount.asText(2), new TxnAmount(new BigDecimal(parts[5])).asText(2));
+        assertEquals(PREFIX, parts[6]);
+        assertEquals("some details", parts[7]);
     }
 }

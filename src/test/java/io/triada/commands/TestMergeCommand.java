@@ -58,18 +58,19 @@ public final class TestMergeCommand extends Assert {
         final Path copiesPath = this.folder.newFolder(wallet.head().id()).toPath();
         final CopiesFromFile copies = new CopiesFromFile(copiesPath);
         copies.add(FileUtils.readFileToString(first.file(), StandardCharsets.UTF_8), HostAndPort.fromParts("host-1", 80), 5);
-        copies.add(FileUtils.readFileToString(first.file(), StandardCharsets.UTF_8), HostAndPort.fromParts("host-2", 80), 5);
+        copies.add(FileUtils.readFileToString(second.file(), StandardCharsets.UTF_8), HostAndPort.fromParts("host-2", 80), 5);
 
-        final List<String> modified = new MergeCommand(
-                new Wallets(wallet.file().getParentFile()),
-                new RemoteNodes(this.folder.newFile()),
-                copiesPath.getParent()
-        ).run(
-                new String[]{
-                        "-merge",
-                        "ids=" + wallet.head().id()
-                }
-        );
+        final List<String> modified =
+                new MergeCommand(
+                        new Wallets(wallet.file().getParentFile()),
+                        new RemoteNodes(this.folder.newFile()),
+                        copiesPath.getParent()
+                ).run(
+                        new String[]{
+                                "-merge",
+                                "ids=" + wallet.head().id()
+                        }
+                );
         assertEquals(1, modified.size());
         assertEquals(wallet.head().id(), modified.get(0));
     }
