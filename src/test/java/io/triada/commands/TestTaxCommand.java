@@ -43,12 +43,12 @@ public final class TestTaxCommand extends Assert {
     @Test
     public void testPayTaxes() throws Exception {
 
-        Wallet wallet = new FakeHome().createWallet(new LongId(), 0);
+        final Wallet wallet = new FakeHome().createEagerWallet(new LongId());
         final Wallets wallets = new Wallets(wallet.file().getParentFile());
         final TxnAmount fund = new TxnAmount(new BigDecimal("19.99"));
         final RsaKey key = new RsaKey(ResourceUtils.getFile(this.getClass().getResource("/keys/pkcs8")));
         for (int i = 0; i < 10; i++) {
-            wallet = wallet.add(
+            wallet.add(
                     new SignedTriadaTxn(
                             new ValidatedTxn(
                                     String.valueOf(i + 1),
@@ -64,11 +64,12 @@ public final class TestTaxCommand extends Assert {
             );
         }
         Score score = new SuffixScore(HostAndPort.fromParts("localhost", 9098), "NOPREFIX@0000000000000000", 1);
-        final RemoteNodes nodes = new RemoteNodes(this.folder.newFile("remotes"));
-        nodes.add(score.address());
         for (int i = 0; i < 10; i++) {
             score = score.next();
         }
+        final RemoteNodes nodes = new RemoteNodes(this.folder.newFile("remotes"));
+        nodes.add(score.address());
+
         this.fileService.stubFor(
                 get(urlEqualTo("/"))
                         .withHeader("Accept", equalTo(MediaType.APPLICATION_JSON_UTF8_VALUE))
@@ -78,6 +79,7 @@ public final class TestTaxCommand extends Assert {
                                         .withStatus(200)
                         )
         );
+
         final Amount<Long> before = wallet.balance();
         final TxnTaxes tax = new TxnTaxes(wallet, true);
         final long debt = tax.debt();
@@ -95,6 +97,7 @@ public final class TestTaxCommand extends Assert {
         final TxnTaxes taxesAfter = new TxnTaxes(after);
         assertTrue(taxesAfter.paid() > 0);
         assertEquals(before.substract(debt).asText(6), after.balance().asText(6));
+        this.fileService.stop();
     }
 
 
