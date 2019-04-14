@@ -76,7 +76,7 @@ public final class TaxesCommand implements Command {
             System.out.printf("No need to pay taxes yet , while the debt is less than %d\n", TRIAL.value());
             return;
         }
-        final List<Score> top = bestScores(params);
+        final List<Score> top = this.bestScores(params);
         final List<Score> everyBody = new ArrayList<>(top);
         int paid = 0;
         while (debt > TxnTaxes.TRIAL.value()) {
@@ -98,7 +98,10 @@ public final class TaxesCommand implements Command {
                 System.out.printf("The score has already been taxes : %s\n", best.asText());
                 continue;
             }
-            taxes = taxes.pay(new RsaKey(new File(params.privateKey())), best);
+            taxes = taxes.pay(
+                    new RsaKey(new File(params.privateKey())),
+                    best
+            );
             final ParsedTxnData data = new ParsedTxnData(taxes.last().get());
             debt += data.amount().value();
             paid++;
