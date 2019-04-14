@@ -16,7 +16,6 @@ import org.apache.commons.cli.DefaultParser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-// TODO: 3/3/19 Not ready , need Pay command
 
 /**
  * Add transactions from payer to receiver
@@ -32,8 +31,7 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);
         if (cmd.hasOption("-propagate")) {
             final PropagateParams propagateParams = new PropagateParams(Arrays.asList(cmd.getOptionValues("propagate")));
-            final List<String> ids = propagateParams.ids(this.wallets.all());
-            final List<String> modified = new ArrayList<>(ids.size());
+            final List<String> modified = new ArrayList<>(16);
             for (final String id : propagateParams.ids(this.wallets.all())) {
                 modified.addAll(this.propagate(id));
             }
@@ -49,7 +47,8 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
         int total = 0;
         for (final SignedTransaction transaction : this.wallets.acq(id).transactions()) {
             final ParsedTxnData data = new ParsedTxnData(transaction);
-            if (data.amount().lessOrEq(0L)) {
+            if (data.amount().negative()) {
+                total++;
                 if (data.bnf().asText().equals(id)) {
                     System.out.printf("Pay itself in %s %s\n", id, data.asText());
                     continue;
@@ -58,10 +57,17 @@ public final class PropagateCommand implements ValuableCommand<List<String>> {
                 if (this.shouldSkip(id, network, data, target)) {
                     continue;
                 }
-                target.add(new SignedTriadaTxn(new InversedTxn(transaction, new LongId(id)), transaction.signature()));
+                target.add(
+                        new SignedTriadaTxn(
+                                new InversedTxn(
+                                        transaction,
+                                        new LongId(id)
+                                ),
+                                transaction.signature()
+                        )
+                );
                 modified.add(data.bnf().asText());
             }
-            total++;
         }
         System.out.printf("Wallet %s propagated successfully with %d txns\n", id, total);
         return modified;
