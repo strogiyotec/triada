@@ -21,4 +21,6 @@ public interface Tax extends Text {
 
     String details(Score score);
 
+    boolean inDept();
+
 }

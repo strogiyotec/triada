@@ -204,6 +204,11 @@ public final class TxnTaxes implements Tax {
     }
 
     @Override
+    public boolean inDept() {
+        return this.debt() > TRIAL.value();
+    }
+
+    @Override
     public String asText() {
         return String.format(
                 "A=%d hours,F=%d triada/th, T=%dt, Paid=%d",
