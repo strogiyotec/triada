@@ -18,7 +18,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
@@ -62,28 +61,25 @@ public final class CopiesFromFile implements Copies {
             final boolean master
     ) throws IOException {
         final String name;
-        final Optional<CsvCopy> target =
-                this.load()
-                        .stream()
-                        .filter(Unchecked.predicate(
-                                csv -> {
-                                    final Path file = this.dir.resolve(csv.name() + EXT);
-                                    final String digest = Hashing.sha256().hashString(content, StandardCharsets.UTF_8).toString();
-                                    return Files.exists(file) && Hashing.sha256().hashBytes(Files.readAllBytes(file)).toString().equals(digest);
-                                })
-                        ).findFirst();
+        final Optional<CsvCopy> target = this.contentExists(content);
         if (target.isPresent()) {
             name = target.get().name();
         } else {
-            final int max = Stream.of(requireNonNull(this.dir.toFile().listFiles((dir, fileName) -> removeExtension(fileName).matches("^[0-9]+$"))))
-                    .mapToInt(file -> Integer.parseInt(removeExtension(file.getName())))
-                    .max()
-                    .orElse(0);
+            final int max =
+                    Stream.of(this.files())
+                            .mapToInt(file -> Integer.parseInt(removeExtension(file.getName())))
+                            .max()
+                            .orElse(0);
             name = String.valueOf(max + 1);
             Files.write(this.dir.resolve(name + EXT), content.getBytes(StandardCharsets.UTF_8));
         }
         final List<CsvCopy> load = this.load();
-        logDeleted(load.removeIf(csv -> csv.port() == hostAndPort.getPort() && csv.host().equals(hostAndPort.getHost())), hostAndPort);
+        logDeleted(
+                load.removeIf(
+                        csv -> csv.port() == hostAndPort.getPort() && csv.host().equals(hostAndPort.getHost())
+                ),
+                hostAndPort
+        );
         load.add(new ConstCsvCopy(
                 name,
                 hostAndPort.getHost(),
@@ -95,6 +91,31 @@ public final class CopiesFromFile implements Copies {
         this.rewrite(load.stream().map(CsvCopy::asText).collect(toList()));
         return name;
 
+    }
+
+    /**
+     * @param content Content
+     * @return Optional of csv file if csv file content os equals to fiven content
+     * @throws IOException if failed
+     */
+    private Optional<CsvCopy> contentExists(final String content) throws IOException {
+        return this.load()
+                .stream()
+                .filter(Unchecked.predicate(
+                        csv -> {
+                            final Path file = this.dir.resolve(csv.name() + EXT);
+                            final String digest =
+                                    Hashing.sha256()
+                                            .hashString(content, StandardCharsets.UTF_8)
+                                            .toString();
+                            return Files.exists(file) &&
+                                    Hashing.sha256()
+                                            .hashBytes(Files.readAllBytes(file))
+                                            .toString()
+                                            .equals(digest);
+                        })
+                )
+                .findFirst();
     }
 
     /**
