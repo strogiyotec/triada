@@ -3,6 +3,7 @@ package io.triada.commands.merge;
 import io.triada.commands.Command;
 import io.triada.commands.ValuableCommand;
 import io.triada.commands.propagate.PropagateCommand;
+import io.triada.commands.pull.PullCommand;
 import io.triada.commands.remote.Remotes;
 import io.triada.models.patch.TxnsPatch;
 import io.triada.models.transaction.ParsedTxnData;
@@ -10,9 +11,14 @@ import io.triada.models.wallet.*;
 import lombok.AllArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
+import org.jooq.lambda.Seq;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +34,16 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
     private final Remotes remotes;
 
     private final Path copies;
+
+    public MergeCommand(
+            final Path wallets,
+            final Remotes remotes,
+            final Path copies
+    ) {
+        this.wallets = new Wallets(wallets.toFile());
+        this.remotes = remotes;
+        this.copies = copies;
+    }
 
     @Override
     public List<String> run(final String[] argc) throws Exception {
@@ -68,6 +84,7 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
         int index = 0;
         for (final WalletCopy copy : copies.all()) {
             final TriadaWallet wallet = new TriadaWallet(copy.path());
+            final boolean baseline = index == 0 && (copy.master() || mergeParams.edgeBaseline()) && !mergeParams.noBaseline();
             final String name =
                     String.format(
                             "%s/%d/%d",
@@ -75,13 +92,14 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
                             index,
                             copy.score()
                     );
-            this.mergeOne(mergeParams, patch, wallet, name);
+
+            this.mergeOne(mergeParams, patch, wallet, name, baseline);
             score += copy.score();
             index++;
         }
         try {
             final Wallet wallet = this.wallets.acq(id);
-            this.mergeOne(mergeParams, patch, wallet, "localhost");
+            //  this.mergeOne(mergeParams, patch, wallet, "localhost");
             System.out.printf("Local copy of %s merged\n", id);
         } catch (final Exception exc) {
             System.out.printf("Local copy of %s is absent\n", id);
@@ -104,7 +122,8 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
             final MergeParams mergeParams,
             final TxnsPatch patch,
             final Wallet wallet,
-            final String name
+            final String name,
+            final boolean baseline/*will use later in path*/
     ) {
         try {
             System.out.printf(
@@ -113,26 +132,53 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
                     name,
                     wallet.mnemo()
             );
-            if (mergeParams.shallow()) {
+
+            if (mergeParams.depth() > 0) {
                 patch.join(
                         wallet,
                         new File(mergeParams.ledger()),
                         signedTransaction -> {
                             final ParsedTxnData data = new ParsedTxnData(signedTransaction);
+                            final String trustedPath = mergeParams.trusted();
+                            final List<String> trusted = Files.readAllLines(Paths.get(trustedPath));
+                            if (trusted.contains(data.bnf().asText())) {
+                                System.out.printf("Won't pull %s since it's trusted\n", data.bnf().asText());
+                            } else if (trusted.size() > mergeParams.maxTrusted()) {
+                                System.out.printf("Won't pull %s since there are too many trusted alreay \n", data.bnf().asText());
+                            } else {
+                                this.saveTrustedWallets(data, trustedPath, trusted);
+                                new PullCommand(
+                                        this.remotes,
+                                        this.wallets.dir().toPath(),
+                                        this.copies
+                                ).run(
+                                        new String[]{
+                                                "-pull",
+                                                "ids=" + data.bnf().asText(),
+                                                "network=" + mergeParams.network(),
+                                                "quiet-if-absent",
+                                                "depth=" + (mergeParams.depth() - 1),
+                                                mergeParams.noBaseline() ? "no-baseline" : "",
+                                                mergeParams.edgeBaseline() ? "edge-baseline" : "",
+                                                "trusted=" + mergeParams.trusted()
+                                        }
+                                );
+                            }
                             System.out.printf(
                                     "Paying wallet %s file is absent but it's a 'shallow' MERGE: %s\n",
                                     data.bnf().asText(),
                                     data.asText()
                             );
-                            return false;
+                            return true;
                         });
             } else {
                 patch.join(
                         wallet,
                         new File(mergeParams.ledger()),
                         signedTransaction -> {
-                            // TODO: 3/11/19 Need pull command
-                            return true;
+                            final ParsedTxnData data = new ParsedTxnData(signedTransaction);
+                            System.out.printf("Paying wallet %s is incomplete but there is not enough depth to PULL\n", data.bnf().asText());
+                            return false;
                         });
             }
             System.out.printf(
@@ -146,6 +192,18 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
                     name, exc.getMessage()
             );
         }
+    }
+
+    private void saveTrustedWallets(final ParsedTxnData data, final String trustedPath, final List<String> trusted) throws IOException {
+        trusted.add(data.bnf().asText());
+        Files.write(
+                Paths.get(trustedPath),
+                Seq.seq(trusted)
+                        .sorted()
+                        .distinct()
+                        .toString(",")
+                        .getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private static void logModify(

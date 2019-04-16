@@ -26,6 +26,14 @@ final class MergeParams {
         return this.params.stream().anyMatch(param -> param.equals("skip-propagate"));
     }
 
+    boolean edgeBaseline() {
+        return this.params.stream().anyMatch(param -> param.equals("edge-baseline"));
+    }
+
+    boolean noBaseline() {
+        return this.params.stream().anyMatch(param -> param.equals("no-baseline"));
+    }
+
     boolean skipLegacy() {
         return this.params.stream().anyMatch(param -> param.equals("skip-legacy"));
     }
@@ -40,5 +48,39 @@ final class MergeParams {
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .findFirst()
                 .orElse("/dev/null");
+    }
+
+    String trusted() {
+        return this.params.stream()
+                .filter(p -> p.contains("trusted"))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .orElse("/dev/null");
+    }
+
+    String network() {
+        return this.params.stream()
+                .filter(p -> p.contains("network"))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .orElse("test");
+    }
+
+    int depth() {
+        return this.params.stream()
+                .filter(p -> p.contains("depth"))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .map(Integer::parseInt)
+                .orElse(0);
+    }
+
+    int maxTrusted() {
+        return this.params.stream()
+                .filter(p -> p.contains("trusted-max"))
+                .map(p -> p.substring(p.indexOf("=") + 1))
+                .findFirst()
+                .map(Integer::parseInt)
+                .orElse(128);
     }
 }
