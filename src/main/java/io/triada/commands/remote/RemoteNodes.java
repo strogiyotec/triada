@@ -148,7 +148,6 @@ public final class RemoteNodes implements Remotes {
         }
     }
 
-
     @Override
     public void modify(final CheckedConsumer<RemoteNode> consumer, final Farm farm) throws Exception {
         final ExecutorService service = Executors.newFixedThreadPool(4);
