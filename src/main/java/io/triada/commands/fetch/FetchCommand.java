@@ -47,6 +47,16 @@ public final class FetchCommand implements Command {
      */
     private final Remotes remotes;
 
+    public FetchCommand(
+            final Path wallets,
+            final Path copies,
+            final Remotes remotes
+    ) {
+        this.wallets = new Wallets(wallets.toFile());
+        this.copies = copies;
+        this.remotes = remotes;
+    }
+
     @Override
     public void run(final String[] argc) throws Exception {
         final CommandLine cmd = new DefaultParser().parse(Command.options(), argc);

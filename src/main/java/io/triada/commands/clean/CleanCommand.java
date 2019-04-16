@@ -8,16 +8,19 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Optional;
 
-// TODO: 2/28/19 Add test
 @AllArgsConstructor
 public final class CleanCommand implements Command {
 
     private final Path copies;
 
     private final Wallets wallets;
+
+    public CleanCommand(final Path copies, final Path wallets) {
+        this.copies = copies;
+        this.wallets = new Wallets(wallets.toFile());
+    }
 
     @Override
     public void run(final String[] argc) throws Exception {
