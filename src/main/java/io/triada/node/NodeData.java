@@ -2,6 +2,8 @@ package io.triada.node;
 
 import io.triada.text.Text;
 
+import java.util.List;
+
 public interface NodeData extends Text {
 
     /**
@@ -38,4 +40,7 @@ public interface NodeData extends Text {
      */
     String asText(String host, int port, int errors, int score);
 
+    static boolean has(final List<NodeData> nodes, final String host, final int port) {
+        return nodes.stream().anyMatch(node -> node.host().equals(host) && node.port() == port);
+    }
 }
