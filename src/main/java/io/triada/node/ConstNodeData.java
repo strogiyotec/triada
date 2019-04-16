@@ -3,6 +3,7 @@ package io.triada.node;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HostAndPort;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import java.util.List;
  * Simple data provider for node
  */
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"host", "port"})
 public final class ConstNodeData implements NodeData {
 
     /**
@@ -115,7 +117,7 @@ public final class ConstNodeData implements NodeData {
     private static List<NodeData> masters() {
         try {
             return Files.lines(new File(ConstNodeData.class.getClassLoader().getResource("masters.txt").getFile()).toPath())
-                    .filter(line->!StringUtils.isEmpty(line))
+                    .filter(line -> !StringUtils.isEmpty(line))
                     .map(ConstNodeData::new)
                     .collect(ImmutableList.toImmutableList());
         } catch (final IOException e) {
