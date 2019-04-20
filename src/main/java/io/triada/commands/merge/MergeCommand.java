@@ -97,14 +97,9 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
             score += copy.score();
             index++;
         }
-        try {
-            final Wallet wallet = this.wallets.acq(id);
-            //  this.mergeOne(mergeParams, patch, wallet, "localhost");
-            System.out.printf("Local copy of %s merged\n", id);
-        } catch (final Exception exc) {
-            System.out.printf("Local copy of %s is absent\n", id);
-        }
-        if (patch.empty()) {
+        this.mergeItSelf(id, mergeParams, patch);
+
+        if (patch.empty() && !mergeParams.quietIfAbsent()) {
             throw new IllegalStateException(
                     String.format(
                             "There are no copies of %s nothing to merge",
@@ -114,8 +109,20 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
         }
         final Wallet wallet = this.wallets.acq(id);
         final boolean modified = patch.save(wallet.file(), true);
+
         logModify(id, cps, score, wallet, modified);
+
         return modified;
+    }
+
+    private void mergeItSelf(final String id, final MergeParams mergeParams, final TxnsPatch patch) throws Exception {
+        final Wallet wallet = this.wallets.acq(id);
+        if (wallet.file().exists()) {
+            this.mergeOne(mergeParams, patch, wallet, "localhost", false);
+            System.out.printf("Local copy of %s merged\n", id);
+        } else {
+            System.out.printf("Local copy of %s is absent\n", id);
+        }
     }
 
     private void mergeOne(

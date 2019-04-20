@@ -30,6 +30,10 @@ final class MergeParams {
         return this.params.stream().anyMatch(param -> param.equals("edge-baseline"));
     }
 
+    boolean quietIfAbsent() {
+        return this.params.stream().anyMatch(param -> param.equals("quiet-if-absent"));
+    }
+
     boolean noBaseline() {
         return this.params.stream().anyMatch(param -> param.equals("no-baseline"));
     }
