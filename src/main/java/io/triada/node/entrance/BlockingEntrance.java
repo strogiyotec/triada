@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static java.lang.Long.parseLong;
 import static java.nio.file.Files.*;
 
 @AllArgsConstructor
@@ -156,7 +157,7 @@ public final class BlockingEntrance implements Entrance {
 
         return seq.map(t -> t.split(";"))
                 .distinct(t -> t[1] + "" + t[3])
-                .filter(Predicates.not(t -> new Date(Long.parseLong(t[0])).compareTo(DateConverters.nowMinusHours(24)) <= 0))
+                .filter(Predicates.not(t -> isDateAfter(t[0])))
                 .map(t -> String.join(";", t))
                 .toString("\n");
     }
@@ -171,5 +172,9 @@ public final class BlockingEntrance implements Entrance {
             return createDirectory(path);
         }
         return path;
+    }
+
+    private static boolean isDateAfter(final String unix) {
+        return new Date(parseLong(unix)).compareTo(DateConverters.nowMinusHours(24)) <= 0;
     }
 }
