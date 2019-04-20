@@ -8,7 +8,6 @@ import io.triada.models.id.LongId;
 import io.triada.models.wallet.CopiesFromFile;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 public final class TestBlockingEntrance extends Assert {
 
@@ -34,6 +35,36 @@ public final class TestBlockingEntrance extends Assert {
     public void testPushedWallet() throws Exception {
         final LongId sid = LongId.ROOT;
         final LongId tid = new LongId();
+        final String body = this.fakeWalletBody(sid, tid);
+
+        final File ledger = this.folder.newFile("ledger.csv");
+        final Wallet source = this.fakeHome.createEagerWallet(sid);
+        final Wallet target = this.fakeHome.createEagerWallet(tid,source);
+
+        final BlockingEntrance entrance = new BlockingEntrance(
+                new Wallets(source.file().getParentFile()),
+                new RemoteNodes(this.folder.newFile()),
+                this.path(
+                        source.file().getParentFile(),
+                        "copies"
+                ),
+                "x",
+                ledger.toPath()
+        );
+        final List<String> modified = entrance.push(source.head().id(), body);
+
+        assertEquals(2, modified.size());
+        assertEquals("-19.99", source.balance().asText(2));
+        assertEquals("19.98", target.balance().asText(2));
+        assertTrue(modified.contains(sid.asText()));
+        assertEquals(1, Files.lines(ledger.toPath()).count());
+    }
+
+    private Path path(final File parentFile, final String copies) throws IOException {
+        return this.folder.newFolder(parentFile.toPath().resolve(copies).toFile().getAbsolutePath().split("/")).toPath();
+    }
+
+    private String fakeWalletBody(final LongId sid, final LongId tid) throws Exception {
         final Wallet source = this.fakeHome.createEagerWallet(sid);
         final Wallet target = this.fakeHome.createEagerWallet(tid, source);
         new PayCommand(
@@ -49,33 +80,7 @@ public final class TestBlockingEntrance extends Assert {
                 "amount=" + "19.99",
                 "details=" + "testing"
         });
-        final String body = FileUtils.readFileToString(source.file(), StandardCharsets.UTF_8);
-        final File ledger = this.folder.newFile("ledger.csv");
-        final Path copiesPath = this.path(
-                source.file().getParentFile(),
-                "copies"
-        );
-        final Path resolve = copiesPath.resolve(source.head().id());
-        Files.createDirectory(resolve);
-        resolve.toFile().deleteOnExit();
-        final BlockingEntrance entrance = new BlockingEntrance(
-                new Wallets(source.file().getParentFile()),
-                new RemoteNodes(this.folder.newFile()),
-                copiesPath,
-                "x",
-                ledger.toPath()
-        );
-        final List<String> modified = entrance.push(source.head().id(), body);
+        return readFileToString(source.file(), StandardCharsets.UTF_8);
 
-        assertEquals(1, modified.size());
-        assertEquals("-19.99", source.balance().asText(2));
-        assertEquals("19.98", target.balance().asText(2));
-        assertEquals(1, Files.lines(ledger.toPath()).count());
     }
-
-    private Path path(final File parentFile, final String copies) throws IOException {
-        return this.folder.newFolder(parentFile.toPath().resolve(copies).toFile().getAbsolutePath().split("/")).toPath();
-    }
-
-
 }

@@ -11,24 +11,20 @@ import io.triada.dates.DateConverters;
 import io.triada.functions.VoidYield;
 import io.triada.models.wallet.Copies;
 import io.triada.models.wallet.CopiesFromFile;
-import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 import lombok.AllArgsConstructor;
 import org.jooq.lambda.Seq;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.*;
 
 @AllArgsConstructor
 public final class BlockingEntrance implements Entrance {
@@ -71,9 +67,8 @@ public final class BlockingEntrance implements Entrance {
 
     @Override
     public List<String> push(final String id, final String body) throws Exception {
-        final CopiesFromFile copies = new CopiesFromFile(this.copies.resolve(id));
+        final CopiesFromFile copies = new CopiesFromFile(this.walletCopiesDir(id));
         final String host = "0.0.0.0";
-        final long start = System.currentTimeMillis();
         copies.add(body, host, RemoteNodes.PORT, 0);
         if (!this.remotes.all().isEmpty()) {
             new FetchCommand(
@@ -95,6 +90,7 @@ public final class BlockingEntrance implements Entrance {
                         "max-age=" + 1
                 });
         copies.remove(host, RemoteNodes.PORT);
+
         if (modified.isEmpty()) {
             System.out.printf("Accepted %s and not modified anything\n", id);
         } else {
@@ -104,42 +100,40 @@ public final class BlockingEntrance implements Entrance {
                     String.join(",", modified)
             );
         }
-        if (copies.all().size() == 1) {
+
+        if (copies.all().size() > 1) {
             modified.add(id);
         }
-        final long sec = System.currentTimeMillis() - start;
-        final Wallet wallet = this.wallets.acq(id);
-        this.history.add(
-                String.format(
-                        "%d/%d/%s",
-                        sec,
-                        modified.size(),
-                        wallet.mnemo()
-                )
-        );
-        this.speed.add(sec);
         return modified;
     }
 
     @Override
     public List<String> merge(final String id, final Copies copies) throws Exception {
-        final Path f = Files.createTempFile("ledger", "");
-        final List<String> modified = new MergeCommand(
-                this.wallets,
-                this.remotes,
-                copies.root().toPath()
-        ).run(new String[]{
-                "-merge",
-                "ids=" + id,
-                "ledger=" + f.toFile().getAbsolutePath(),
-                "network=" + this.network
-        });
-        Files.write(
-                this.ledger,
-                this.content(f).getBytes(UTF_8)
-        );
-        f.toFile().delete();
-        return modified;
+        final Path f = createTempFile("ledger", "");
+        final Path t = createTempFile("trusted", "");
+        try {
+            final List<String> modified =
+                    new MergeCommand(
+                            this.wallets,
+                            this.remotes,
+                            copies.root().toPath()
+                    ).run(new String[]{
+                            "-merge",
+                            "ids=" + id,
+                            //   NodeData.has(MASTERS, )
+                            "trusted=" + t.toFile().getAbsolutePath(),
+                            "ledger=" + f.toFile().getAbsolutePath(),
+                            "network=" + this.network
+                    });
+            final List<String> txns = exists(this.ledger) ? readAllLines(this.ledger) : Collections.emptyList();
+            txns.addAll(readAllLines(f));
+            write(this.ledger, this.content(txns).getBytes(StandardCharsets.UTF_8));
+
+            return modified;
+        } finally {
+            delete(f);
+            delete(t);
+        }
     }
 
     @Override
@@ -149,7 +143,7 @@ public final class BlockingEntrance implements Entrance {
             resJO.addProperty("history", String.join(",", this.history));
             resJO.addProperty("historySize", this.history.size());
             resJO.addProperty("speed", this.speed.isEmpty() ? 0 : this.speed.stream().mapToLong(Long::longValue).sum() / this.speed.size());
-            resJO.addProperty("ledger", Files.exists(this.ledger) ? Files.lines(this.ledger, StandardCharsets.UTF_8).count() : 0L);
+            resJO.addProperty("ledger", exists(this.ledger) ? lines(this.ledger, StandardCharsets.UTF_8).count() : 0L);
 
             return resJO;
         } catch (final IOException exc) {
@@ -157,18 +151,25 @@ public final class BlockingEntrance implements Entrance {
         }
     }
 
-    private String content(final Path f) throws IOException {
-        final Seq<String> seq =
-                Files.exists(this.ledger) ?
-                        Seq.concat(
-                                Files.lines(this.ledger, UTF_8),
-                                Files.lines(f, UTF_8)) :
-                        Seq.seq((Files.lines(f, UTF_8)));
+    private String content(final List<String> txns) {
+        final Seq<String> seq = Seq.seq(txns);
 
         return seq.map(t -> t.split(";"))
                 .distinct(t -> t[1] + "" + t[3])
-                .filter(Predicates.not(t -> new Date(Long.parseLong(t[0])).compareTo(DateConverters.nowMinusHours(24)) >= 0))
-                .map(t -> Stream.of(t).collect(Collectors.joining(";")))
+                .filter(Predicates.not(t -> new Date(Long.parseLong(t[0])).compareTo(DateConverters.nowMinusHours(24)) <= 0))
+                .map(t -> String.join(";", t))
                 .toString("\n");
+    }
+
+    /**
+     * @param id Wallet id
+     * @return Copies dir for wallet with given id
+     */
+    private Path walletCopiesDir(final String id) throws IOException {
+        final Path path = this.copies.resolve(id);
+        if (!exists(path)) {
+            return createDirectory(path);
+        }
+        return path;
     }
 }
