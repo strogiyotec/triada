@@ -14,6 +14,7 @@ import io.triada.node.farm.SingleThreadScoreFarm;
 import io.triada.node.front.FrontPage;
 import io.vertx.core.Vertx;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 
@@ -22,14 +23,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-@AllArgsConstructor
-public final class NodeCommand implements Command {
+/**
+ * Not thread safe
+ */
+@RequiredArgsConstructor
+public final class NodeCommand implements Command, AutoCloseable {
 
     private final Remotes remotes;
 
     private final Path copies;
 
     private final EagerWallets wallets;
+
+    private Vertx vertx;
 
     @Override
     public void run(final String[] argc) throws Exception {
@@ -70,19 +76,19 @@ public final class NodeCommand implements Command {
                                 nodeParams.strength(),
                                 invoice(nodeParams)
                         );
-                Vertx.vertx()
-                        .deployVerticle(new FrontPage(
-                                ImmutableMap.of(
-                                        "protocol", Triada.PROTOCOL,
-                                        "version", Triada.VERSION
-                                ),
-                                farm,
-                                ledger.toFile(),
-                                new Wallets(this.wallets.dir()),
-                                this.remotes,
-                                8080,
-                                new BlockingEntrance(new Wallets(this.wallets.dir()), this.remotes, this.copies, address, ledger)
-                        ));
+                this.vertx = Vertx.vertx();
+                this.vertx.deployVerticle(new FrontPage(
+                        ImmutableMap.of(
+                                "protocol", Triada.PROTOCOL,
+                                "version", Triada.VERSION
+                        ),
+                        farm,
+                        ledger.toFile(),
+                        new Wallets(this.wallets.dir()),
+                        this.remotes,
+                        port,
+                        new BlockingEntrance(new Wallets(this.wallets.dir()), this.remotes, this.copies, address, ledger)
+                ));
                 System.out.println("Node was started");
             });
 
@@ -105,6 +111,13 @@ public final class NodeCommand implements Command {
             });
         } else {
             return invoice;
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (this.vertx != null) {
+            this.vertx.close();
         }
     }
 }
