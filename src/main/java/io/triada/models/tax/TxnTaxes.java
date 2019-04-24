@@ -28,7 +28,7 @@ public final class TxnTaxes implements Tax {
 
 
     /**
-     * The exact score a wallet must but in order to pay taxes
+     * The exact score a wallet must have in order to pay taxes
      */
     private static final int EXACT_SCORE = 8;
 
@@ -36,15 +36,6 @@ public final class TxnTaxes implements Tax {
      * Score validator
      */
     private static final IsValidScore scoreValidator = new IsValidScore();
-
-    /**
-     * When score strengths were updated. The numbers here indicate the
-     * strengths we accepted before these dates.
-     */
-    private static final Map<Date, Integer> MILESTONES = ImmutableMap.of(
-            Date.from(parse("2018-11-30T00:00:00Z").toInstant()), 6,
-            Date.from(parse("2018-12-09T00:00:00Z").toInstant()), 7
-    );
 
     /**
      * This is how much we charge per one transaction per hour
