@@ -20,6 +20,9 @@ public interface Command {
                         Command.remoteAdd()
                 )
                 .addOption(
+                        Command.node()
+                )
+                .addOption(
                         push()
                 )
                 .addOption(
@@ -127,6 +130,11 @@ public interface Command {
     static Option propagate() {
         return getOption("propagate", "Returns list of Wallet IDs which were affected", 1);
     }
+
+    static Option node() {
+        return getOption("node", "Run node ", 10);
+    }
+
 
     static Option getOption(final String fetch, final String s, final int i) {
         final Option option = new Option(fetch, true, s);
