@@ -171,18 +171,22 @@ public final class RemoteCommand implements Command {
         factory.setReadTimeout(5000);
 
         final RestTemplate template = new RestTemplate(factory);
-        final ResponseEntity<byte[]> exchange = template.exchange(
-                String.format(
-                        "http://%s:%d",
-                        hostAndPort.getHost(),
-                        hostAndPort.getPort()
-                ),
-                HttpMethod.GET,
-                new HttpEntity<>(Collections.emptyMap()),
-                byte[].class,
-                Collections.emptyMap()
-        );
-        return exchange.getStatusCodeValue() == 200;
+        try {
+            final ResponseEntity<byte[]> exchange = template.exchange(
+                    String.format(
+                            "http://%s:%d",
+                            hostAndPort.getHost(),
+                            hostAndPort.getPort()
+                    ),
+                    HttpMethod.GET,
+                    new HttpEntity<>(Collections.emptyMap()),
+                    byte[].class,
+                    Collections.emptyMap()
+            );
+            return exchange.getStatusCodeValue() == 200;
+        } catch (final Exception exc) {
+            return false;
+        }
 
     }
 

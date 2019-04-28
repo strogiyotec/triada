@@ -115,7 +115,8 @@ public final class MergeCommand implements ValuableCommand<List<String>> {
         return modified;
     }
 
-    private void mergeItSelf(final String id, final MergeParams mergeParams, final TxnsPatch patch) throws Exception {
+    private void
+    mergeItSelf(final String id, final MergeParams mergeParams, final TxnsPatch patch) throws Exception {
         final Wallet wallet = this.wallets.acq(id);
         if (wallet.file().exists()) {
             this.mergeOne(mergeParams, patch, wallet, "localhost", false);

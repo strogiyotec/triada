@@ -246,6 +246,42 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 });
     }
 
+
+    private void getWalletRoute(final Router router) {
+        router.get("/wallet/:id")
+                .handler(routingContext -> {
+                    final String walletId = routingContext.request().getParam("id");
+
+                    if (this.argc.containsKey("disable-push")) {
+                        routingContext.response()
+                                .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
+                                .setStatusCode(404)
+                                .end("Push is disabled with --disable-push");
+                    } else {
+                        final String walletId = routingContext.request().getParam("id");
+                        final JsonObject wallet = routingContext.getBodyAsJson();
+                        final List<String> modified = Unchecked.supplier(() -> this.entrance.push(walletId, wallet.toString())).get();
+                        if (modified.isEmpty()) {
+                            routingContext.response()
+                                    .setStatusCode(304)
+                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
+                                    .end("No wallets were modified");
+                        } else {
+                            routingContext.response()
+                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
+                                    .setStatusCode(200)
+                                    .end(
+                                            new JsonObject()
+                                                    .put("score", this.best().get().hash())
+                                                    .put("wallets", this.wallets.count())
+                                                    .toString()
+                                    );
+                        }
+                    }
+
+                });
+    }
+
     /**
      * Version route
      * Was tested

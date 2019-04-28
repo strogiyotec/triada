@@ -1,4 +1,4 @@
-package io.triada.models;
+package io.triada.functions;
 
 import lombok.experimental.UtilityClass;
 import org.jooq.lambda.fi.util.function.CheckedConsumer;
