@@ -3,7 +3,7 @@ package io.triada.models.patch;
 import com.google.common.hash.Hashing;
 import io.triada.dates.DateConverters;
 import io.triada.functions.CheckedToBooleanFunction;
-import io.triada.models.Exceptionally;
+import io.triada.functions.Exceptionally;
 import io.triada.models.id.LongId;
 import io.triada.models.key.RsaKey;
 import io.triada.models.sign.TxnSignature;

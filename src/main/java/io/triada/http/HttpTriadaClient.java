@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Triada http client
@@ -110,7 +111,7 @@ public final class HttpTriadaClient {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_OCTET_STREAM));
         final HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
-
+        ExecutorService
         return template.exchange(
                 url,
                 HttpMethod.GET,

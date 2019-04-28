@@ -66,7 +66,7 @@ final class NodeParams {
                 .filter(p -> p.contains("network"))
                 .map(p -> p.substring(p.indexOf("=") + 1))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Need to provide host"));
+                .orElseThrow(() -> new IllegalArgumentException("Need to provide network"));
     }
 
     public int strength() {
