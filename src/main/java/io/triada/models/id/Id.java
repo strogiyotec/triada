@@ -3,7 +3,7 @@ package io.triada.models.id;
 import io.triada.text.Text;
 
 /**
- * Represent id
+ * Represent id of wallet
  * @param <T> type
  */
 public interface Id<T> extends Text{

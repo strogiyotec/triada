@@ -26,6 +26,9 @@ import java.util.List;
 import static io.triada.http.HttpTriadaClient.READ_TIMEOUT;
 import static io.triada.models.tax.TxnTaxes.TRIAL;
 
+/**
+ * Command to pay taxes
+ */
 @AllArgsConstructor
 public final class TaxesCommand implements Command {
 

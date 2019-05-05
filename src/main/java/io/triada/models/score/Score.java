@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface Score extends Text,Jsonable {
 
+    /**
+     *
+     * @return Mnemo of wallet
+     */
     String mnemo();
 
     /**

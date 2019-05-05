@@ -15,10 +15,19 @@ import java.nio.file.Path;
 @AllArgsConstructor
 public final class PullCommand implements Command {
 
+    /**
+     * Remote nodes
+     */
     private final Remotes remotes;
 
+    /**
+     * Wallets path
+     */
     private final Path wallets;
 
+    /**
+     * Copies path
+     */
     private final Path copies;
 
     @Override

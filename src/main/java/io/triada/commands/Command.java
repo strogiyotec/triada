@@ -4,6 +4,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 public interface Command {
+
+    /**
+     * @param argc Command argc
+     * @throws Exception if failed
+     *                   Run command with given argc
+     */
     void run(String argc[]) throws Exception;
 
     /**

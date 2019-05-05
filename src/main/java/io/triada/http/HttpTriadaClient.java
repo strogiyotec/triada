@@ -111,7 +111,6 @@ public final class HttpTriadaClient {
         final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_OCTET_STREAM));
         final HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
-        ExecutorService
         return template.exchange(
                 url,
                 HttpMethod.GET,
