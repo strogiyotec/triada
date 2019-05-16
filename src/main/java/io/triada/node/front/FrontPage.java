@@ -2,6 +2,8 @@ package io.triada.node.front;
 
 import io.triada.commands.remote.Remotes;
 import io.triada.models.score.Score;
+import io.triada.models.tax.TxnTaxes;
+import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
 import io.triada.node.entrance.Entrance;
 import io.triada.node.farm.Farm;
@@ -59,6 +61,9 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
      */
     private final int port;
 
+    /**
+     * Entrance
+     */
     private final Entrance entrance;
 
     /**
@@ -72,6 +77,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
         final Router router = Router.router(this.vertx);
         this.versionRoute(router);
         this.protocolRoute(router);
+        this.getWalletRoute(router);
         this.pidRoute(router);
         this.ledgerRoute(router);
         this.remotesRoute(router);
@@ -246,39 +252,30 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 });
     }
 
-
+    /**
+     * Get json representation of wallet
+     *
+     * @param router Router
+     *               // TODO: 5/16/19 add test
+     */
     private void getWalletRoute(final Router router) {
         router.get("/wallet/:id")
-                .handler(routingContext -> {
-                    final String walletId = routingContext.request().getParam("id");
+                .handler(event -> {
+                    final String walletId = event.request().getParam("id");
+                    final Wallet wallet = Unchecked.supplier(() -> this.wallets.acq(walletId)).get();
+                    final TxnTaxes taxes = new TxnTaxes(wallet);
+                    final JsonObject body = new JsonObject()
+                            .put("version", this.argc.get("version"))
+                            .put("protocol", this.argc)
+                            .put("id", wallet.asText())
+                            .put("score", this.best().get().asJson())
+                            .put("taxes", taxes.paid())
+                            .put("debt", taxes.debt());
 
-                    if (this.argc.containsKey("disable-push")) {
-                        routingContext.response()
-                                .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
-                                .setStatusCode(404)
-                                .end("Push is disabled with --disable-push");
-                    } else {
-                        final String walletId = routingContext.request().getParam("id");
-                        final JsonObject wallet = routingContext.getBodyAsJson();
-                        final List<String> modified = Unchecked.supplier(() -> this.entrance.push(walletId, wallet.toString())).get();
-                        if (modified.isEmpty()) {
-                            routingContext.response()
-                                    .setStatusCode(304)
-                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
-                                    .end("No wallets were modified");
-                        } else {
-                            routingContext.response()
-                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
-                                    .setStatusCode(200)
-                                    .end(
-                                            new JsonObject()
-                                                    .put("score", this.best().get().hash())
-                                                    .put("wallets", this.wallets.count())
-                                                    .toString()
-                                    );
-                        }
-                    }
-
+                    event.request().response()
+                            .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
+                            .setStatusCode(200)
+                            .end(body.toString());
                 });
     }
 
