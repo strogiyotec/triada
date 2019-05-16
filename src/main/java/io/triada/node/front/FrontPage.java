@@ -9,12 +9,14 @@ import io.triada.node.entrance.Entrance;
 import io.triada.node.farm.Farm;
 import io.triada.text.Text;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Unchecked;
@@ -256,7 +258,6 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
      * Get json representation of wallet
      *
      * @param router Router
-     *               // TODO: 5/16/19 add test
      */
     private void getWalletRoute(final Router router) {
         router.get("/wallet/:id")
@@ -266,9 +267,9 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                     final TxnTaxes taxes = new TxnTaxes(wallet);
                     final JsonObject body = new JsonObject()
                             .put("version", this.argc.get("version"))
-                            .put("protocol", this.argc)
+                            .put("protocol", this.argc.get("protocol"))
                             .put("id", wallet.asText())
-                            .put("score", this.best().get().asJson())
+                            .put("score", new JsonObject(this.best().get().asJson().toString()))
                             .put("taxes", taxes.paid())
                             .put("debt", taxes.debt());
 
@@ -276,7 +277,12 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                             .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
                             .setStatusCode(200)
                             .end(body.toString());
-                });
+                }).failureHandler(new Handler<RoutingContext>() {
+            @Override
+            public void handle(final RoutingContext event) {
+                System.out.println(event);
+            }
+        });
     }
 
     /**

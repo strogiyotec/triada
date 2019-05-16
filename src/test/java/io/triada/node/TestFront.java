@@ -29,6 +29,8 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.hamcrest.CoreMatchers.is;
+
 public final class TestFront extends Assert {
 
     @ClassRule
@@ -45,6 +47,11 @@ public final class TestFront extends Assert {
     private static final String INVOICE = "NOPREFIX@ffffffffffffffff";
 
     private final RestTemplate template = new RestTemplate();
+
+    /**
+     * init in before class
+     */
+    private static String walletId;
 
     @BeforeClass
     public static void start() throws Throwable {
@@ -87,6 +94,8 @@ public final class TestFront extends Assert {
         final Vertx vertx = Vertx.vertx(options);
         vertx.deployVerticle(frontPage);
         Thread.sleep(2000);//need some time to deploy verticle
+
+        walletId = wallet.head().id();
     }
 
     @Test
@@ -117,8 +126,16 @@ public final class TestFront extends Assert {
     }
 
     @Test
-    public void testPutWallet() throws Exception {
+    public void testGetWallet() throws Exception {
+        final ResponseEntity<String> response = template.getForEntity("http://localhost:8080/wallet/" + walletId, String.class);
+        final JsonObject body = new JsonObject(response.getBody());
 
+        assertThat(body.getString("protocol"), is(Triada.TEST_NETWORK));
+        assertThat(body.getString("version"), is(Triada.VERSION));
+        assertThat(body.getJsonObject("score").getString("host"), is("localhost"));
+        assertThat(body.getJsonObject("score").getInteger("port"), is(8080));
+        assertThat(body.getInteger("taxes"), is(0));
+        assertThat(body.getInteger("debt"), is(0));
     }
 
     @Test
