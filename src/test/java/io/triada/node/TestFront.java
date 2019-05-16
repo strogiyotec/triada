@@ -75,6 +75,7 @@ public final class TestFront extends Assert {
                         "protocol", Triada.TEST_NETWORK,
                         "version", Triada.VERSION
                 ),
+                ImmutableMap.of("disable-push", false),
                 farm,
                 ledger,
                 wallets,

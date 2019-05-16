@@ -1,6 +1,7 @@
 package io.triada.node.front;
 
 import io.triada.commands.remote.Remotes;
+import io.triada.models.id.LongId;
 import io.triada.models.score.Score;
 import io.triada.models.tax.TxnTaxes;
 import io.triada.models.wallet.Wallet;
@@ -35,6 +36,11 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
      * Argc
      */
     private final Map<String, String> argc;
+
+    /**
+     * Boolean flags
+     */
+    private final Map<String, Boolean> flags;
 
     /**
      * Farm
@@ -84,7 +90,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
         this.scoreRoute(router);
         this.farmRoute(router);
         this.walletsRoute(router);
-        this.pushWalletRoute(router);
+        this.putWalletRoute(router);
 
         this.httpServer.requestHandler(router);
         this.httpServer.listen(this.port);
@@ -218,40 +224,6 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                 );
     }
 
-    // TODO: 4/5/19 Add test
-    private void pushWalletRoute(final Router router) {
-        router.delete("/wallet/:id")
-                .handler(routingContext -> {
-                    if (this.argc.containsKey("disable-push")) {
-                        routingContext.response()
-                                .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
-                                .setStatusCode(404)
-                                .end("Push is disabled with --disable-push");
-                    } else {
-                        final String walletId = routingContext.request().getParam("id");
-                        final JsonObject wallet = routingContext.getBodyAsJson();
-                        final List<String> modified = Unchecked.supplier(() -> this.entrance.push(walletId, wallet.toString())).get();
-                        if (modified.isEmpty()) {
-                            routingContext.response()
-                                    .setStatusCode(304)
-                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "text/plain")
-                                    .end("No wallets were modified");
-                        } else {
-                            routingContext.response()
-                                    .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
-                                    .setStatusCode(200)
-                                    .end(
-                                            new JsonObject()
-                                                    .put("score", this.best().get().hash())
-                                                    .put("wallets", this.wallets.count())
-                                                    .toString()
-                                    );
-                        }
-                    }
-
-                });
-    }
-
     /**
      * Get json representation of wallet
      *
@@ -276,6 +248,50 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                             .setStatusCode(200)
                             .end(body.toString());
                 });
+    }
+
+    /**
+     * Get json representation of wallet
+     *
+     * @param router Router
+     *               // TODO: 5/16/19 Add test
+     */
+    private void putWalletRoute(final Router router) {
+        router.put("/wallet/:id")
+                .handler(event -> {
+                    if (this.flags.getOrDefault("disable-push", true)) {
+                        event.request().response()
+                                .setStatusCode(404)
+                                .end();
+                        return;
+                    }
+
+                    final List<String> modified =
+                            Unchecked.supplier(
+                                    () ->
+                                            this.entrance.push(
+                                                    new LongId(event.request().getParam("id")).asText(),
+                                                    event.getBodyAsJson().toString()
+                                            )
+                            ).get();
+
+                    if (modified.isEmpty()) {
+                        event.request().response().setStatusCode(304).end();
+                        return;
+                    }
+
+                    event.request().response()
+                            .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
+                            .setStatusCode(200)
+                            .end(
+                                    new JsonObject()
+                                            .put("version", this.argc.get("version"))
+                                            .put("score", new JsonObject(this.best().get().asJson().toString()))
+                                            .put("wallets", this.wallets.count())
+                                            .toString()
+                            );
+                });
+
     }
 
     /**
