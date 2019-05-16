@@ -9,14 +9,12 @@ import io.triada.node.entrance.Entrance;
 import io.triada.node.farm.Farm;
 import io.triada.text.Text;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Unchecked;
@@ -277,12 +275,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                             .putHeader(HttpHeaders.CONTENT_TYPE.toString(), "application/json")
                             .setStatusCode(200)
                             .end(body.toString());
-                }).failureHandler(new Handler<RoutingContext>() {
-            @Override
-            public void handle(final RoutingContext event) {
-                System.out.println(event);
-            }
-        });
+                });
     }
 
     /**
