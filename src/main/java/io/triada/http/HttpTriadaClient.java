@@ -9,9 +9,11 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.concurrent.ExecutorService;
+import java.util.Objects;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Triada http client
@@ -47,14 +49,14 @@ public final class HttpTriadaClient {
     public File getFile(final File file) throws Exception {
         final ResponseEntity<byte[]> response = HttpTriadaClient.response(this.url);
         HttpTriadaClient.validate(response);
-        final byte[] body = response.getBody();
+
         FileUtils.write(
                 file,
                 new String(
-                        body,
-                        StandardCharsets.UTF_8
+                        Objects.requireNonNull(response.getBody()),
+                        UTF_8
                 ),
-                StandardCharsets.UTF_8,
+                UTF_8,
                 false
         );
         return file;
@@ -75,7 +77,7 @@ public final class HttpTriadaClient {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
         final HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
         final ResponseEntity<String> response = template.exchange(this.url, HttpMethod.GET, entity, String.class, Collections.emptyMap());
-        return new JsonParser().parse(response.getBody()).getAsJsonObject();
+        return new JsonParser().parse(requireNonNull(response.getBody())).getAsJsonObject();
     }
 
     /**
@@ -94,7 +96,7 @@ public final class HttpTriadaClient {
      * @throws Exception if failed
      */
     public JsonObject putFile(final File file) throws Exception {
-        final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        final String content = FileUtils.readFileToString(file, UTF_8);
         final ResponseEntity<String> response = HttpTriadaClient.response(this.url, content);
         HttpTriadaClient.validate(response);
         return new JsonParser().parse(response.getBody() == null ? "{}" : response.getBody()).getAsJsonObject();
