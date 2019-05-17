@@ -16,6 +16,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jooq.lambda.Unchecked;
@@ -81,6 +82,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
     public void start() throws Exception {
         this.httpServer = this.vertx.createHttpServer();
         final Router router = Router.router(this.vertx);
+        router.route().handler(BodyHandler.create());
         this.versionRoute(router);
         this.protocolRoute(router);
         this.getWalletRoute(router);
@@ -290,7 +292,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                                             .put("wallets", this.wallets.count())
                                             .toString()
                             );
-                });
+                }).failureHandler(event -> event.failure().printStackTrace());
 
     }
 

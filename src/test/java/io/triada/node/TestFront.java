@@ -3,10 +3,13 @@ package io.triada.node;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 import io.triada.Triada;
+import io.triada.commands.remote.RemoteNode;
 import io.triada.commands.remote.RemoteNodes;
+import io.triada.http.HttpTriadaClient;
 import io.triada.mocks.FakeFile;
 import io.triada.mocks.FakeHome;
 import io.triada.models.id.LongId;
+import io.triada.models.score.SuffixScore;
 import io.triada.models.wallet.TriadaWallet;
 import io.triada.models.wallet.Wallet;
 import io.triada.models.wallet.Wallets;
@@ -65,7 +68,7 @@ public final class TestFront extends Assert {
         );
         final File ledger = folder.newFile("ledger.csv");
         final RemoteNodes nodes = new RemoteNodes(Unchecked.supplier(() -> folder.newFile("remotes")).get());
-        nodes.add("localhost", 22);
+        nodes.add("127.0.0.1", 4096);
         nodes.add("localhost", 44);
 
         final Wallets wallets = new Wallets(wallet.file().getParentFile());
@@ -137,6 +140,27 @@ public final class TestFront extends Assert {
         assertThat(body.getJsonObject("score").getInteger("port"), is(8080));
         assertThat(body.getInteger("taxes"), is(0));
         assertThat(body.getInteger("debt"), is(0));
+    }
+
+    @Test
+    public void testPutFile() throws Exception {
+        final RemoteNode node = new RemoteNode(
+                HostAndPort.fromParts("localhost", 8080),
+                new SuffixScore(
+                        HostAndPort.fromParts("localhost", 8080),
+                        INVOICE,
+                        SuffixScore.STRENGTH
+                ),
+                false,
+                "triada",
+                1
+        );
+        final Wallet newWallet = fakeHome.createEagerWallet();
+        final HttpTriadaClient http = node.http(String.format("wallet/%s", newWallet.head().id()));
+
+        final com.google.gson.JsonObject response = http.putFile(newWallet.file());
+
+        System.out.println(response);
     }
 
     @Test
