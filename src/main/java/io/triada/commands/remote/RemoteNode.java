@@ -41,7 +41,7 @@ public final class RemoteNode implements Text {
     /**
      * Is Http client from node was touched , become true when http is called
      */
-    private boolean touched = false;
+    private boolean touched;
 
     public RemoteNode(
             final HostAndPort hostAndPort,
