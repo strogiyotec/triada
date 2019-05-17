@@ -198,12 +198,12 @@ public final class SuffixScore implements Score {
      * Ctor
      **/
     public SuffixScore(final JsonObject jo) {
-            this.time = new Date(jo.get("time").getAsLong());
-            this.hostAndPort = HostAndPort.fromParts(jo.get("host").getAsString(), jo.get("port").getAsInt());
-            this.invoice = jo.get("invoice").getAsString();
-            this.suffixes = Stream.of(jo.get("suffixes").getAsString().split("_")).filter(suf->!suf.isEmpty()).collect(Collectors.toList());
-            this.strength = jo.get("strength").getAsInt();
-            this.created = new Date();
+        this.time = new Date(jo.get("time").getAsLong());
+        this.hostAndPort = HostAndPort.fromParts(jo.get("host").getAsString(), jo.get("port").getAsInt());
+        this.invoice = jo.get("invoice").getAsString();
+        this.suffixes = Stream.of(jo.get("suffixes").getAsString().split("_")).filter(suf -> !suf.isEmpty()).collect(Collectors.toList());
+        this.strength = jo.get("strength").getAsInt();
+        this.created = new Date();
     }
 
     @Override
@@ -361,7 +361,7 @@ public final class SuffixScore implements Score {
         resJO.addProperty("value", this.value());
         resJO.addProperty("host", this.hostAndPort.getHost());
         resJO.addProperty("port", this.hostAndPort.getPort());
-        resJO.addProperty("invoice",this.invoice);
+        resJO.addProperty("invoice", this.invoice);
         resJO.addProperty("time", this.time.getTime());
         resJO.addProperty("suffixes", this.suffixes.stream().collect(Collectors.joining("_")));
         resJO.addProperty("strength", this.strength);
@@ -371,5 +371,13 @@ public final class SuffixScore implements Score {
         resJO.addProperty("age", this.age());
         resJO.addProperty("created", this.created.getTime());
         return resJO;
+    }
+
+    public static void main(String[] args) {
+        class Test{
+            boolean hey;
+        }
+        final Test test = new Test();
+        System.out.println(test.hey);
     }
 }
