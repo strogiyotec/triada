@@ -251,7 +251,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
     }
 
     /**
-     * Get json representation of wallet
+     * Put wallet
      *
      * @param router Router
      *               // TODO: 5/16/19 Add test
@@ -271,7 +271,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                                     () ->
                                             this.entrance.push(
                                                     new LongId(event.request().getParam("id")).asText(),
-                                                    event.getBodyAsJson().toString()
+                                                    event.getBodyAsString()
                                             )
                             ).get();
 
