@@ -19,13 +19,15 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Long.parseLong;
 import static java.nio.file.Files.*;
+import static java.util.Arrays.asList;
 
 @AllArgsConstructor
 public final class BlockingEntrance implements Entrance {
@@ -41,10 +43,6 @@ public final class BlockingEntrance implements Entrance {
     private final String network;
 
     private final Path ledger;
-
-    private final List<String> history = new ArrayList<>(16);
-
-    private final List<Long> speed = new ArrayList<>(16);
 
     public BlockingEntrance(
             final Wallets wallets,
@@ -67,7 +65,7 @@ public final class BlockingEntrance implements Entrance {
     }
 
     @Override
-    public List<String> push(final String id, final String body) throws Exception {
+    public List<String> push(final String id, final String body, final List<String> params) throws Exception {
         final CopiesFromFile copies = new CopiesFromFile(this.walletCopiesDir(id));
         final String host = "0.0.0.0";
         copies.add(body, host, RemoteNodes.PORT, 0);
@@ -76,12 +74,18 @@ public final class BlockingEntrance implements Entrance {
                     this.wallets,
                     copies.root().toPath(),
                     this.remotes
-            ).run(new String[]{
-                    "-fetch",
-                    "ignore-node=" + address,
-                    "network=" + this.network,
-                    "quiet-if-absent",
-            });
+            ).run(
+                    newArrayList(
+                            concat(
+                                    asList("-fetch",
+                                            "ignore-node=" + address,
+                                            "network=" + this.network,
+                                            "quiet-if-absent"
+                                    ),
+                                    params
+                            )
+                    ).toArray(new String[]{})
+            );
         }
         final List<String> modified = this.merge(id, copies);
         new CleanCommand(copies.root().toPath(), this.wallets)
@@ -141,9 +145,6 @@ public final class BlockingEntrance implements Entrance {
     public JsonObject asJson() {
         try {
             final JsonObject resJO = new JsonObject();
-            resJO.addProperty("history", String.join(",", this.history));
-            resJO.addProperty("historySize", this.history.size());
-            resJO.addProperty("speed", this.speed.isEmpty() ? 0 : this.speed.stream().mapToLong(Long::longValue).sum() / this.speed.size());
             resJO.addProperty("ledger", exists(this.ledger) ? lines(this.ledger, StandardCharsets.UTF_8).count() : 0L);
 
             return resJO;

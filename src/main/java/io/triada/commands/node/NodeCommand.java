@@ -85,6 +85,7 @@ public final class NodeCommand implements ValuableCommand<Integer>, AutoCloseabl
                                 "protocol", Triada.PROTOCOL,
                                 "version", Triada.VERSION
                         ),
+                        ImmutableMap.of("disable-push", false),
                         farm,
                         ledger.toFile(),
                         new Wallets(this.wallets.dir()),
