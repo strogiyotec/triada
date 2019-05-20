@@ -256,7 +256,6 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
      * Put wallet
      *
      * @param router Router
-     *               // TODO: 5/16/19 Add test
      */
     private void putWalletRoute(final Router router) {
         router.put("/wallet/:id")
@@ -292,11 +291,7 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                                             .put("wallets", this.wallets.count())
                                             .toString()
                             );
-                }).failureHandler(event ->
-        {
-            event.failure().printStackTrace();
-            event.request().response().end();
-        });
+                }).failureHandler(event -> event.request().response().setStatusCode(500).end());
 
     }
 

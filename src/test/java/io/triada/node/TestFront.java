@@ -163,7 +163,7 @@ public final class TestFront extends Assert {
 
         final com.google.gson.JsonObject response = http.putFile(newWallet.file());
 
-        System.out.println(response);
+        assertThat(response.size(), is(0));
     }
 
     @Test
