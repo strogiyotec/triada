@@ -39,17 +39,20 @@ public final class TestFront extends Assert {
     @ClassRule
     public static final TemporaryFolder folder = new TemporaryFolder();
 
-    private static final FakeHome fakeHome = new FakeHome();
+    private static final FakeHome FAKE_HOME = new FakeHome();
 
-    private static final Wallet wallet = Unchecked.supplier(() -> fakeHome.createEagerWallet(new LongId(12345L))).get();
-
-    private static ExecutorService service = Executors.newSingleThreadExecutor();
-
-    private static FrontPage frontPage;
+    /**
+     * Main wallet
+     */
+    private static final Wallet WALLET = Unchecked.supplier(() -> FAKE_HOME.createEagerWallet(new LongId(12345L))).get();
 
     private static final String INVOICE = "NOPREFIX@ffffffffffffffff";
 
-    private final RestTemplate template = new RestTemplate();
+    private static final RestTemplate REST_TEMPLATE = new RestTemplate();
+
+    private static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+
+    private static FrontPage frontPage;
 
     /**
      * init in before class
@@ -64,14 +67,14 @@ public final class TestFront extends Assert {
                         2,
                         INVOICE
                 ),
-                service
+                EXECUTOR
         );
         final File ledger = folder.newFile("ledger.csv");
         final RemoteNodes nodes = new RemoteNodes(Unchecked.supplier(() -> folder.newFile("remotes")).get());
         nodes.add("127.0.0.1", 4096);
         nodes.add("localhost", 44);
 
-        final Wallets wallets = new Wallets(wallet.file().getParentFile());
+        final Wallets wallets = new Wallets(WALLET.file().getParentFile());
 
         frontPage = new FrontPage(
                 ImmutableMap.of(
@@ -87,7 +90,7 @@ public final class TestFront extends Assert {
                 new BlockingEntrance(
                         wallets,
                         nodes,
-                        wallet.file().getParentFile().toPath(),
+                        WALLET.file().getParentFile().toPath(),
                         Triada.TEST_NETWORK,
                         ledger.toPath()
                 )
@@ -99,16 +102,16 @@ public final class TestFront extends Assert {
         vertx.deployVerticle(frontPage);
         Thread.sleep(2000);//need some time to deploy verticle
 
-        walletId = wallet.head().id();
+        walletId = WALLET.head().id();
     }
 
     @Test
     public void testStaticRoutes() throws Exception {
-        final ResponseEntity<String> protocol = template.getForEntity("http://localhost:8080/protocol", String.class);
-        final ResponseEntity<String> version = template.getForEntity("http://localhost:8080/version", String.class);
-        final ResponseEntity<String> pid = template.getForEntity("http://localhost:8080/pid", String.class);
-        final ResponseEntity<String> wallets = template.getForEntity("http://localhost:8080/wallets", String.class);
-        final ResponseEntity<String> ledger = template.getForEntity("http://localhost:8080/ledger", String.class);
+        final ResponseEntity<String> protocol = REST_TEMPLATE.getForEntity("http://localhost:8080/protocol", String.class);
+        final ResponseEntity<String> version = REST_TEMPLATE.getForEntity("http://localhost:8080/version", String.class);
+        final ResponseEntity<String> pid = REST_TEMPLATE.getForEntity("http://localhost:8080/pid", String.class);
+        final ResponseEntity<String> wallets = REST_TEMPLATE.getForEntity("http://localhost:8080/wallets", String.class);
+        final ResponseEntity<String> ledger = REST_TEMPLATE.getForEntity("http://localhost:8080/ledger", String.class);
 
         assertEquals(Triada.TEST_NETWORK, protocol.getBody());
         assertEquals(Triada.VERSION, version.getBody());
@@ -120,7 +123,7 @@ public final class TestFront extends Assert {
     @Test
     public void testRemotes() throws Exception {
         Thread.sleep(5000);//need some time to find suffixes
-        final ResponseEntity<String> remotes = template.getForEntity("http://localhost:8080/remotes", String.class);
+        final ResponseEntity<String> remotes = REST_TEMPLATE.getForEntity("http://localhost:8080/remotes", String.class);
         final JsonObject remoteNodes = new JsonObject(remotes.getBody());
         assertTrue(remoteNodes.containsKey("remotes"));
 
@@ -131,7 +134,7 @@ public final class TestFront extends Assert {
 
     @Test
     public void testGetWallet() throws Exception {
-        final ResponseEntity<String> response = template.getForEntity("http://localhost:8080/wallet/" + walletId, String.class);
+        final ResponseEntity<String> response = REST_TEMPLATE.getForEntity("http://localhost:8080/WALLET/" + walletId, String.class);
         final JsonObject body = new JsonObject(response.getBody());
 
         assertThat(body.getString("protocol"), is(Triada.TEST_NETWORK));
@@ -155,7 +158,7 @@ public final class TestFront extends Assert {
                 "triada",
                 1
         );
-        final Wallet newWallet = fakeHome.createEagerWallet();
+        final Wallet newWallet = FAKE_HOME.createEagerWallet(WALLET);
         final HttpTriadaClient http = node.http(String.format("wallet/%s", newWallet.head().id()));
 
         final com.google.gson.JsonObject response = http.putFile(newWallet.file());
@@ -165,8 +168,8 @@ public final class TestFront extends Assert {
 
     @Test
     public void testDynamicRoutes() throws Exception {
-        final ResponseEntity<String> farm = template.getForEntity("http://localhost:8080/farm", String.class);
-        final ResponseEntity<String> score = template.getForEntity("http://localhost:8080/score", String.class);
+        final ResponseEntity<String> farm = REST_TEMPLATE.getForEntity("http://localhost:8080/farm", String.class);
+        final ResponseEntity<String> score = REST_TEMPLATE.getForEntity("http://localhost:8080/score", String.class);
 
         assertThat(farm.getBody(), Matchers.containsString("best"));
         assertThat(score.getBody(), Matchers.containsString(INVOICE));
@@ -176,6 +179,6 @@ public final class TestFront extends Assert {
     @AfterClass
     public static void close() throws Exception {
         frontPage.close();
-        service.shutdownNow();
+        EXECUTOR.shutdownNow();
     }
 }
