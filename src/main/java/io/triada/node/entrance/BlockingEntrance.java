@@ -2,6 +2,7 @@ package io.triada.node.entrance;
 
 import com.google.common.base.Predicates;
 import com.google.gson.JsonObject;
+import io.netty.channel.epoll.Epoll;
 import io.triada.commands.clean.CleanCommand;
 import io.triada.commands.fetch.FetchCommand;
 import io.triada.commands.merge.MergeCommand;
@@ -125,7 +126,6 @@ public final class BlockingEntrance implements Entrance {
                     ).run(new String[]{
                             "-merge",
                             "ids=" + id,
-                            //   NodeData.has(MASTERS, )
                             "trusted=" + t.toFile().getAbsolutePath(),
                             "ledger=" + f.toFile().getAbsolutePath(),
                             "network=" + this.network

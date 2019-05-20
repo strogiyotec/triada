@@ -292,7 +292,11 @@ public final class FrontPage extends AbstractVerticle implements AutoCloseable {
                                             .put("wallets", this.wallets.count())
                                             .toString()
                             );
-                }).failureHandler(event -> event.failure().printStackTrace());
+                }).failureHandler(event ->
+        {
+            event.failure().printStackTrace();
+            event.request().response().end();
+        });
 
     }
 

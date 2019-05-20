@@ -40,7 +40,7 @@ public final class Wallets {
 
     /**
      * @param id Wallet id
-     * @return True if wallet file exisrs
+     * @return True if wallet file exists
      * @throws Exception if failed
      */
     public boolean exists(String id) throws Exception {
