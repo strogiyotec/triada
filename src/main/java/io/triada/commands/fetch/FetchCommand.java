@@ -288,6 +288,7 @@ public final class FetchCommand implements Command {
             final JsonObject body = remoteNode.http(url).get(READ_TIMEOUT);
             return yield.apply(body);
         } catch (final Throwable exc) {
+            System.out.println(String.format("Can't get wallet from remote node with address : %s", remoteNode.address().toString()));
             // TODO: 2/28/19 Retry
             return 0;
         }
