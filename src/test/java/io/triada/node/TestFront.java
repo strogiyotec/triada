@@ -36,9 +36,15 @@ import static org.hamcrest.CoreMatchers.is;
 
 public final class TestFront extends Assert {
 
+    /**
+     * Create temp folders
+     */
     @ClassRule
     public static final TemporaryFolder folder = new TemporaryFolder();
 
+    /**
+     * Create fake wallets
+     */
     private static final FakeHome FAKE_HOME = new FakeHome();
 
     /**
@@ -46,12 +52,24 @@ public final class TestFront extends Assert {
      */
     private static final Wallet WALLET = Unchecked.supplier(() -> FAKE_HOME.createEagerWallet(new LongId(12345L))).get();
 
+    /**
+     * Invoicew
+     */
     private static final String INVOICE = "NOPREFIX@ffffffffffffffff";
 
+    /**
+     * Http client
+     */
     private static final RestTemplate REST_TEMPLATE = new RestTemplate();
 
+    /**
+     * Thread pool
+     */
     private static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
+    /**
+     * Front page verticle
+     */
     private static FrontPage frontPage;
 
     /**
@@ -61,19 +79,24 @@ public final class TestFront extends Assert {
 
     @BeforeClass
     public static void start() throws Throwable {
-        final AsyncFarm farm = new AsyncFarm(
-                new SingleThreadScoreFarm(
-                        new FakeFile(TriadaWallet.EXT).call(),
-                        2,
-                        INVOICE
-                ),
-                EXECUTOR
-        );
+        final AsyncFarm farm =
+                new AsyncFarm(
+                        new SingleThreadScoreFarm(
+                                new FakeFile(TriadaWallet.EXT).call(),
+                                2,
+                                INVOICE
+                        ),
+                        EXECUTOR
+                );
+        //Storage of negative transactions
         final File ledger = folder.newFile("ledger.csv");
+
+        //Remote nodes
         final RemoteNodes nodes = new RemoteNodes(Unchecked.supplier(() -> folder.newFile("remotes")).get());
         nodes.add("127.0.0.1", 4096);
         nodes.add("localhost", 44);
 
+        //Wallets dir
         final Wallets wallets = new Wallets(WALLET.file().getParentFile());
 
         frontPage = new FrontPage(
@@ -96,6 +119,7 @@ public final class TestFront extends Assert {
                 )
         );
         farm.start(HostAndPort.fromParts("localhost", 8080), () -> Thread.sleep(30000));
+
         final VertxOptions options = new VertxOptions();
         options.setBlockedThreadCheckInterval(1000 * 60 * 60);
         final Vertx vertx = Vertx.vertx(options);
@@ -128,13 +152,13 @@ public final class TestFront extends Assert {
         assertTrue(remoteNodes.containsKey("remotes"));
 
         final JsonArray remotesJA = remoteNodes.getJsonArray("remotes");
-        assertThat(remotesJA.getString(0), Matchers.containsString("22"));
+        assertThat(remotesJA.getString(0), Matchers.containsString("4096"));
         assertThat(remotesJA.getString(1), Matchers.containsString("44"));
     }
 
     @Test
     public void testGetWallet() throws Exception {
-        final ResponseEntity<String> response = REST_TEMPLATE.getForEntity("http://localhost:8080/WALLET/" + walletId, String.class);
+        final ResponseEntity<String> response = REST_TEMPLATE.getForEntity("http://localhost:8080/wallet/" + walletId, String.class);
         final JsonObject body = new JsonObject(response.getBody());
 
         assertThat(body.getString("protocol"), is(Triada.TEST_NETWORK));
